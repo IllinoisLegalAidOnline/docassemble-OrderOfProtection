@@ -1,0 +1,1525 @@
+metadata:
+  title: Order of protection
+  short title: Order of protection
+  comment: This program helps you ask the court to order someone to stop harming or threatening you or other household members.
+  authors:
+    - Matt Newsted
+---
+include:
+  - docassemble.AssemblyLine:assembly_line.yml
+  - docassemble.ALToolbox:escape_button.yml  
+  - docassemble.ALToolbox:phone-number-validation.yml  
+  - docassemble.ILAO:ilao-interview-framework.yml
+  - docassemble.ILAO:shared-basic-questions.yml
+---
+objects:
+  - users: ALPeopleList.using(there_are_any=True)
+  - other_parties: ALPeopleList.using(there_are_any=True)
+  - other_parties[i].work_address: ALAddress
+  - shared_kids: ALPeopleList.using(there_are_any=True)
+  - petitioner_kids: ALPeopleList.using(there_are_any=True)
+  - other_hh_members: ALPeopleList.using(there_are_any=True)
+  - dependent_adult: ALIndividual
+  - high_risk_adult: ALIndividual
+  - other_ops: DAList.using(object_type=Thing, there_are_any=True)
+  - other_cases: DAList.using(object_type=Thing, there_are_any=True)
+  - incidents: DAList.using(object_type=Thing, there_are_any=True)
+  - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
+
+---
+code: |
+  ilao_easy_form_title = "Order of Protection"
+  ilao_easy_form_url = "https://www.illinoislegalaid.org/legal-information/order-protection"
+  form_name = "Order of Protection"
+  al_form_type = 'new_case'
+  user_ask_role = 'plaintiff'
+  github_user = 'IllinoisLegalAidOnline'
+  github_repo_name = 'docassemble-OrderOfProtection'
+  allowed_courts = ['Circuit']
+---
+# Road map
+sections:
+  - section_intro: Start
+  - section_petitioner: People you want to protect
+  - section_respondent: Person who caused abuse
+  - section_incidents: Incidents of abuse
+  - section_protections: Protections
+  - section_child: About your children (optional)
+  - section_property: About your property
+  - section_remedies: Other remedies
+  - section_filing_info: Case info and Next steps
+  - section_download: Download
+---
+# interview order block
+mandatory: True
+code: |
+  nav.set_section('section_intro')
+  sees_nav_bar
+  instructions
+  whats_next
+  accept_terms
+  if in_illinois == False:
+    not_in_illinois
+  
+  trial_court
+  if jurisdiction_type.all_false():
+    other_jurisdiction_location
+  if relationship_type.all_false():
+    other_relief
+  nav.set_section('section_petitioner')
+  users.gather(number=1)
+  other_parties.gather(number=1)
+  minor_kids_with_respondent
+  protect_petitioner
+  if minor_kids_with_respondent:
+    shared_kids.gather()
+  if protect_petitioner_kids:
+    petitioner_kids.gather()
+    for person in shared_kids[:4]:
+      person.birthdate
+  if protect_other_hh_members:
+    other_hh_members.gather()
+  if protect_dependent_adult:
+    dependent_adult.name.first
+  if protect_high_risk_adult:
+    high_risk_adult.name.first
+
+  nav.set_section('section_respondent')
+  other_parties[0].birthdate
+  other_parties[0].address.address
+  if knows_respondent_work:
+    other_parties[0].work_address.address
+  if has_other_ops == "True":
+    other_ops.gather()
+  if has_other_cases == "True":
+    other_cases.gather()  
+
+  nav.set_section('section_incidents')
+  incidents_intro
+  incidents.gather()
+
+  nav.set_section('section_protections')
+  no_harassment
+  stay_away
+  hide_address
+  users[0].address.address
+  exclusive_possession
+  if exclusive_possession:
+    exclusive_possession_reason
+
+  nav.set_section('section_child')
+
+
+
+  nav.set_section('section_property')
+
+
+  nav.set_section('section_remedies')
+
+
+
+  nav.set_section('section_filing_info')
+  eop 
+  case_number
+  nav.set_section('section_download')  
+  get_docs_screen
+---
+id: welcome
+question: |
+  Order of Protection
+subquestion: |
+  Welcome to Illinois Legal Aid Online's **Order of Protection** Easy Form.
+
+  This program makes forms that help you ask the court to order someone to stop harming or threatening you or other household members.
+  
+  To learn more, read ILAO's article about [**Orders of Protection**](https://www.illinoislegalaid.org/node/29806).
+field: sees_nav_bar
+---
+id: instructions
+continue button field: instructions
+question: |
+  Instructions
+subquestion: |
+  To use this program you will need: 
+
+  * Thing 1
+  * Thing 2
+
+  EDIT: You can find this information on other court papers you have about this case. 
+
+  Set aside 15 to 30 minutes to finish this program. You can login and save your work to return to later. 
+ 
+  ${ collapse_template(help_example) }  
+
+  Click on **{green words}** to learn what they mean. Some questions have a question mark in a circle ${ fa_icon("question-circle", color_css="#0dcaf0" ) } that also gives help.
+---
+template: help_example
+subject: |
+  **You can expand sections like this to show more information.**
+content: |  
+  This is an example of help. Click again to hide.
+---
+id: whats next
+continue button field: whats_next
+question: |
+  After you finish this program
+subquestion: |
+  After you download your ${ form_name } forms, you must file them with the court. This program does not file your ${ form_name } for you.
+  
+  Read the "How to Ask for an Order of Protection" instructions you can download at the end of this program. 
+---
+id: accept terms
+question: |
+  Terms of use
+subquestion: |
+  This program does not provide legal advice. It does not take the place of advice from a lawyer.
+
+  Using this program does not create an attorney-client relationship between you and Illinois Legal Aid Online or its employees.
+
+  ${ collapse_template(get_legal_help) }  
+
+fields:
+  - To continue, you must accept the [**terms of use**](https://www.illinoislegalaid.org/about/terms-of-use).: accept
+    datatype: checkboxes
+    none of the above: False
+    minlength: 1
+    choices:
+      - I accept the terms of use.
+    validation messages:
+      minlength: |
+        You cannot continue unless you agree to the terms of use. 
+continue button field: accept_terms
+---
+template: get_legal_help
+subject: |
+  **What if I need legal advice?**
+content: |  
+  If you have questions or concerns about your legal problem and want legal advice you should talk to a lawyer.
+  
+  Use [**Get Legal Help**](https://www.illinoislegalaid.org/get-legal-help) to find free or low-cost legal services in your area.
+---
+id: in illinois
+question: |
+  Do you want to file for an Order of Protection in Illinois?
+subquestion: |
+  You can file in Illinois if:
+
+  * You live in Illinois,
+  * The person you are filing against lives in Illinois,
+  * The abuse took place in Illinois, or
+  * You are in Illinois to avoid abuse elsewhere.
+fields:
+  - no label: in_illinois
+    datatype: yesnoradio
+---
+id: not in illinois
+event: not_in_illinois
+question: |
+  Sorry
+subquestion: |
+  This program is only for people who want an Order of Protection in Illinois.
+  
+  You can use the [**Legal Services Corporation website**](https://www.lsc.gov/about-lsc/what-legal-aid/get-legal-help) to find a legal aid organization near you.
+buttons:
+  - Exit: exit
+  - Restart: restart
+---
+id: county
+continue button field: case_county
+question: |
+  In which county will you file your ${ form_name }?
+fields:
+  - no label: trial_court_index
+    datatype: integer
+    code: |
+      court_county_lookup()
+---
+depends on:
+  - trial_court_index
+code: |
+  trial_court = court_list.as_court('trial_court', trial_court_index)
+---
+code: |
+  def court_county_lookup(lowercase=False):
+    all_court_counties = court_list._load_courts()['address_county'].items()
+    filtered_courts = [(-1, "cook")] if lowercase else [(-1, "Cook")]
+    for court in all_court_counties:
+      if court[1] != "Cook":
+        court_name = court[1].lower() if lowercase else court[1]
+        filtered_courts.append((court[0],court_name))
+    return sorted( filtered_courts, key=lambda y: y[1])
+---
+depends on:
+  - trial_court_index
+code: |
+  if trial_court_index == -1:
+    trial_court = court_list.as_court('trial_court', 15)
+    trial_court.address.county = "Cook"
+  else:
+    trial_court = court_list.as_court('trial_court', trial_court_index)
+---
+id: jurisdiction
+#continue button field: jurisdiction
+question: |
+  Why do you want to file in ${ trial_court.address.county } County?
+fields:
+  - no label: jurisdiction_type
+    datatype: checkboxes
+    choices:
+      - I live in ${ trial_court.address.county } County.: I live here
+      - The person I am filing against lives in ${ trial_court.address.county } County.: Respondent lives here
+      - The abuse took place in ${ trial_court.address.county } County.: Abuse is here
+      - I am in ${ trial_court.address.county } County to avoid abuse elsewhere.: Abuse was elsewhere
+---
+id: not proper location
+event: other_jurisdiction_location
+question: |
+  Sorry
+subquestion: |
+  You can file your case in the Illinois county:
+  
+  * Where you live,
+  * Where the person who caused the abuse lives,
+  * Where the abuse occurred, or
+  * Where you are staying to avoid abuse.
+
+  If Illinois is not the right place to ask for an Order of Protection, you can use the [**Legal Services Corporation website**](https://www.lsc.gov/about-lsc/what-legal-aid/get-legal-help) to find a legal aid organization near you.
+buttons:
+  - Exit: exit
+  - Restart: restart
+---
+id: relationship
+question: |
+  Relationship with the person who caused the abuse
+subquestion: |
+  How is the person who caused the abuse related to you or the person you want to protect? You can check more than one.
+  
+    ${ collapse_template(relationship_example) } 
+fields:
+  - no label: relationship_type
+    datatype: checkboxes
+    choices:
+      - Spouse: se
+      - Ex-spouse: xs
+      - Boyfriend, girlfriend, or romantic partner (including ex-): bg
+      - We have a child in common (never married): cc
+      - We share or shared a living space: cs
+      - Child: ch
+      - Parent: pa
+      - Brother, sister, or sibling: sb
+      - Other family member: of
+      - Other family relationship: ot
+      - Step child: sc
+      - Step brother, step sister, or step sibling: ss
+      - Step parent: sp
+      - Grandchild: gc
+      - Grandparent: gp
+      - In-law: il
+      - Protected person has a disability and receives care from the abuser: pd
+      - Person responsible for a high risk adult: pc
+        help: |
+          A **high risk adult with disabilities** is a person aged 18 or over whose physical or mental disability keeps them from protecting themself from abuse, neglect, or exploitation.
+      - Personal assistant or caregiver to a person with a disability: pr
+      - Family or household member of my foster child: f
+      - Family or household member of my adopted child, or of my prospective adopted child: a
+      - Family or household member of a child that I am the legally-appointed custodian of: l
+---
+template: relationship_example
+subject: |
+  **Can I see some examples?**
+content: |  
+  If you want an Order of Protection against your mother, you will select **Child** because you are the child of that person.
+  
+  If you want an Order of Protection against the father of your foster child, select **Family or household member of my foster child**.
+---
+id: not proper relationship
+event: other_relief
+question: |
+  Sorry
+subquestion: |
+  You can file for an Order of Protection only if the person you want protected has a qualifying relationship with the abuser.
+  
+  A Stalking No Contact Order might work better in your situation. Read ILAO's article about [**Getting a no contact order for stalking**](https://www.illinoislegalaid.org/node/30216) to learn more.
+  
+buttons:
+  - Exit: exit
+  - Restart: restart
+---
+id: petitioner name
+sets:
+    - users[0].name.first
+    - users[0].name.last
+    - users[0].name.middle
+    - users[0].name.suffix
+question:  |
+  What is your name?
+subquestion: |
+  Enter your name, even if you are filing the Order of Protection on behalf of your family or household members. In court and on the forms, you will be listed as the **Petitioner**.
+fields:
+  - code: |
+      users[0].name_fields()
+---
+id: respondent name
+sets:
+    - other_parties[0].name.first
+    - other_parties[0].name.last
+    - other_parties[0].name.middle
+    - other_parties[0].name.suffix
+question:  |
+  What is the name of the person you want an Order of Protection against?
+subquestion: |
+  This person will be called the **Respondent** in court and on the forms.
+fields:
+  - code: |
+      other_parties[0].name_fields()
+
+---
+id: minor kids with respondent
+question: |
+  Do you have any minor children with ${other_parties[0].name.full(middle="full")}?
+subquestion:
+  Minor children are under 18.
+field: minor_kids_with_respondent
+choices:
+  - Yes: True
+  - No: False
+---
+id: protected parties
+question: |
+  Who do you want protected by this Order of Protection?
+subquestion: |
+  Check all that apply.
+fields:
+  - Me: protect_petitioner
+    datatype: yesnowide
+  - Minor children I have with ${other_parties[0].name.full(middle="full")}: protect_shared_kids
+    datatype: yesnowide
+    show if:
+      code: |
+        minor_kids_with_respondent == True
+  - My minor children I **did not** have with ${other_parties[0].name.full(middle="full")}: protect_petitioner_kids
+    datatype: yesnowide
+  - A dependent adult: protect_dependent_adult
+    datatype: yesnowide
+    help: |
+      A **dependent adult** is an elder adult who can't protect themself from abuse by a family or household member.
+  - A high risk adult with disabilities: protect_high_risk_adult
+    datatype: yesnowide
+    help: |
+      A **high risk adult with disabilities** is a person aged 18 or over whose physical or mental disability keeps them from protecting themself from abuse, neglect, or exploitation.
+  - Other household members: protect_other_hh_members
+    datatype: yesnowide
+    help: |
+      **Other household members** include spouses, former spouses, parents, children, stepchildren and other persons related by blood or by present or prior marriage, persons who share or formerly shared a common dwelling, persons who have or allegedly have a child in common, persons who share or allegedly share a blood relationship through a child, persons who have or have had a dating or engagement relationship, persons with disabilities and their personal assistants, and caregivers. 
+validation code: |
+  if not (protect_petitioner or protect_shared_kids or protect_petitioner_kids or protect_dependent_adult or protect_high_risk_adult or protect_other_hh_members):
+    validation_error("You need to select at least one choice to continue.", field="protect_other_hh_members")
+---
+sets:
+  - shared_kids[0].name.first
+  - shared_kids[0].name.middle
+  - shared_kids[0].name.last
+  - shared_kids[0].name.suffix
+id: name of first child with respondent
+question: |
+  What is the name of your minor child with ${other_parties[0].name.full(middle="full")}?
+fields:
+  - code: |
+      shared_kids[0].name_fields()
+---
+id: names of other children with respondent
+sets:
+  - shared_kids[i].name.first
+  - shared_kids[i].name.middle
+  - shared_kids[i].name.last
+  - shared_kids[i].name.suffix
+question: |
+  What is the name of your ${ ordinal(i) } minor child with ${other_parties[0].name.full(middle="full")}?
+fields:
+  - code: |
+      shared_kids[i].name_fields()
+---
+id: any other children with respondent
+question: |
+  Do you have another minor child with ${other_parties[0].name.full(middle="full")}?
+subquestion: |
+  The statewide Order of Protection forms have space for up to 4 minor children with the Respondent.
+  % if len(other_parties.elements) >= 1:  
+  So far you have told us about ${comma_and_list(shared_kids.complete_elements().full_names())}.
+  % endif
+fields:
+  - "Anyone else?": shared_kids.there_is_another
+    datatype: yesnoradio
+---
+sets:
+  - petitioner_kids[0].name.first
+  - petitioner_kids[0].name.middle
+  - petitioner_kids[0].name.last
+  - petitioner_kids[0].name.suffix
+id: name of first child not with respondent
+question: |
+  What is the name of your minor child **not with** ${other_parties[0].name.full(middle="full")}?
+fields:
+  - code: |
+      petitioner_kids[0].name_fields()
+---
+id: names of other children not with respondent
+sets:
+  - petitioner_kids[i].name.first
+  - petitioner_kids[i].name.middle
+  - petitioner_kids[i].name.last
+  - petitioner_kids[i].name.suffix
+question: |
+  What is the name of your ${ ordinal(i) } minor child **not with** ${other_parties[0].name.full(middle="full")}?
+fields:
+  - code: |
+      petitioner_kids[i].name_fields()
+---
+id: any other children not with respondent
+question: |
+  Do you have another minor child **not with** ${other_parties[0].name.full(middle="full")} you want to protect with this order?
+subquestion: |
+  % if len(petitioner_kids.elements) >= 1:  
+  So far you have told us about ${comma_and_list(petitioner_kids.complete_elements().full_names())}.
+  % endif
+fields:
+  - "Anyone else?": petitioner_kids.there_is_another
+    datatype: yesnoradio
+---
+sets:
+  - other_hh_members[0].name.first
+  - other_hh_members[0].name.middle
+  - other_hh_members[0].name.last
+  - other_hh_members[0].name.suffix
+id: name of first other household member
+question: |
+  What is the name of the household member you want protected by this order?
+fields:
+  - code: |
+      other_hh_members[0].name_fields()
+---
+id: names of other household members
+sets:
+  - other_hh_members[i].name.first
+  - other_hh_members[i].name.middle
+  - other_hh_members[i].name.last
+  - other_hh_members[i].name.suffix
+question: |
+  What is the name of the ${ ordinal(i) } household member you want protected by this order?
+fields:
+  - code: |
+      other_hh_members[i].name_fields()
+---
+id: any other household members
+question: |
+  Do you have another household member you want to protect with this order?
+subquestion: |
+  % if len(other_hh_members.elements) >= 1:  
+  So far you have told us about ${comma_and_list(other_hh_members.complete_elements().full_names())}.
+  % endif
+fields:
+  - "Anyone else?": other_hh_members.there_is_another
+    datatype: yesnoradio
+---
+id: minor child info
+generic object: ALIndividual
+question: |
+  Tell us more about ${ x.name.full(middle="full")}
+fields:
+  - Date of birth: x.birthdate
+    datatype: date
+    max: ${ today().format("yyyy-MM-dd") }
+  - State of residence: x.address.state
+    code: states_list()
+  - Include as a protected person?: x.protect
+    datatype: yesnoradio
+    #choices:
+      #- Yes: include
+      #- No: exclude
+---
+sets:
+  - dependent_adult.name.first
+  - dependent_adult.name.middle
+  - dependent_adult.name.last
+  - dependent_adult.name.suffix
+id: name of dependent adult
+question: |
+  What is the name of the dependent adult you want to protect with this order?
+fields:
+  - code: |
+      dependent_adult.name_fields()
+---
+sets:
+  - high_risk_adult.name.first
+  - high_risk_adult.name.middle
+  - high_risk_adult.name.last
+  - high_risk_adult.name.suffix
+id: name of high risk adult
+question: |
+  What is the name of the high risk adult you want to protect with this order?
+fields:
+  - code: |
+      high_risk_adult.name_fields()
+---
+id: order type
+question: |
+  Which type of Order of Protection do you want against ${other_parties[0].name.full(middle="full")}?
+fields:
+  - Emergency: eop
+    datatype: yesnowide
+    help: |
+      **Emergency Order of Protection**
+
+      * Judge can give this order on the same day you file, without notifying ${other_parties[0].name.full(middle="full")}
+      * Lasts for 14 - 21 days
+      * After ${other_parties[0].name.full(middle="full")} is served with court papers, you can ask for a long-term (Plenary) Order of Protection
+  - Plenary: pop
+    datatype: yesnowide
+    help: |
+      **Plenary (long-term) Order of Protection**
+          
+      * Judge can give this order on a later date, after ${other_parties[0].name.full(middle="full")} has been notified
+      * Lasts for up to 2 years
+      * ${other_parties[0].name.full(middle="full")} will have a chance to participate in the court case
+validation code: |
+  if not (eop or pop):
+    validation_error("You need to select at least one choice to continue.", field="pop")
+
+---
+id: other ops
+question: |
+  Other Orders of Protection
+subquestion: |
+  Is there now, or has there ever been, an Order of Protection in any state against ${other_parties[0].name.full(middle="full")} involving you or other people you want to protect in this Order?
+fields:
+  - Other Orders of Protection?: has_other_ops
+    datatype: radio
+    choices:
+      - Yes: True
+      - No: False
+      - I don't know: idk
+#  - How many?: other_op_total
+#    datatype: number
+#    max: 9
+#    validation messages:
+#      max: |
+#        You can list up to 9 other Orders of Protection on the forms.
+#    show if: 
+#      variable: has_other_ops
+#      is: True
+---
+id: other ops detail
+question: |
+  Tell us about the ${ ordinal(i) } Order of Protection
+fields:
+  - Names of people involved: other_ops[i].name.text
+  - State: other_ops[i].state
+    code: |
+      states_list()
+  - County: other_ops[i].county
+  - Year: other_ops[i].year
+    input type: combobox
+    datatype: integer
+    maxlength: 4
+    min: ${ today().year-120 }
+    max: ${ today().year }
+    code: |
+      reversed(range(today().year-120, today().year+1))
+---
+id: more ops
+question: |
+  Are there any more Orders of Protection you would like to list?
+field: other_ops.there_is_another
+choices:
+  - Yes: True
+  - No: False
+
+---
+id: other cases
+question: |
+  Other court cases
+subquestion: |
+  Are there now, or have there ever been, any other court cases (civil or criminal) involving ${other_parties[0].name.full(middle="full")} and you or other people you want to protect in this Order?
+  Examples include divorce, custody, child support, paternity, parenting time, guardianship, adoption, or abuse and neglect cases.
+  Note: do not include other Orders of Protection.
+fields:
+  - Other cases?: has_other_cases
+    datatype: radio
+    choices:
+      - Yes: True
+      - No: False
+      - I don't know: idk
+#  - How many?: other_cases_total
+#    datatype: number
+#    max: 9
+#    validation messages:
+#      max: |
+#        You can list up to 9 other court cases on the forms.
+#    show if: 
+#      variable: has_other_cases
+#      is: True
+---
+id: other cases detail
+question: |
+  Tell us about the ${ ordinal(i) } court case
+fields:
+  - Type of court case: other_cases[i].name.text
+  - State: other_cases[i].state
+    code: |
+      states_list()
+  - County: other_cases[i].county
+  - Year: other_cases[i].year
+    input type: combobox
+    datatype: integer
+    maxlength: 4
+    min: ${ today().year-120 }
+    max: ${ today().year }
+    code: |
+      reversed(range(today().year-120, today().year+1))
+---
+id: more cases
+question: |
+  Are there any more court cases you would like to list?
+field: other_cases.there_is_another
+choices:
+  - Yes: True
+  - No: False
+---
+id: incidents intro
+continue button field: incidents_intro
+question: |
+  You can do this
+subquestion: |
+  It can be hard, but it is important to list the full history of abuse in your petition.
+
+  Start with what happened most recently.
+  
+  You can include any past abuse and any criminal convictions that resulted.
+
+---
+id: incidents detail
+question: |
+  Tell us about the ${ ordinal(i) } incident of abuse
+subquestion: |
+  Try to be specific about what happened and the effect the abuse had on you or the other victims.
+  
+  For repeated abuse, you can say "weekly" for the date or "anytime I work late" for the time. 
+  
+  ${ collapse_template(incidents_help) }  
+
+fields:
+  - Date: incidents[i].date
+    maxlength: 20
+  - Time: incidents[i].time
+    maxlength: 20
+  - What happened: incidents[i].name.text
+    input type: area
+    rows: 12
+    maxlength: 875
+
+---
+template: incidents_help
+subject: |
+  **What if I don't remember the date and time?**
+content: |  
+  If you don't remember the exact date, enter the month and year.  
+
+  If you don't remember the exact time, enter "morning" or "afternoon" or "night."
+---
+id: more cases
+question: |
+  Are there any more events of abuse you would like to list?
+field: incidents.there_is_another
+choices:
+  - Yes: True
+  - No: False
+---
+id: no abuse
+question: |
+  What do you want the court to order ${other_parties[0].name.full(middle="full")} to not do or threaten to do?
+subquestion: |
+  Check all that apply.
+fields:
+  - Harassment: no_harassment
+    datatype: yesnowide
+    help: |
+      **Harassment** means knowing conduct which is not necessary to accomplish a purpose that is reasonable under the circumstances, would cause a reasonable person emotional distress, and does cause emotional distress to Petitioner.
+  - Physical abuse: no_physical
+    datatype: yesnowide
+    help: |
+      **Physical abuse** includes sexual abuse and means any of the following:
+
+      * Knowing or reckless use of physical force, confinement or restraint, 
+      * Knowing, repeated and unnecessary sleep deprivation, or
+      * Knowing or reckless conduct which creates an immediate risk of physical harm.
+  - Stalking: no_stalking
+    datatype: yesnowide
+    help: |
+      **Stalking** means knowingly and without lawful justification, on at least two (2) separate occasions, following another person or placing the person under surveillance or any combination thereof and:
+      
+      * At any time transmitting a threat of immediate or future bodily harm, sexual assault, confinement or restraint and the threat is directed towards that person or a family member of that person,
+      * Placing that person in reasonable apprehension of immediate or future bodily harm, sexual assault, confinement or restraint, or
+      * Placing that person in reasonable apprehension that a family member will receive immediate or future bodily harm, sexual assault, confinement, or restraint.
+  - Willful deprivation: no_willful
+    datatype: yesnowide
+    help: |
+      **Willful deprivation** means willfully denying a person who because of age, health or disability requires medication, medical care, shelter, food, therapeutic device, or other physical assistance, and thereby exposing that person to the risk of physical, mental or emotional harm, except with regard to medical care or treatment when the dependent person has expressed an intent to forego such medical care or treatment. This paragraph does not create any new affirmative duty to provide support to dependent persons.
+  - Intimidation of a dependent: no_intimidation
+    datatype: yesnowide
+    help: |
+      **Intimidation of a dependent** means subjecting a person who is dependent because of age, health or disability to participation in or the witnessing of: physical force against another or physical confinement or restraint of another which constitutes physical abuse as defined in this Act, regardless of whether the abused person is a family or household member.
+  - Exploitation of a high-risk adult with disabilities: no_exploitation
+    datatype: yesnowide
+    help: |
+      **Exploitation** means the illegal, including tortious, use of a high-risk adult with disabilities or of the assets or resources of a high-risk adult with disabilities. Exploitation includes, but is not limited to, the misappropriation of assets or resources of a high-risk adult with disabilities by undue influence, by breach of a fiduciary relationship, by fraud, deception, or extortion, or the use of such assets or resources in a manner contrary to law.
+  - Neglect of a high-risk adult with disabilities: no_neglect
+    datatype: yesnowide
+    help: |
+      **Neglect** means the failure to exercise that degree of care toward a high-risk adult with disabilities which a reasonable person would exercise under the circumstances and includes but is not limited to:
+      
+      * The failure to take reasonable steps to protect a high-risk adult with disabilities from acts of abuse,
+      * The repeated, careless imposition of unreasonable confinement,
+      * The failure to provide food, shelter, clothing, and personal hygiene to a high-risk adult with disabilities who requires such assistance,
+      * The failure to provide medical and rehabilitative care for the physical and mental health needs of a high-risk adult with disabilities, or
+      * The failure to protect a high-risk adult with disabilities from health and safety hazards.
+  - Interference with personal liberty: no_interference
+    datatype: yesnowide
+    help: |
+      **Interference with personal liberty** means committing or threatening physical abuse, harassment, intimidation or willful deprivation so as to compel another to engage in conduct from which she or he has a right to abstain or to refrain from conduct in which she or he has a right to engage.
+---
+id: stay away
+question: |
+  Do you want the court to order ${other_parties[0].name.full(middle="full")} to stay away and not communicate with people protected by this order?
+subquestion: |
+  * If ordered to **stay away** from Petitioner, Respondent must not have any physical, non-physical, direct or indirect contact with Petitioner.
+  * If ordered to **not communicate** with Petitioner, communication includes oral communication, written communication, sign language, telephone and cell phone calls, faxes, texts, tweets, emails, posts, or communication by any other social media, and all other communication with Petitioner. This also includes contact or communication through others who may not know about the Order of Protection.
+  
+  Check all that apply.
+fields:
+  - Stay away at all times: stay_away
+    datatype: yesnowide
+  - How far do you want ${other_parties[0].name.full(middle="full")} to stay away, in feet? (optional): stay_away_distance
+    datatype: number
+    required: False
+    show if: 
+      variable: stay_away
+      is: True
+    help: |
+      A car is about 15 feet long, and a basketball court is about 90 feet long.
+  - No communication: no_communication
+    datatype: yesnowide
+---
+id: hide address
+question: |
+  Do you want to keep your address hidden?
+subquestion: |
+  You do not need to list where you are staying on your court papers. You can use an address where you can receive court notices instead.
+field: hide_address
+choices:
+  - Yes: True
+  - No: False
+---
+id: get address
+question: |
+  % if hide_address:
+  What is your mailing address?
+  % else:
+  What is your home address?
+  % endif
+subquestion: |
+  % if hide_address:
+  **This address will appear on your court papers.** You may receive court notices and documents about your case at this address.
+  % else:
+  **This address will appear on your court papers.** If you do not want this, click **< Back** to keep your address hidden.
+  % endif
+fields:
+  - Street address: users[0].address.address
+    address autocomplete: True
+  - Address line 2: users[0].address.unit
+    required: False
+  - City: users[0].address.city
+  - State: users[0].address.state
+    code: |
+      states_list()
+    default: IL      
+  - ZIP code: users[0].address.zip
+---
+id: residence remedies
+question: |
+  What do you want the court to order about where you are living?
+subquestion: |
+  This does not affect who owns the property, only who gets to use or occupy it.
+fields:
+  - I want **exclusive possession** of my residence, and ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive_possession
+    datatype: yesnowide
+  - I want ${other_parties[0].name.full(middle="full")} **not to stay** at my residence while under the influence of drugs or alcohol. This would be a threat to the safety or well-being of myself or my children.: no_stay_under_influence
+    datatype: yesnowide
+    hide if: 
+      code: |
+        any((no_communication, stay_away)) 
+  - I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live because we share a residence.: provide_alt_housing
+    datatype: yesnowide
+  - None of the above: no_residence_remedy
+    datatype: yesnowide
+
+# alt question radio buttons but no show if functionality
+#---
+#id: residence remedies
+#question: |
+#  What do you want the court to order about where you are living?
+#subquestion: |
+#  This does not affect who owns the property, only who gets to use or occupy it.
+#field: residence_remedy
+#choices:
+#  - I want **exclusive possession** of my residence, and ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive_possession
+#  - I want ${other_parties[0].name.full(middle="full")} **not to stay** at my residence while under the influence of drugs or alcohol. This would be a threat to the safety or well-being of myself or my children.: no_stay_under_influence
+#    hide if: 
+#      code: |
+#        any((no_communication, stay_away)) 
+#  - I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live because we share a residence.: provide_alt_housing
+#  - None of the above: none
+#
+---
+id: exclusive possession reason
+question: |
+  Why should the court give you exclusive possession of your residence?
+field: exclusive_possession_reason
+choices:
+  - I have a right to occupy the residence and ${other_parties[0].name.full(middle="full")} has no right.: respondent_no_right_to_stay
+  - Both of us have a right to occupy the residence, but it would be harder on me to leave.: both_parties_right_to_stay
+
+
+
+
+
+
+
+
+---
+id: respondent info
+question: |
+  Tell us more about ${other_parties[0].name.full(middle="full")}
+subquestion: |
+  If you do not know, leave these blank.
+fields:
+  - Date of birth: other_parties[0].birthdate
+    datatype: date
+    max: ${ today().format("yyyy-MM-dd") }
+    required: False
+  - Phone: other_parties[0].phone_number
+    required: False
+  - Email address: other_parties[0].email    
+    datatype: email
+    required: False
+---
+id: respondent address
+question: |
+  What is ${other_parties[0].name.full(middle="full")}'s home address?
+subquestion: |
+  If you do not know, leave these blank.
+fields:
+  - Street address: other_parties[0].address.address
+    address autocomplete: True
+    required: False
+  - Address line 2: other_parties[0].address.unit
+    required: False
+  - City: other_parties[0].address.city
+    required: False
+  - State: other_parties[0].address.state
+    code: |
+      states_list()
+    required: False
+  - ZIP code: other_parties[0].address.zip
+    required: False
+
+---
+id: respondent work question
+question: |
+  Do you know ${other_parties[0].name.full(middle="full")}'s work information?
+fields:
+  - Know ${other_parties[0].name.full(middle="full")}'s work info?: knows_respondent_work
+    datatype: yesnoradio
+---
+id: respondent work info
+question: |
+  Tell us about ${other_parties[0].name.full(middle="full")}'s job
+subquestion: |
+fields:
+  - Employer or Company: other_parties[0].employer
+  - Street address: other_parties[0].work_address.address
+    address autocomplete: True
+  - Address line 2: other_parties[0].work_address.unit
+    required: False
+  - City: other_parties[0].work_address.city
+  - State: other_parties[0].work_address.state
+    code: |
+      states_list()
+  - ZIP code: other_parties[0].work_address.zip
+
+---
+id: case number
+question: |
+  What is the case number?
+subquestion: |
+  This is optional 
+fields:
+  - Case number: case_number
+    required: False
+
+---
+id: get docs screen
+question: |
+  Download
+subquestion: |
+  
+  Your forms are ready. View and download your forms below. Click **Make changes** to fix any mistakes.
+
+  This program does not file your ${ form_name } with the court. You will need to do this yourself.
+
+  ${ action_button_html(url_action('review_answers'), label=':edit: Make changes', color='success', size="md") }
+  
+  ${ al_user_bundle.download_list_html() }
+
+  &nbsp;
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
+
+  **Note:** This program does not file your ${ form_name } with the court.
+  
+  Thank you for using ILAO Easy Forms!
+event: get_docs_screen
+under: |
+  % if not user_logged_in():
+  [${fa_icon("sign-in-alt", color="#0079d0", size="sm")} Sign-in](${url_of('login', next=interview_url())}) or [create](${url_of('register', next=interview_url())}) an ILAO Easy Form account to save your progress (optional).
+  % endif 
+
+  &nbsp;
+  ${ action_button_html(interview_url(i="docassemble.ILAO:feedback.yml", easy_form_interview=ilao_easy_form_url, easy_form_title=ilao_easy_form_title, easy_form_page=user_info().question_id, easy_form_variable=user_info().variable, local=False,reset=1), label=':comment: Was this program helpful?', color="#181c36", size="md", new_window=True) }
+---
+generic object: ALDocumentBundle
+template: x.send_email_template
+subject: |
+  Your forms
+content: |
+  Your forms are attached.
+  
+  Thanks for using ILAO Easy Forms!
+  
+  [Illinois Legal Aid Online](https://www.illinoislegalaid.org)
+---
+
+---
+objects:
+  - op_petition: ALDocument.using(title="Petition", filename="petition.pdf", enabled=True, has_addendum=False)
+  - op_instructions: ALDocument.using(title="Instructions", filename="instructions.pdf", enabled=True, has_addendum=False)
+---
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_petition], filename="order_of_protection.pdf", title="Download all forms")
+  - al_court_bundle: ALDocumentBundle.using(elements=[op_petition], filename="order_of_protection.pdf", title="Order of protection")
+---
+
+---
+attachment:
+  variable name: op_instructions[i]
+  name: instructions
+  filename: op_instructions
+  skip undefined: True
+  editable: False
+  pdf template file: op_instructions.pdf
+  fields:
+      - "fake": ${ "" }
+---
+attachment:
+  variable name: op_petition[i]
+  name: petition
+  filename: petition
+  skip undefined: True
+  editable: False
+  pdf template file: op_petition.pdf
+  fields:
+      - "county": ${ trial_court.address.county.upper() }
+      - "civil_proceeding": True
+      - "petitioner__1": ${ users[0].name.full(middle="full") }
+      - "petitioner__2": ${ users[0].name.full(middle="full") }
+      - "respondent": ${other_parties[0].name.full(middle="full")}
+      - "case_number__1": ${ case_number }
+      - "case_number__2": ${ case_number }
+      - "case_number__3": ${ case_number }
+      - "case_number__4": ${ case_number }
+      - "case_number__5": ${ case_number }
+      - "case_number__6": ${ case_number }
+      - "case_number__7": ${ case_number }
+      - "case_number__8": ${ case_number }
+      - "case_number__9": ${ case_number }
+      - "case_number__10": ${ case_number }
+      - "case_number__11": ${ case_number }
+      - "protect_petitioner": ${ protect_petitioner }
+      - "protect_shared_kids": ${ protect_shared_kids }
+      - "shared_kids_list": ${ shared_kids.full_names() }
+      - "protect_petitioner_kids": ${ protect_petitioner_kids }
+      - "petitioner_kids_list": ${ petitioner_kids.full_names() }
+      - "protect_dependent_adult": ${ protect_dependent_adult }
+      - "protect_high_risk_adult": ${ protect_high_risk_adult }
+      - "protect_other_hh_members": ${ protect_other_hh_members }
+      - "other_hh_members_list": ${ other_hh_members.full_names() }
+      - "dependent_adult": ${ dependent_adult.name.full(middle="full") }
+      - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") }
+
+      - "eop": ${ eop }
+      - "pop": ${ pop }
+
+      - "hide_address": ${ hide_address }
+      - "notice_address_one_line": ${ users[0].address.on_one_line(bare=True) if hide_address else ""}
+      - "show_address": ${ not hide_address }
+      - "home_address_one_line": ${ users[0].address.on_one_line(bare=True) if not hide_address else "" }
+
+
+      # page 2
+      - "respondent_dob": |
+          % if other_parties[0].birthdate != "":
+          ${ other_parties[0].birthdate }
+          % else:
+          ${ "do not know" }
+          % endif
+      - "respondent_home_address": |
+          % if other_parties[0].address.address != "":
+          ${ other_parties[0].address.on_one_line(bare=True) }
+          % else:
+          ${ "do not know" }
+          % endif
+      - "respondent_work_info": |
+          % if knows_respondent_work:
+          ${ other_parties[0].employer + ", " + other_parties[0].work_address.on_one_line(bare=True) }
+          % else:
+          ${ "do not know" }
+          % endif
+
+      - "relationship_se": ${ relationship_type['se'] }
+      - "relationship_xs": ${ relationship_type['xs'] }
+      - "relationship_bg": ${ relationship_type['bg'] }
+      - "relationship_cc": ${ relationship_type['cc'] }
+      - "relationship_cs": ${ relationship_type['cs'] }
+      - "relationship_ch": ${ relationship_type['ch'] }
+      - "relationship_pa": ${ relationship_type['pa'] }
+      - "relationship_sb": ${ relationship_type['sb'] }
+      - "relationship_of": ${ relationship_type['of'] }
+      - "relationship_il": ${ relationship_type['il'] }
+      - "relationship_sc": ${ relationship_type['sc'] }
+      - "relationship_ss": ${ relationship_type['ss'] }
+      - "relationship_sp": ${ relationship_type['sp'] }
+      - "relationship_gc": ${ relationship_type['gc'] }
+      - "relationship_gp": ${ relationship_type['gp'] }
+      - "relationship_pc": ${ relationship_type['pc'] }
+      - "relationship_pr": ${ relationship_type['pr'] }
+      - "relationship_f": ${ relationship_type['f'] }
+      - "relationship_a": ${ relationship_type['a'] }
+      - "relationship_l": ${ relationship_type['l'] }
+      - "relationship_ot": ${ relationship_type['ot'] }
+      - "relationship_pd": ${ relationship_type['pd'] }
+
+      - "has_other_ops_yes": ${ has_other_ops == "True" }
+      - "has_other_ops_no": ${ has_other_ops == "False" }
+      - "has_other_ops_idk": ${ has_other_ops == "idk" }
+      - "other_ops_people_1": ${ other_ops[0].name.text }
+      - "other_ops_state_county_1": ${ other_ops[0].state + ", " + other_ops[0].county }
+      - "other_ops_year_1": ${ other_ops[0].year }
+      - "other_ops_people_2": ${ other_ops[1].name.text }
+      - "other_ops_state_county_2": ${ other_ops[1].state + ", " + other_ops[1].county }
+      - "other_ops_year_2": ${ other_ops[1].year }
+      - "other_ops_additional": ${ other_ops.number() > 2 } 
+
+      - "has_other_cases_yes": ${ has_other_cases == "True" }
+      - "has_other_cases_no": ${ has_other_cases == "False" }
+      - "has_other_cases_idk": ${ has_other_cases == "idk" }
+      - "other_cases_type_1": ${ other_cases[0].name.text }
+      - "other_cases_state_county_1": ${ other_cases[0].state + ", " + other_ops[0].county }
+      - "other_cases_year_1": ${ other_cases[0].year }
+      - "other_cases_type_2": ${ other_cases[1].name.text }
+      - "other_cases_state_county_2": ${ other_cases[1].state + ", " + other_ops[1].county }
+      - "other_cases_year_2": ${ other_cases[1].year }
+      - "other_cases_additional": ${ other_cases.number() > 2 } 
+
+      - "jurisdiction_petitioner_lives_here": ${ jurisdiction_type['I live here'] }
+      - "jurisdiction_respondent_lives_here": ${ jurisdiction_type['Respondent lives here'] }
+      - "jurisdiction_abuse_here": ${ jurisdiction_type['Abuse was here'] }
+      - "jurisdiction_abuse_elsewhere": ${ jurisdiction_type['Abuse was elsewhere'] }
+
+      # page 3
+      - "incident_date_1": ${ incidents[0].date }
+      - "incident_time_1": ${ incidents[0].time }
+      - "incident_reason_1": ${ incidents[0].name.text }
+      - "incident_date_2": ${ incidents[1].date }
+      - "incident_time_2": ${ incidents[1].time }
+      - "incident_reason_2": ${ incidents[1].name.text }
+      - "incident_date_3": ${ incidents[2].date }
+      - "incident_time_3": ${ incidents[2].time }
+      - "incident_reason_3": ${ incidents[2].name.text }
+      - "incident_date_4": ${ incidents[3].date }
+      - "incident_time_4": ${ incidents[3].time }
+      - "incident_reason_4": ${ incidents[3].name.text }
+      - "additional_incidents": ${ incidents.number() > 4 }
+
+      - "no_abuse": ${ any((no_harassment, no_physical, no_stalking, no_willful, no_intimidation, no_exploitation, no_neglect, no_interference)) }
+      - "no_harassment": ${ no_harassment }
+      - "no_physical": ${ no_physical }
+      - "no_stalking": ${ no_stalking }
+      - "no_willful": ${ no_willful }
+      - "no_intimidation": ${ no_intimidation }
+      - "no_exploitation": ${ no_exploitation }
+      - "no_neglect": ${ no_neglect }
+      - "no_interference": ${ no_interference}
+
+      - "stay_away_checkbox": ${ any((no_communication, stay_away)) }
+      - "no_communication": ${ no_communication }
+      - "stay_away": ${ stay_away }
+
+      # page 4
+      - "possession_residence": ${ not no_residence_remedy }
+      - "exclusive_possession": ${ exclusive_possession }
+      - "exclusive_home_address_checkbox": |
+          % if (not hide_address) and exclusive_possession:
+          ${ True }
+          % else:
+          ${ False }
+          % endif
+      - "exclusive_home_address_one_line": |
+          % if (not hide_address) and exclusive_possession:
+          ${ users[0].address.on_one_line(bare=True) }
+          % else:
+          ${ "" }
+          % endif
+      - "exclusive_address_hidden": |
+          % if hide_address and exclusive_possession:
+          ${ True }
+          % else:
+          ${ False }
+          % endif
+      - "respondent_no_right_to_stay": ${ exclusive_possession_reason == "respondent_no_right_to_stay" }
+      - "both_parties_right_to_stay": ${ exclusive_possession_reason == "both_parties_right_to_stay" }
+      - "provide_alt_housing": ${ provide_alt_housing }
+
+
+      - "minor_kids_with_respondent": ${ minor_kids_with_respondent }
+      - "shared_kids_1_name": ${ shared_kids[0].name.full(middle="full") }
+      - "shared_kids_1_age": ${ shared_kids[0].age_in_years() }
+      - "shared_kids_1_state": ${ shared_kids[0].address.state }
+      - "shared_kids_1_include_yes": ${ shared_kids[0].protect }
+      - "shared_kids_1_include_no": ${ shared_kids[0].protect is False }
+      - "shared_kids_2_name": ${ shared_kids[1].name.full(middle="full") }
+      - "shared_kids_2_age": ${ shared_kids[1].age_in_years() }
+      - "shared_kids_2_state": ${ shared_kids[1].address.state }
+      - "shared_kids_2_include_yes": ${ shared_kids[1].protect}
+      - "shared_kids_2_include_no": ${ shared_kids[1].protect is False }
+      - "shared_kids_3_name": ${ shared_kids[2].name.full(middle="full") }
+      - "shared_kids_3_age": ${ shared_kids[2].age_in_years() }
+      - "shared_kids_3_state": ${ shared_kids[2].address.state }
+      - "shared_kids_3_include_yes": ${ shared_kids[2].protect }
+      - "shared_kids_3_include_no": ${ shared_kids[2].protect is False }
+      - "shared_kids_4_name": ${ shared_kids[3].name.full(middle="full") }
+      - "shared_kids_4_age": ${ shared_kids[3].age_in_years() }
+      - "shared_kids_4_state": ${ shared_kids[3].address.state }
+      - "shared_kids_4_include_yes": ${ shared_kids[3].protect }
+      - "shared_kids_4_include_no": ${ shared_kids[3].protect is False }
+
+
+
+      # page 9
+      - "no_stay_under_influence": ${ no_stay_under_influence }
+      
+
+---
+############### Review page
+id: review screen
+event: review_answers
+question: |
+  Review screen
+subquestion: |
+  Edit your answers below.
+review: 
+  - Edit: users[0].name.first
+    button: |
+      **Your name:**
+      ${users[0].name.full(middle="full")}
+  - Edit: 
+      - trial_court_index
+      - recompute:
+        - trial_court
+    button: |
+      **County where you will file:**
+      ${ trial_court.address.county }
+  - Edit: jurisdiction_type
+    button: |
+      **Filing in ${ trial_court.address.county } County because:**
+      ${ jurisdiction_type }
+  - Edit: relationship_type
+    button: |
+      **Protected party's relationship to person who caused abuse:**
+      % if relationship_type['se'] == True:
+        * Spouse
+      % endif
+      % if relationship_type['xs'] == True:
+        * Ex-spouse
+      % endif
+      % if relationship_type['bg'] == True:
+        * Boyfriend, girlfriend, or romantic partner (including ex-)
+      % endif
+      % if relationship_type['cc'] == True:
+        * We have a child in common (never married)
+      % endif
+      % if relationship_type['cs'] == True:
+        * We share or shared a living space
+      % endif
+      % if relationship_type['ch'] == True:
+        * Child
+      % endif
+      % if relationship_type['pa'] == True:
+        * Parent
+      % endif
+      % if relationship_type['sb'] == True:
+        * Brother, sister, or sibling
+      % endif
+      % if relationship_type['of'] == True:
+        * Other family member
+      % endif
+      % if relationship_type['ot'] == True:
+        * Other family relationship
+      % endif
+      % if relationship_type['sc'] == True:
+        * Step child
+      % endif
+      % if relationship_type['ss'] == True:
+        * Step brother, step sister, or step sibling
+      % endif
+      % if relationship_type['sp'] == True:
+        * Step parent
+      % endif
+      % if relationship_type['gc'] == True:
+        * Grandchild
+      % endif
+      % if relationship_type['gp'] == True:
+        * Grandparent
+      % endif
+      % if relationship_type['il'] == True:
+        * In-law
+      % endif
+      % if relationship_type['pd'] == True:
+        * Protected person has a disability and receives care from the abuser
+      % endif
+      % if relationship_type['pc'] == True:
+        * Person responsible for a high risk adult
+      % endif
+      % if relationship_type['pr'] == True:
+        * Personal assistant or caregiver to a person with a disability
+      % endif
+      % if relationship_type['f'] == True:
+        * Family or household member of my foster child
+      % endif
+      % if relationship_type['a'] == True:
+        * Family or household member of my adopted child, or of my prospective adopted child
+      % endif
+      % if relationship_type['l'] == True:
+        * Family or household member of a child that I am the legally-appointed custodian of
+      % endif
+      
+  - Edit: other_parties[0].name.first
+    button: |
+      **Person you want an Order of Protection against:**
+      ${other_parties[0].name.full(middle="full")}
+  - Edit: minor_kids_with_respondent
+    button: |
+      **Do you have minor children with ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(minor_kids_with_respondent)) }
+
+  - Edit: protect_petitioner
+    button: |
+      **People to protect with this Order of Protection:**
+      
+      % if protect_petitioner == True:
+        * You
+      % endif
+      % if protect_shared_kids == True:
+        * Minor children you have with ${other_parties[0].name.full(middle="full")}
+      % endif
+      % if protect_petitioner_kids == True:
+        * Minor children you **did not** have with ${other_parties[0].name.full(middle="full")}
+      % endif
+      % if protect_dependent_adult == True:
+        * A dependent adult
+      % endif
+      % if protect_high_risk_adult == True:
+        * A high risk adult with disabilities
+      % endif      
+      % if protect_other_hh_members == True:
+        * Other household members
+      % endif
+
+  - Edit: shared_kids.revisit
+    button: |
+      **Your minor children with ${other_parties[0].name.full(middle="full")}: (Edit to change names and details)**
+
+      % for my_var in shared_kids:
+        * ${ my_var.name.full(middle="full") }
+      % endfor
+
+  - Edit: petitioner_kids.revisit
+    button: |
+      **Your minor children **not with** ${other_parties[0].name.full(middle="full")}: (Edit to change names)**
+
+      % for my_var in petitioner_kids:
+        * ${ my_var.name.full(middle="full") }
+      % endfor
+
+  - Edit: other_hh_members.revisit
+    button: |
+      **Other household members: (Edit to change names)**
+
+      % for my_var in other_hh_members:
+        * ${ my_var.name.full(middle="full") }
+      % endfor
+
+  - Edit: dependent_adult.name.first
+    button: |
+      **Dependent adult you want to protect:**
+      ${dependent_adult.name.full(middle="full")}
+
+  - Edit: high_risk_adult.name.first
+    button: |
+      **High risk adult you want to protect:**
+      ${high_risk_adult.name.full(middle="full")}
+
+  - Edit: other_parties[0].birthdate
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s birthdate:**
+      % if other_parties[0].birthdate != "":
+      ${ other_parties[0].birthdate }
+      % else:
+      ${ "do not know" }
+      % endif
+  - Edit: other_parties[0].phone_number
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s phone number:**
+      % if other_parties[0].phone_number != "":
+      ${ phone_number_formatted(other_parties[0].phone_number) }      
+      % else:
+      ${ "do not know" }
+      % endif
+  - Edit: other_parties[0].email
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s email:**
+      % if other_parties[0].email != "":
+      ${ other_parties[0].email }
+      % else:
+      ${ "do not know" }
+      % endif
+  - Edit: other_parties[0].address.address
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s home address: **
+      % if other_parties[0].address.address != "":
+      ${ other_parties[0].address.on_one_line(bare=True) }
+      % else:
+      ${ "do not know" }
+      % endif
+  - Edit: knows_respondent_work
+    button: |
+      **Do you know ${other_parties[0].name.full(middle="full")}'s work info?**
+      ${ word(yesno(knows_respondent_work)) }
+  - Edit: other_parties[0].work_address.address
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s work info: **
+      % if knows_respondent_work:
+      ${ other_parties[0].employer + ", " + other_parties[0].work_address.on_one_line(bare=True) }
+      % else:
+      ${ "do not know" }
+      % endif
+    
+
+  - Edit: case_number
+    button: |
+      **Case number:**
+      ${ case_number }   
+
+
+
+---
+continue button field: shared_kids.revisit
+question: |
+  Edit the minor children you have with ${other_parties[0].name.full(middle="full")}
+subquestion: |
+  ${ shared_kids.table }
+
+  ${ shared_kids.add_action() }
+---
+table: shared_kids.table
+rows: shared_kids
+columns:
+  - Name: |
+      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+  - Details: |
+      action_button_html(url_action(row_item.attr_name("review_shared_child_details")), label="Edit", icon="pencil-alt")
+delete buttons: True
+confirm: True
+
+---
+continue button field: x.review_shared_child_details
+generic object: ALIndividual
+question: |
+  Edit ${ x.name.full(middle="full") }'s information
+review: 
+  - Edit: x.name.first
+    button: |
+      **Name:**
+      ${ x.name.full(middle="full")  }
+  - Edit: x.birthdate
+    button: |
+      **Birthdate:**
+      ${ x.birthdate } 
+  - Edit: x.address.state
+    button: |
+      **State of residence:**
+      ${ x.address.state }
+  - Edit: x.protect
+    button: |
+      **Include as a protected person?**
+      ${ word(yesno(x.protect)) }
+
+---      
+
+
+
+---
+continue button field: petitioner_kids.revisit
+question: |
+  Edit your minor children you **do not** have with ${other_parties[0].name.full(middle="full")} you want protected by this order
+subquestion: |
+  ${ petitioner_kids.table }
+
+  ${ petitioner_kids.add_action() }
+---
+table: petitioner_kids.table
+rows: petitioner_kids
+columns:
+  - Name: |
+      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+edit:
+  - name.first
+delete buttons: True
+confirm: True
+
+---
+continue button field: other_hh_members.revisit
+question: |
+  Edit the household members you want protected by this order
+subquestion: |
+  ${ other_hh_members.table }
+
+  ${ other_hh_members.add_action() }
+---
+table: other_hh_members.table
+rows: other_hh_members
+columns:
+  - Name: |
+      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+edit:
+  - name.first
+delete buttons: True
+confirm: True
