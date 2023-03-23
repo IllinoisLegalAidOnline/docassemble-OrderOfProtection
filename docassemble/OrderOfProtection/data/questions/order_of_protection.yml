@@ -40,12 +40,13 @@ code: |
 # Road map
 sections:
   - section_intro: Start
-  - section_petitioner: People you want to protect
+  - section_basic: Basic information
+  - section_petitioner: Other people you want to protect
   - section_respondent: Person who caused abuse
-  - section_incidents: Incidents of abuse
+  - section_incidents: What happened
   - section_protections: Protections
   - section_child: About your children (optional)
-  - section_property: About your property
+  - section_property: Property details
   - section_remedies: Other remedies
   - section_filing_info: Case info and Next steps
   - section_download: Download
@@ -58,17 +59,21 @@ code: |
   instructions
   whats_next
   accept_terms
+  who_can_be_protected
+  important_op_info
   if in_illinois == False:
     not_in_illinois
   
+  nav.set_section('section_basic')
   trial_court
   if jurisdiction_type.all_false():
     other_jurisdiction_location
   if relationship_type.all_false():
     other_relief
-  nav.set_section('section_petitioner')
   users.gather(number=1)
   other_parties.gather(number=1)
+
+  nav.set_section('section_petitioner')
   minor_kids_with_respondent
   protect_petitioner
   if minor_kids_with_respondent:
@@ -85,7 +90,7 @@ code: |
     high_risk_adult.name.first
 
   nav.set_section('section_respondent')
-  other_parties[0].birthdate
+  knows_respondent_dob
   other_parties[0].address.address
   if knows_respondent_work:
     other_parties[0].work_address.address
@@ -106,6 +111,8 @@ code: |
   exclusive_possession
   if exclusive_possession:
     exclusive_possession_reason
+  if stay_away or no_communication or exclusive_possession or provide_alt_housing:
+    no_stay_under_influence
 
   nav.set_section('section_child')
 
@@ -197,6 +204,43 @@ content: |
   If you have questions or concerns about your legal problem and want legal advice you should talk to a lawyer.
   
   Use [**Get Legal Help**](https://www.illinoislegalaid.org/get-legal-help) to find free or low-cost legal services in your area.
+---
+id: who can be protected
+continue button field: who_can_be_protected
+question: |
+  Who can be protected
+subquestion: |
+  You can ask for an Order of Protection if you have been abused by a family or household member, such as a:
+  
+  * Current or ex-romantic partner,
+  * Current or ex-spouse,
+  * Person with whom you live or used to live,
+  * The other parent of your child,
+  * Relative by blood,
+  * Related through a current or a prior marriage,
+  * Relative of your child (includes relatives of your foster child, adopted child or prospective adopted child, or relatives of a child for whom you are the legally-appointed guardian or legally-appointed custodian), or
+  * Caregiver for persons with disabilities.
+
+  You can also ask for an Order of Protection if you are filing for any person who has been abused by a family or household member, but is unable to file on their own.
+---
+id: important op info
+continue button field: important_op_info
+question: |
+  Before you get started
+subquestion: |
+  The person who caused the abuse is called **the Respondent**. In court, the judge will use this word to refer to the abuser. This program and the forms will do the same.
+
+  You will need to list an address on your court forms. **If you do not want the Respondent to know where you are staying, or if you do not have a home address, you can list a different mailing address where you will receive court documents.**
+
+  You have to include an email address on your court forms, if you have one. If you do not want to use your personal email, you can create a new email account to receive information about your case.
+
+  **You will need to include an address where the Respondent can be found.** This is so the sheriff can deliver the court papers. Delivery of the court papers is called **service.** This might be where the Respondent lives, works, or a place where they stay. **Note: the Respondent will get a copy of all the court forms, except for the ones that are confidential like school or daycare location.**
+
+  At the end of this program, you can file your forms by emailing them to the clerk. You can also download a copy of the forms for your records. Your forms will include instructions that will explain the next steps.
+
+  **If you are filing your forms electronically, you will need an email address.** The email address you use will appear on your court forms. If you need to create another email account, do that now.
+
+  **The Order of Protection is not valid until signed by a judge.** You must go to court, either in person or remotely, where a judge will decide whether or not to grant you an Order of Protection.
 ---
 id: in illinois
 question: |
@@ -308,7 +352,6 @@ fields:
       - Parent: pa
       - Brother, sister, or sibling: sb
       - Other family member: of
-      - Other family relationship: ot
       - Step child: sc
       - Step brother, step sister, or step sibling: ss
       - Step parent: sp
@@ -372,7 +415,33 @@ subquestion: |
 fields:
   - code: |
       other_parties[0].name_fields()
+---
+id: know respondent birthdate
+question: |
+  Do you know ${other_parties[0].name.full(middle="full")}'s birthdate?
+fields:   
+  - no label: knows_respondent_dob
+    datatype: radio
+    choices:
+      - Yes, I will enter the date.: True
+      - I know some of it.: False
+        help: |
+          For example, "June 3rd" or "Summer of 1990."
+      - I don't know it.: idk
+    disable others: True
+  - ${other_parties[0].name.full(middle="full")}'s date of birth: other_parties[0].birthdate
+    datatype: date
+    max: ${ today().format("yyyy-MM-dd") }
+    show if: 
+      variable: knows_respondent_dob
+      is: True
+  - What you know about ${other_parties[0].name.full(middle="full")}'s date of birth: other_parties[0].birthdate_info
+    maxlength: 25
+    show if:
+      variable: knows_respondent_dob
+      is: False
 
+  
 ---
 id: minor kids with respondent
 question: |
@@ -533,9 +602,6 @@ fields:
     code: states_list()
   - Include as a protected person?: x.protect
     datatype: yesnoradio
-    #choices:
-      #- Yes: include
-      #- No: exclude
 ---
 sets:
   - dependent_adult.name.first
@@ -692,18 +758,24 @@ question: |
 subquestion: |
   It can be hard, but it is important to list the full history of abuse in your petition.
 
-  Start with what happened most recently.
-  
-  You can include any past abuse and any criminal convictions that resulted.
+  Start with what happened **most recently**.
 
+  Be sure to include the **most severe** abuse, even if it happened long ago.
+
+  Explain **how the abuse affected you**, even if the abuse was emotional, verbal, financial, or controlling.
+
+  You can include any past abuse and any criminal convictions that resulted.
 ---
 id: incidents detail
 question: |
   Tell us about the ${ ordinal(i) } incident of abuse
 subquestion: |
-  Try to be specific about what happened and the effect the abuse had on you or the other victims.
+  Try to be specific about:
   
-  For repeated abuse, you can say "weekly" for the date or "anytime I work late" for the time. 
+  * What ${other_parties[0].name.full(middle="full")} did, and
+  * The effect the abuse had on you or the other survivors.
+  
+  For repeated abuse, you can say things like "weekly" for the date or "anytime I work late" for the time. 
   
   ${ collapse_template(incidents_help) }  
 
@@ -809,6 +881,16 @@ fields:
   - No communication: no_communication
     datatype: yesnowide
 ---
+id: no stay under influence
+question: |
+  Do you want the court to order ${other_parties[0].name.full(middle="full")} to stay away from and not be at your residence while under the influence?
+subquestion: |
+  Select **Yes** if when ${other_parties[0].name.full(middle="full")} is under the influence of drugs or alcohol, they are a threat to you or your children.
+fields:
+  - No entry or presence while under the influence: no_stay_under_influence
+    datatype: yesnowide
+
+---
 id: hide address
 question: |
   Do you want to keep your address hidden?
@@ -852,11 +934,11 @@ subquestion: |
 fields:
   - I want **exclusive possession** of my residence, and ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive_possession
     datatype: yesnowide
-  - I want ${other_parties[0].name.full(middle="full")} **not to stay** at my residence while under the influence of drugs or alcohol. This would be a threat to the safety or well-being of myself or my children.: no_stay_under_influence
-    datatype: yesnowide
-    hide if: 
-      code: |
-        any((no_communication, stay_away)) 
+  #- I want ${other_parties[0].name.full(middle="full")} **not to stay** at my residence while under the influence of drugs or alcohol. This would be a threat to the safety or well-being of myself or my children.: no_stay_under_influence
+  #  datatype: yesnowide
+  #  hide if: 
+  #    code: |
+  #      any((no_communication, stay_away)) 
   - I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live because we share a residence.: provide_alt_housing
     datatype: yesnowide
   - None of the above: no_residence_remedy
@@ -945,7 +1027,7 @@ question: |
   Tell us about ${other_parties[0].name.full(middle="full")}'s job
 subquestion: |
 fields:
-  - Employer or Company: other_parties[0].employer
+  - Employer or company: other_parties[0].employer
   - Street address: other_parties[0].work_address.address
     address autocomplete: True
   - Address line 2: other_parties[0].work_address.unit
