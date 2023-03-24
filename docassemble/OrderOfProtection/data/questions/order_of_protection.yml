@@ -16,7 +16,7 @@ objects:
   - users: ALPeopleList.using(there_are_any=True)
   - other_parties: ALPeopleList.using(there_are_any=True)
   - other_parties[i].work_address: ALAddress
-  - shared_kids: ALPeopleList.using(there_are_any=True)
+  - shared_kids: ALPeopleList.using(complete_attribute='complete', there_are_any=True)
   - petitioner_kids: ALPeopleList.using(there_are_any=True)
   - other_hh_members: ALPeopleList.using(there_are_any=True)
   - dependent_adult: ALIndividual
@@ -24,6 +24,9 @@ objects:
   - other_ops: DAList.using(object_type=Thing, there_are_any=True)
   - other_cases: DAList.using(object_type=Thing, there_are_any=True)
   - incidents: DAList.using(object_type=Thing, there_are_any=True)
+  - jobs: ALAddressList.using(there_are_any=True)
+  - schools: ALAddressList.using(there_are_any=True)
+  - other_locations: ALAddressList.using(there_are_any=True)
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 
 ---
@@ -80,8 +83,6 @@ code: |
     shared_kids.gather()
   if protect_petitioner_kids:
     petitioner_kids.gather()
-    for person in shared_kids[:4]:
-      person.birthdate
   if protect_other_hh_members:
     other_hh_members.gather()
   if protect_dependent_adult:
@@ -108,11 +109,24 @@ code: |
   stay_away
   hide_address
   users[0].address.address
-  exclusive_possession
-  if exclusive_possession:
+  if residence_remedies == 'exclusive possession':
     exclusive_possession_reason
-  if stay_away or no_communication or exclusive_possession or provide_alt_housing:
+  if stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing'):
     no_stay_under_influence
+  if stay_away_jobs:
+    jobs[0].employer
+    if stay_away_jobs_2:
+      jobs[1].employer
+  if stay_away_schools:
+    schools[0].name
+    if stay_away_schools_2:
+      schools[1].name
+  if stay_away_other:
+    other_locations[0].name
+    if stay_away_other_2:
+      other_locations[1].name
+
+
 
   nav.set_section('section_child')
 
@@ -312,7 +326,7 @@ fields:
     choices:
       - I live in ${ trial_court.address.county } County.: I live here
       - The person I am filing against lives in ${ trial_court.address.county } County.: Respondent lives here
-      - The abuse took place in ${ trial_court.address.county } County.: Abuse is here
+      - The abuse took place in ${ trial_court.address.county } County.: Abuse was here
       - I am in ${ trial_court.address.county } County to avoid abuse elsewhere.: Abuse was elsewhere
 ---
 id: not proper location
@@ -428,7 +442,6 @@ fields:
         help: |
           For example, "June 3rd" or "Summer of 1990."
       - I don't know it.: idk
-    disable others: True
   - ${other_parties[0].name.full(middle="full")}'s date of birth: other_parties[0].birthdate
     datatype: date
     max: ${ today().format("yyyy-MM-dd") }
@@ -461,6 +474,7 @@ subquestion: |
 fields:
   - Me: protect_petitioner
     datatype: yesnowide
+    default: True
   - Minor children I have with ${other_parties[0].name.full(middle="full")}: protect_shared_kids
     datatype: yesnowide
     show if:
@@ -602,6 +616,15 @@ fields:
     code: states_list()
   - Include as a protected person?: x.protect
     datatype: yesnoradio
+---
+code: |
+  shared_kids[i].name.first
+  shared_kids[i].birthdate
+  shared_kids[i].complete = True
+---
+code: |
+  if shared_kids.number_gathered() >= 4:
+    shared_kids.there_is_another = False
 ---
 sets:
   - dependent_adult.name.first
@@ -888,7 +911,7 @@ subquestion: |
   Select **Yes** if when ${other_parties[0].name.full(middle="full")} is under the influence of drugs or alcohol, they are a threat to you or your children.
 fields:
   - No entry or presence while under the influence: no_stay_under_influence
-    datatype: yesnowide
+    datatype: yesnoradio
 
 ---
 id: hide address
@@ -931,18 +954,28 @@ question: |
   What do you want the court to order about where you are living?
 subquestion: |
   This does not affect who owns the property, only who gets to use or occupy it.
+  
 fields:
-  - I want **exclusive possession** of my residence, and ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive_possession
-    datatype: yesnowide
-  #- I want ${other_parties[0].name.full(middle="full")} **not to stay** at my residence while under the influence of drugs or alcohol. This would be a threat to the safety or well-being of myself or my children.: no_stay_under_influence
-  #  datatype: yesnowide
-  #  hide if: 
-  #    code: |
-  #      any((no_communication, stay_away)) 
-  - I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live because we share a residence.: provide_alt_housing
-    datatype: yesnowide
-  - None of the above: no_residence_remedy
-    datatype: yesnowide
+  - no label: residence_remedies
+    datatype: radio
+    choices:
+    - I want **exclusive possession** of my residence, and ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive possession
+    - I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live because we share a residence.: provide alternate housing
+    - None of the above: none
+  
+#  
+#fields:
+#  - I want **exclusive possession** of my residence, and ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive_possession
+#    datatype: yesnowide
+#  #- I want ${other_parties[0].name.full(middle="full")} **not to stay** at my residence while under the influence of drugs or alcohol. This would be a threat to the safety or well-being of myself or my children.: no_stay_under_influence
+#  #  datatype: yesnowide
+#  #  hide if: 
+#  #    code: |
+#  #      any((no_communication, stay_away)) 
+#  - I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live because we share a residence.: provide_alt_housing
+#    datatype: yesnowide
+#  - None of the above: no_residence_remedy
+#    datatype: yesnowide
 
 # alt question radio buttons but no show if functionality
 #---
@@ -969,12 +1002,6 @@ field: exclusive_possession_reason
 choices:
   - I have a right to occupy the residence and ${other_parties[0].name.full(middle="full")} has no right.: respondent_no_right_to_stay
   - Both of us have a right to occupy the residence, but it would be harder on me to leave.: both_parties_right_to_stay
-
-
-
-
-
-
 
 
 ---
@@ -1037,6 +1064,113 @@ fields:
     code: |
       states_list()
   - ZIP code: other_parties[0].work_address.zip
+---
+id: stay away work question
+question: |
+  Do you want ${other_parties[0].name.full(middle="full")} to stay away from where you work?
+subquestion: |
+  The statewide Order of Protection forms have space for up to 2 places of employment.
+fields:
+  - no label: stay_away_jobs
+    datatype: yesnoradio
+---
+id: stay away work info
+question: |
+  % if i==0:
+  Tell us about your job
+  % else:
+  Tell us about your other job
+  % endif
+fields:
+  - Employer or company: jobs[i].employer
+  - Street address: jobs[i].address
+    address autocomplete: True
+  - Address line 2: jobs[i].unit
+    required: False
+  - City: jobs[i].city
+  - State: jobs[i].state
+    code: |
+      states_list()
+  - ZIP code: jobs[i].zip
+---
+id: another stay away job
+question: |
+  Do you have another job you want ${other_parties[0].name.full(middle="full")} to stay away from?
+fields:
+  - no label: stay_away_jobs_2
+    datatype: yesnoradio
+---
+id: stay away school question
+question: |
+  Do you want ${other_parties[0].name.full(middle="full")} to stay away from any schools, kindergartens, or daycare centers?
+subquestion: |
+  The statewide Order of Protection forms have space for up to 2 schools or daycares.
+fields:
+  - no label: stay_away_schools
+    datatype: yesnoradio
+---
+id: stay away school info
+question: |
+  % if i==0:
+  Tell us about the school, kindergarten, or daycare
+  % else:
+  Tell us about the other school, kindergarten, or daycare
+  % endif
+fields:
+  - School or daycare name: schools[i].name
+  - Street address: schools[i].address
+    address autocomplete: True
+  - Address line 2: schools[i].unit
+    required: False
+  - City: schools[i].city
+  - State: schools[i].state
+    code: |
+      states_list()
+  - ZIP code: schools[i].zip
+---
+id: another stay away school
+question: |
+  Do you have another school or daycare you want ${other_parties[0].name.full(middle="full")} to stay away from?
+fields:
+  - no label: stay_away_schools_2
+    datatype: yesnoradio
+
+---
+id: stay away other location question
+question: |
+  Do you want ${other_parties[0].name.full(middle="full")} to stay away from other locations?
+subquestion: |
+  The statewide Order of Protection forms have space for up to 2 other locations.
+fields:
+  - no label: stay_away_other
+    datatype: yesnoradio
+---
+id: other stay away location info
+question: |
+  % if i==0:
+  Tell us about the other location
+  % else:
+  Tell us about the second location
+  % endif
+fields:
+  - Other location name: other_locations[i].name
+  - Street address: other_locations[i].address
+    address autocomplete: True
+  - Address line 2: other_locations[i].unit
+    required: False
+  - City: other_locations[i].city
+  - State: other_locations[i].state
+    code: |
+      states_list()
+  - ZIP code: other_locations[i].zip
+---
+id: another stay away location
+question: |
+  Do you have another location you want ${other_parties[0].name.full(middle="full")} to stay away from?
+fields:
+  - no label: stay_away_other_2
+    datatype: yesnoradio
+
 
 ---
 id: case number
@@ -1256,31 +1390,49 @@ attachment:
       - "stay_away": ${ stay_away }
 
       # page 4
-      - "possession_residence": ${ not no_residence_remedy }
-      - "exclusive_possession": ${ exclusive_possession }
+      - "possession_residence": ${ not (residence_remedies == 'none') }
+      - "exclusive_possession": ${ residence_remedies == 'exclusive possession' }
       - "exclusive_home_address_checkbox": |
-          % if (not hide_address) and exclusive_possession:
+          % if (not hide_address) and (residence_remedies == 'exclusive possession'):
           ${ True }
           % else:
           ${ False }
           % endif
       - "exclusive_home_address_one_line": |
-          % if (not hide_address) and exclusive_possession:
+          % if (not hide_address) and (residence_remedies == 'exclusive possession'):
           ${ users[0].address.on_one_line(bare=True) }
           % else:
           ${ "" }
           % endif
       - "exclusive_address_hidden": |
-          % if hide_address and exclusive_possession:
+          % if hide_address and (residence_remedies == 'exclusive possession'):
           ${ True }
           % else:
           ${ False }
           % endif
       - "respondent_no_right_to_stay": ${ exclusive_possession_reason == "respondent_no_right_to_stay" }
       - "both_parties_right_to_stay": ${ exclusive_possession_reason == "both_parties_right_to_stay" }
-      - "provide_alt_housing": ${ provide_alt_housing }
+      - "provide_alt_housing": ${ residence_remedies == 'provide alternate housing' }
+      
+      
+      - "stay_away_locations": ${ any((stay_away_jobs, stay_away_schools, stay_away_other))}
+      - "stay_away_jobs": ${ stay_away_jobs }
+      - "stay_away_job_1": ${ jobs[0].employer + ", " + jobs[0].on_one_line(bare=True) if stay_away_jobs else '' }
+      - "stay_away_job_2": ${ jobs[1].employer + ", " + jobs[1].on_one_line(bare=True) if stay_away_jobs_2 else '' }
+      - "stay_away_schools": ${ stay_away_schools }
+      - "stay_away_school_1": ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
+      - "stay_away_school_2": ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
+      - "stay_away_other": ${ stay_away_other }
+      - "stay_away_other_1": ${ other_locations[0].name + ", " + other_locations[0].on_one_line(bare=True) if stay_away_schools else '' }
+      - "stay_away_other_2": ${ other_locations[1].name + ", " + other_locations[1].on_one_line(bare=True) if stay_away_other_2 else '' }
 
 
+
+
+
+
+      # page 5
+      - "care_and_possession_of_children": ${ minor_kids_with_respondent } 
       - "minor_kids_with_respondent": ${ minor_kids_with_respondent }
       - "shared_kids_1_name": ${ shared_kids[0].name.full(middle="full") }
       - "shared_kids_1_age": ${ shared_kids[0].age_in_years() }
