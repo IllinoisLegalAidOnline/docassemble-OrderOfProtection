@@ -26,6 +26,7 @@ objects:
   - incidents: DAList.using(object_type=Thing, there_are_any=True)
   - jobs: ALAddressList.using(there_are_any=True)
   - schools: ALAddressList.using(there_are_any=True)
+  #- schools[i].kids_who_attend: DADict
   - other_locations: ALAddressList.using(there_are_any=True)
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 
@@ -123,8 +124,7 @@ code: |
       schools[0].type
     if stay_away_schools_2:
       schools[1].name
-      if shared_kids.number() > 0 or petitioner_kids.number() > 0:
-        schools[1].hide
+      if schools[1].hide:
         schools[1].type
   if stay_away_other:
     other_locations[0].name
@@ -1147,10 +1147,12 @@ fields:
 reconsider: True
 code: |
   minor_kids_list = []
-  for person in shared_kids:
-    minor_kids_list.append( person.name.full(middle="full") )
-  for person in petitioner_kids:
-    minor_kids_list.append( person.name.full(middle="full") )
+  if shared_kids.number() > 0:
+    for person in shared_kids:
+      minor_kids_list.append( {person.name.full(middle="full"): person.name.full(middle="full") } )
+  if petitioner_kids.number() > 0:
+    for person in petitioner_kids:
+      minor_kids_list.append( {person.name.full(middle="full"): person.name.full(middle="full") } )
 ---
 id: confidential school details
 question: |
@@ -1161,10 +1163,13 @@ fields:
     choices:
       - School: school
       - Daycare: daycare
-
-
-
-
+  - Children who attend ${ schools[i].name}: schools[i].kids_who_attend
+    datatype: checkboxes
+    none of the above: False
+    code: minor_kids_list
+    show if:
+      code: |
+        shared_kids.number() > 0 and petitioner_kids.number() > 0
 
 
 
@@ -1277,12 +1282,23 @@ content: |
 
 ---
 objects:
-  - op_petition: ALDocument.using(title="Petition", filename="petition.pdf", enabled=True, has_addendum=False)
-  - op_instructions: ALDocument.using(title="Instructions", filename="instructions.pdf", enabled=True, has_addendum=False)
+  - op_instructions: ALDocument.using(title="Instructions", filename="instructions.pdf", has_addendum=False)
+  - op_petition: ALDocument.using(title="Petition", filename="petition.pdf", has_addendum=False)
+  - op_schools: ALDocument.using(title="Confidential School or Daycare", filename="confidential_schools.pdf", has_addendum=False)
+---
+code: |
+  op_instructions.enabled = True
+  op_petition.enabled = True
+  op_schools.enabled = False
+  
+  if schools[0].hide or schools[1].hide:
+    op_schools.enabled = True
+
+
 ---
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_petition], filename="order_of_protection.pdf", title="Download all forms")
-  - al_court_bundle: ALDocumentBundle.using(elements=[op_petition], filename="order_of_protection.pdf", title="Order of protection")
+  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_petition, op_schools], filename="order_of_protection.pdf", title="Download all forms")
+  - al_court_bundle: ALDocumentBundle.using(elements=[op_petition, op_schools], filename="order_of_protection.pdf", title="Order of protection")
 ---
 
 ---
@@ -1510,7 +1526,39 @@ attachment:
 
       # page 9
       - "no_stay_under_influence": ${ no_stay_under_influence }
-      
+
+---
+attachment:
+  variable name: op_schools[i]
+  name: confidential_schools
+  filename: confidential_schools
+  skip undefined: True
+  editable: False
+  pdf template file: op_schools.pdf
+  fields:
+      - "county": ${ trial_court.address.county.upper() }
+      - "petitioner__1": ${ users[0].name.full(middle="full") }
+      - "respondent": ${other_parties[0].name.full(middle="full")}
+      - "case_number__1": ${ case_number }
+      - "protect_petitioner": ${ protect_petitioner }
+      - "protect_shared_kids": ${ protect_shared_kids }
+      - "shared_kids_list": ${ shared_kids.full_names() }
+      - "protect_petitioner_kids": ${ protect_petitioner_kids }
+      - "petitioner_kids_list": ${ petitioner_kids.full_names() }
+      - "protect_dependent_adult": ${ protect_dependent_adult }
+      - "protect_high_risk_adult": ${ protect_high_risk_adult }
+      - "protect_other_hh_members": ${ protect_other_hh_members }
+      - "other_hh_members_list": ${ other_hh_members.full_names() }
+      - "dependent_adult": ${ dependent_adult.name.full(middle="full") }
+      - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") }
+      - "school_1_kids": ${ comma_and_list(schools[i].kids_who_attend.true_values()) }
+      - "school_1_name": ${ schools[0].name }
+      - "school_1_type_school": ${ True if schools[0].type=='school' else '' }
+      - "school_1_type_daycare": ${ True if schools[0].type=='daycare' else '' }
+      - "school_1_address": ${ schools[0].on_one_line(bare=True) }
+
+
+
 
 ---
 ############### Review page
