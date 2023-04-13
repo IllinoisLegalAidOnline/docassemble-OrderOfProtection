@@ -46,7 +46,7 @@ sections:
   - section_intro: Start
   - section_basic: Basic information
   - section_petitioner: Other people you want to protect
-  - section_respondent: Person who caused abuse
+  - section_respondent: About person who caused abuse
   - section_incidents: What happened
   - section_protections: Protections
   - section_child: About your children (optional)
@@ -130,7 +130,6 @@ code: |
     other_locations[0].name
     if stay_away_other_2:
       other_locations[1].name
-
 
 
   nav.set_section('section_child')
@@ -1110,6 +1109,8 @@ question: |
   Do you want ${other_parties[0].name.full(middle="full")} to stay away from any schools, kindergartens, or daycare centers?
 subquestion: |
   The statewide Order of Protection forms have space for up to 2 schools or daycares.
+  
+  Note: You can keep the name and address of these schools confidential.
 fields:
   - no label: stay_away_schools
     datatype: yesnoradio
@@ -1147,12 +1148,14 @@ fields:
 reconsider: True
 code: |
   minor_kids_list = []
-  if shared_kids.number() > 0:
-    for person in shared_kids:
-      minor_kids_list.append( {person.name.full(middle="full"): person.name.full(middle="full") } )
-  if petitioner_kids.number() > 0:
-    for person in petitioner_kids:
-      minor_kids_list.append( {person.name.full(middle="full"): person.name.full(middle="full") } )
+  if minor_kids_with_respondent:
+    if shared_kids.number() > 0:
+      for person in shared_kids:
+        minor_kids_list.append( {person.name.full(middle="full"): person.name.full(middle="full") } )
+  if protect_petitioner_kids:
+    if petitioner_kids.number() > 0:
+      for person in petitioner_kids:
+        minor_kids_list.append( {person.name.full(middle="full"): person.name.full(middle="full") } )
 ---
 id: confidential school details
 question: |
@@ -1169,47 +1172,26 @@ fields:
     code: minor_kids_list
     show if:
       code: |
-        shared_kids.number() > 0 and petitioner_kids.number() > 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        shared_kids.number() > 0 or protect_petitioner_kids == True
 ---
 id: stay away other location question
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to stay away from other locations?
+  Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places?
 subquestion: |
-  The statewide Order of Protection forms have space for up to 2 other locations.
+  The statewide Order of Protection forms have space for up to 2 other places.
 fields:
   - no label: stay_away_other
     datatype: yesnoradio
 ---
-id: other stay away location info
+id: stay away other location info
 question: |
   % if i==0:
-  Tell us about the other location
+  Tell us about the first place you want ${other_parties[0].name.full(middle="full")} to stay away from
   % else:
-  Tell us about the second location
+  Tell us about the second place you want ${other_parties[0].name.full(middle="full")} to stay away from
   % endif
 fields:
-  - Other location name: other_locations[i].name
+  - Name: other_locations[i].name
   - Street address: other_locations[i].address
     address autocomplete: True
   - Address line 2: other_locations[i].unit
@@ -1222,10 +1204,29 @@ fields:
 ---
 id: another stay away location
 question: |
-  Do you have another location you want ${other_parties[0].name.full(middle="full")} to stay away from?
+  Do you have another place you want ${other_parties[0].name.full(middle="full")} to stay away from?
 fields:
   - no label: stay_away_other_2
     datatype: yesnoradio
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ---
@@ -1487,8 +1488,24 @@ attachment:
       - "stay_away_job_1": ${ jobs[0].employer + ", " + jobs[0].on_one_line(bare=True) if stay_away_jobs else '' }
       - "stay_away_job_2": ${ jobs[1].employer + ", " + jobs[1].on_one_line(bare=True) if stay_away_jobs_2 else '' }
       - "stay_away_schools": ${ stay_away_schools }
-      - "stay_away_school_1": ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
-      - "stay_away_school_2": ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
+      - "stay_away_school_1": |
+          % if schools[0].hide:
+          ${ "Confidential" }
+          % else:
+          ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
+          % endif
+      - "stay_away_school_2": |
+          % if schools[1].hide:
+          ${ "Confidential" }
+          % else:
+          ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
+          % endif
+      - "confidential_schools": ${ True if (schools[0].hide or schools[1].hide) else False }
+      - "stay_away_other": ${ stay_away_other }
+      - "stay_away_other_1": ${ other_locations[0].name + ", " + other_locations[0].on_one_line(bare=True) if stay_away_other else '' }
+      - "stay_away_other_2": ${ other_locations[1].name + ", " + other_locations[1].on_one_line(bare=True) if stay_away_other_2 else '' }
+      
+      
       - "stay_away_other": ${ stay_away_other }
       - "stay_away_other_1": ${ other_locations[0].name + ", " + other_locations[0].on_one_line(bare=True) if stay_away_schools else '' }
       - "stay_away_other_2": ${ other_locations[1].name + ", " + other_locations[1].on_one_line(bare=True) if stay_away_other_2 else '' }
@@ -1551,11 +1568,16 @@ attachment:
       - "other_hh_members_list": ${ other_hh_members.full_names() }
       - "dependent_adult": ${ dependent_adult.name.full(middle="full") }
       - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") }
-      - "school_1_kids": ${ comma_and_list(schools[i].kids_who_attend.true_values()) }
+      - "school_1_kids": ${ comma_and_list(schools[0].kids_who_attend.true_values()) }
       - "school_1_name": ${ schools[0].name }
       - "school_1_type_school": ${ True if schools[0].type=='school' else '' }
       - "school_1_type_daycare": ${ True if schools[0].type=='daycare' else '' }
       - "school_1_address": ${ schools[0].on_one_line(bare=True) }
+      - "school_2_kids": ${ comma_and_list(schools[1].kids_who_attend.true_values()) }
+      - "school_2_name": ${ schools[1].name }
+      - "school_2_type_school": ${ True if schools[1].type=='school' else '' }
+      - "school_2_type_daycare": ${ True if schools[1].type=='daycare' else '' }
+      - "school_2_address": ${ schools[1].on_one_line(bare=True) }
 
 
 
