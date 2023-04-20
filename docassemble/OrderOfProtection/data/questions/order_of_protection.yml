@@ -112,7 +112,7 @@ code: |
   users[0].address.address
   if residence_remedies == 'exclusive possession':
     exclusive_possession_reason
-  if stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing'):
+  if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')):
     no_stay_under_influence
   if stay_away_jobs:
     jobs[0].employer
@@ -120,12 +120,14 @@ code: |
       jobs[1].employer
   if stay_away_schools:
     schools[0].name
-    if schools[0].hide:
-      schools[0].type
+    if minor_kids_with_respondent or protect_petitioner_kids:
+      if schools[0].hide:
+        schools[0].type
     if stay_away_schools_2:
       schools[1].name
-      if schools[1].hide:
-        schools[1].type
+      if minor_kids_with_respondent or protect_petitioner_kids:
+        if schools[1].hide:
+          schools[1].type
   if stay_away_other:
     other_locations[0].name
     if stay_away_other_2:
@@ -441,8 +443,8 @@ fields:
   - no label: knows_respondent_dob
     datatype: radio
     choices:
-      - Yes, I will enter the date.: True
-      - I know some of it.: False
+      - Yes, I will enter the date.: exact
+      - I know some of it.: some
         help: |
           For example, "June 3rd" or "Summer of 1990."
       - I don't know it.: idk
@@ -451,12 +453,12 @@ fields:
     max: ${ today().format("yyyy-MM-dd") }
     show if: 
       variable: knows_respondent_dob
-      is: True
+      is: exact
   - What you know about ${other_parties[0].name.full(middle="full")}'s date of birth: other_parties[0].birthdate_info
     maxlength: 25
     show if:
       variable: knows_respondent_dob
-      is: False
+      is: some
 
   
 ---
@@ -1135,6 +1137,9 @@ fields:
   - ZIP code: schools[i].zip
   - Hide this information from ${ other_parties[0].name.full(middle="full") }?: schools[i].hide
     datatype: yesnoradio
+    show if: 
+      code: |
+        minor_kids_with_respondent or protect_petitioner_kids
     help: |
       If you hide this information, it will not be listed on your Petition. You will get a confidential form that you will file with the court clerk.
 ---
@@ -1292,8 +1297,9 @@ code: |
   op_petition.enabled = True
   op_schools.enabled = False
   
-  if schools[0].hide or schools[1].hide:
-    op_schools.enabled = True
+  if minor_kids_with_respondent or protect_petitioner_kids:
+    if schools[0].hide or schools[1].hide:
+      op_schools.enabled = True
 
 
 ---
@@ -1360,8 +1366,10 @@ attachment:
 
       # page 2
       - "respondent_dob": |
-          % if other_parties[0].birthdate != "":
+          % if knows_respondent_dob == 'exact' and other_parties[0].birthdate != "":
           ${ other_parties[0].birthdate }
+          % elif knows_respondent_dob == 'some':
+          ${ other_parties[0].birthdate_info }
           % else:
           ${ "do not know" }
           % endif
@@ -1489,13 +1497,17 @@ attachment:
       - "stay_away_job_2": ${ jobs[1].employer + ", " + jobs[1].on_one_line(bare=True) if stay_away_jobs_2 else '' }
       - "stay_away_schools": ${ stay_away_schools }
       - "stay_away_school_1": |
-          % if schools[0].hide:
+          % if not (minor_kids_with_respondent or protect_petitioner_kids):
+          ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
+	    	  % elif schools[0].hide:
           ${ "Confidential" }
           % else:
           ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
           % endif
       - "stay_away_school_2": |
-          % if schools[1].hide:
+          % if not (minor_kids_with_respondent or protect_petitioner_kids):
+          ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
+	    	  % elif schools[1].hide:
           ${ "Confidential" }
           % else:
           ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
@@ -1542,7 +1554,7 @@ attachment:
 
 
       # page 9
-      - "no_stay_under_influence": ${ no_stay_under_influence }
+      - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
 
 ---
 attachment:
@@ -1609,71 +1621,69 @@ review:
   - Edit: relationship_type
     button: |
       **Protected party's relationship to person who caused abuse:**
+      
       % if relationship_type['se'] == True:
-        * Spouse
+      * Spouse
       % endif
       % if relationship_type['xs'] == True:
-        * Ex-spouse
+      * Ex-spouse
       % endif
       % if relationship_type['bg'] == True:
-        * Boyfriend, girlfriend, or romantic partner (including ex-)
+      * Boyfriend, girlfriend, or romantic partner (including ex-)
       % endif
       % if relationship_type['cc'] == True:
-        * We have a child in common (never married)
+      * We have a child in common (never married)
       % endif
       % if relationship_type['cs'] == True:
-        * We share or shared a living space
+      * We share or shared a living space
       % endif
       % if relationship_type['ch'] == True:
-        * Child
+      * Child
       % endif
       % if relationship_type['pa'] == True:
-        * Parent
+      * Parent
       % endif
       % if relationship_type['sb'] == True:
-        * Brother, sister, or sibling
+      * Brother, sister, or sibling
       % endif
       % if relationship_type['of'] == True:
-        * Other family member
-      % endif
-      % if relationship_type['ot'] == True:
-        * Other family relationship
+      * Other family member
       % endif
       % if relationship_type['sc'] == True:
-        * Step child
+      * Step child
       % endif
       % if relationship_type['ss'] == True:
-        * Step brother, step sister, or step sibling
+      * Step brother, step sister, or step sibling
       % endif
       % if relationship_type['sp'] == True:
-        * Step parent
+      * Step parent
       % endif
       % if relationship_type['gc'] == True:
-        * Grandchild
+      * Grandchild
       % endif
       % if relationship_type['gp'] == True:
-        * Grandparent
+      * Grandparent
       % endif
       % if relationship_type['il'] == True:
-        * In-law
+      * In-law
       % endif
       % if relationship_type['pd'] == True:
-        * Protected person has a disability and receives care from the abuser
+      * Protected person has a disability and receives care from the abuser
       % endif
       % if relationship_type['pc'] == True:
-        * Person responsible for a high risk adult
+      * Person responsible for a high risk adult
       % endif
       % if relationship_type['pr'] == True:
-        * Personal assistant or caregiver to a person with a disability
+      * Personal assistant or caregiver to a person with a disability
       % endif
       % if relationship_type['f'] == True:
-        * Family or household member of my foster child
+      * Family or household member of my foster child
       % endif
       % if relationship_type['a'] == True:
-        * Family or household member of my adopted child, or of my prospective adopted child
+      * Family or household member of my adopted child, or of my prospective adopted child
       % endif
       % if relationship_type['l'] == True:
-        * Family or household member of a child that I am the legally-appointed custodian of
+      * Family or household member of a child that I am the legally-appointed custodian of
       % endif
       
   - Edit: other_parties[0].name.first
@@ -1742,14 +1752,31 @@ review:
       **High risk adult you want to protect:**
       ${high_risk_adult.name.full(middle="full")}
 
-  - Edit: other_parties[0].birthdate
+  - Edit: knows_respondent_dob
+    button: |
+      **What you know about ${other_parties[0].name.full(middle="full")}'s birthdate:**
+      % if knows_respondent_dob == "exact":
+      The exact date
+      % elif knows_respondent_dob == "some":
+      Something about it
+      % else:
+      Nothing
+      % endif
+
+  - Edit: knows_respondent_dob
     button: |
       **${other_parties[0].name.full(middle="full")}'s birthdate:**
-      % if other_parties[0].birthdate != "":
+      % if knows_respondent_dob == "exact" and other_parties[0].birthdate != "":
       ${ other_parties[0].birthdate }
+      % elif knows_respondent_dob == "some":
+      ${ other_parties[0].birthdate_info }
       % else:
-      ${ "do not know" }
+      ${ "Unknown" }
       % endif
+      
+    
+      
+      
   - Edit: other_parties[0].phone_number
     button: |
       **${other_parties[0].name.full(middle="full")}'s phone number:**
@@ -1837,8 +1864,6 @@ review:
       **Include as a protected person?**
       ${ word(yesno(x.protect)) }
 
----      
-
 
 
 ---
@@ -1878,3 +1903,121 @@ edit:
   - name.first
 delete buttons: True
 confirm: True
+
+---
+id: basic info review screen
+event: section_basic
+question: |
+  Basic information
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: jurisdiction_type
+    button: |
+      **Filing in ${ trial_court.address.county } County because:**
+      ${ jurisdiction_type }
+
+---
+id: petitioner review screen
+event: section_petitioner
+question: |
+  Other people you want to protect
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: case_number
+    button: |
+      **Case number:**
+      ${ case_number }   
+
+---
+id: respondent review screen
+event: section_respondent
+question: |
+  About person who caused abuse
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: case_number
+    button: |
+      **Case number:**
+      ${ case_number }   
+
+---
+id: incidents review screen
+event: section_incidents
+question: |
+  What happened
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: case_number
+    button: |
+      **Case number:**
+      ${ case_number }   
+
+---
+id: protections review screen
+event: section_protections
+question: |
+  Protections
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: case_number
+    button: |
+      **Case number:**
+      ${ case_number }   
+
+---
+id: minor children review screen
+event: section_child
+question: |
+  About your children (optional)
+subquestion: |
+  Edit your answers below.
+review: 
+  - Edit: case_number
+    button: |
+      **Case number:**
+      ${ case_number }   
+ 
+---
+id: property details review screen
+event: section_property
+question: |
+  Property details
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: case_number
+    button: |
+      **Case number:**
+      ${ case_number }   
+
+---
+id: other remedies review screen
+event: section_remedies
+question: |
+  Other remedies
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: case_number
+    button: |
+      **Case number:**
+      ${ case_number }   
+
+---
+id: case info review screen
+event: section_filing_info
+question: |
+  Case info and Next steps
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: case_number
+    button: |
+      **Case number:**
+      ${ case_number }   
+
