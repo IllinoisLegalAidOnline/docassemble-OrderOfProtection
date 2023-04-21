@@ -473,6 +473,31 @@ choices:
   - Yes: True
   - No: False
 ---
+depends on: minor_kids_with_respondent
+code: |
+  if minor_kids_with_respondent == False:
+    protect_shared_kids = False
+---
+reconsider: True
+code: |
+  protected_minor_kids_list = []
+  if minor_kids_with_respondent:
+    if shared_kids.number() > 0:
+      for person in shared_kids:
+        if person.protect == True:
+          protected_minor_kids_list.append( person.name.full(middle="full") )
+#---
+#sets:
+#  - protect_shared_kids
+#reconsider: True
+#code: |
+#  if minor_kids_with_respondent:
+#    protect_shared_kids = False
+#    for person in shared_kids:
+#      if person.protect:
+#        protect_shared_kids = True
+
+---
 id: protected parties
 question: |
   Who do you want protected by this Order of Protection?
@@ -540,16 +565,6 @@ subquestion: |
 fields:
   - "Anyone else?": shared_kids.there_is_another
     datatype: yesnoradio
----
-#sets:
-#  - protect_shared_kids
-#reconsider: True
-#code: |
-#  if minor_kids_with_respondent:
-#    protect_shared_kids = False
-#    for person in shared_kids:
-#      if person.protect:
-#        protect_shared_kids = True
 ---
 sets:
   - petitioner_kids[0].name.first
@@ -650,7 +665,7 @@ sets:
   - dependent_adult.name.suffix
 id: name of dependent adult
 question: |
-  What is the name of the dependent adult you want to protect with this order?
+  Who is the dependent adult you want to protect with this order?
 fields:
   - code: |
       dependent_adult.name_fields()
@@ -662,7 +677,7 @@ sets:
   - high_risk_adult.name.suffix
 id: name of high risk adult
 question: |
-  What is the name of the high risk adult you want to protect with this order?
+  Who is the high risk adult you want to protect with this order?
 fields:
   - code: |
       high_risk_adult.name_fields()
@@ -1158,6 +1173,12 @@ fields:
   - no label: stay_away_schools_2
     datatype: yesnoradio
 ---
+# this depends on doesn't seem to be triggering on name change. hoping it would for kids_who_attend
+depends on:
+  - shared_kids[i].name
+  - shared_kids[i].name.middle
+  - shared_kids[i].name.last
+  - shared_kids[i].name.suffix
 reconsider: True
 code: |
   minor_kids_list = []
@@ -1262,6 +1283,8 @@ subquestion: |
 
   This program does not file your ${ form_name } with the court. You will need to do this yourself.
 
+  Protected shared kids list: ${ comma_and_list(protected_minor_kids_list ) }
+
   ${ action_button_html(url_action('review_answers'), label=':edit: Make changes', color='success', size="md") }
   
   ${ al_user_bundle.download_list_html() }
@@ -1353,7 +1376,7 @@ attachment:
       - "case_number__11": ${ case_number }
       - "protect_petitioner": ${ protect_petitioner }
       - "protect_shared_kids": ${ protect_shared_kids }
-      - "shared_kids_list": ${ shared_kids.full_names() if protect_shared_kids else ''}
+      - "shared_kids_list": ${ comma_and_list(protected_minor_kids_list ) if protect_shared_kids else ''}
       - "protect_petitioner_kids": ${ protect_petitioner_kids }
       - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
       - "protect_dependent_adult": ${ protect_dependent_adult }
@@ -1579,7 +1602,7 @@ attachment:
       - "case_number__1": ${ case_number }
       - "protect_petitioner": ${ protect_petitioner }
       - "protect_shared_kids": ${ protect_shared_kids }
-      - "shared_kids_list": ${ shared_kids.full_names() if protect_shared_kids else ''}
+      - "shared_kids_list": ${ comma_and_list(protected_minor_kids_list ) if protect_shared_kids else ''}
       - "protect_petitioner_kids": ${ protect_petitioner_kids }
       - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
       - "protect_dependent_adult": ${ protect_dependent_adult }
@@ -1704,10 +1727,7 @@ review:
       **Do you have minor children with ${other_parties[0].name.full(middle="full")}?**
       ${ word(yesno(minor_kids_with_respondent)) }
 
-  - Edit:
-      - protect_petitioner
-      - recompute:
-        - protect_shared_kids
+  - Edit: protect_petitioner
     button: |
       **People to protect with this Order of Protection:**
       
