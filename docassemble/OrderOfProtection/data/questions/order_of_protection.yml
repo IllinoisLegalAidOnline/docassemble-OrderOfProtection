@@ -94,6 +94,7 @@ code: |
   nav.set_section('section_respondent')
   knows_respondent_dob
   other_parties[0].address.address
+  other_parties[0].phone_number
   if knows_respondent_work:
     other_parties[0].work_address.address
   if has_other_ops == "True":
@@ -533,12 +534,22 @@ question: |
   Do you have another minor child with ${other_parties[0].name.full(middle="full")}?
 subquestion: |
   The statewide Order of Protection forms have space for up to 4 minor children with the Respondent.
-  % if len(other_parties.elements) >= 1:  
+  % if len(shared_kids.elements) >= 1:  
   So far you have told us about ${comma_and_list(shared_kids.complete_elements().full_names())}.
   % endif
 fields:
   - "Anyone else?": shared_kids.there_is_another
     datatype: yesnoradio
+---
+#sets:
+#  - protect_shared_kids
+#reconsider: True
+#code: |
+#  if minor_kids_with_respondent:
+#    protect_shared_kids = False
+#    for person in shared_kids:
+#      if person.protect:
+#        protect_shared_kids = True
 ---
 sets:
   - petitioner_kids[0].name.first
@@ -1017,11 +1028,8 @@ question: |
 subquestion: |
   If you do not know, leave these blank.
 fields:
-  - Date of birth: other_parties[0].birthdate
-    datatype: date
-    max: ${ today().format("yyyy-MM-dd") }
-    required: False
   - Phone: other_parties[0].phone_number
+    datatype: al_international_phone
     required: False
   - Email address: other_parties[0].email    
     datatype: email
@@ -1345,15 +1353,15 @@ attachment:
       - "case_number__11": ${ case_number }
       - "protect_petitioner": ${ protect_petitioner }
       - "protect_shared_kids": ${ protect_shared_kids }
-      - "shared_kids_list": ${ shared_kids.full_names() }
+      - "shared_kids_list": ${ shared_kids.full_names() if protect_shared_kids else ''}
       - "protect_petitioner_kids": ${ protect_petitioner_kids }
-      - "petitioner_kids_list": ${ petitioner_kids.full_names() }
+      - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
       - "protect_dependent_adult": ${ protect_dependent_adult }
       - "protect_high_risk_adult": ${ protect_high_risk_adult }
       - "protect_other_hh_members": ${ protect_other_hh_members }
-      - "other_hh_members_list": ${ other_hh_members.full_names() }
-      - "dependent_adult": ${ dependent_adult.name.full(middle="full") }
-      - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") }
+      - "other_hh_members_list": ${ other_hh_members.full_names() if protect_other_hh_members else '' }
+      - "dependent_adult": ${ dependent_adult.name.full(middle="full") if protect_dependent_adult else '' }
+      - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") if protect_high_risk_adult else '' }
 
       - "eop": ${ eop }
       - "pop": ${ pop }
@@ -1571,15 +1579,16 @@ attachment:
       - "case_number__1": ${ case_number }
       - "protect_petitioner": ${ protect_petitioner }
       - "protect_shared_kids": ${ protect_shared_kids }
-      - "shared_kids_list": ${ shared_kids.full_names() }
+      - "shared_kids_list": ${ shared_kids.full_names() if protect_shared_kids else ''}
       - "protect_petitioner_kids": ${ protect_petitioner_kids }
-      - "petitioner_kids_list": ${ petitioner_kids.full_names() }
+      - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
       - "protect_dependent_adult": ${ protect_dependent_adult }
       - "protect_high_risk_adult": ${ protect_high_risk_adult }
       - "protect_other_hh_members": ${ protect_other_hh_members }
-      - "other_hh_members_list": ${ other_hh_members.full_names() }
-      - "dependent_adult": ${ dependent_adult.name.full(middle="full") }
-      - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") }
+      - "other_hh_members_list": ${ other_hh_members.full_names() if protect_other_hh_members else '' }
+      - "dependent_adult": ${ dependent_adult.name.full(middle="full") if protect_dependent_adult else '' }
+      - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") if protect_high_risk_adult else '' }
+
       - "school_1_kids": ${ comma_and_list(schools[0].kids_who_attend.true_values()) }
       - "school_1_name": ${ schools[0].name }
       - "school_1_type_school": ${ True if schools[0].type=='school' else '' }
@@ -1695,29 +1704,32 @@ review:
       **Do you have minor children with ${other_parties[0].name.full(middle="full")}?**
       ${ word(yesno(minor_kids_with_respondent)) }
 
-  - Edit: protect_petitioner
+  - Edit:
+      - protect_petitioner
+      - recompute:
+        - protect_shared_kids
     button: |
       **People to protect with this Order of Protection:**
       
       % if protect_petitioner == True:
-        * You
+      * You
       % endif
       % if protect_shared_kids == True:
-        * Minor children you have with ${other_parties[0].name.full(middle="full")}
+      * Minor children you have with ${other_parties[0].name.full(middle="full")}
       % endif
       % if protect_petitioner_kids == True:
-        * Minor children you **did not** have with ${other_parties[0].name.full(middle="full")}
+      * Minor children you **did not** have with ${other_parties[0].name.full(middle="full")}
       % endif
       % if protect_dependent_adult == True:
-        * A dependent adult
+      * A dependent adult
       % endif
       % if protect_high_risk_adult == True:
-        * A high risk adult with disabilities
+      * A high risk adult with disabilities
       % endif      
       % if protect_other_hh_members == True:
-        * Other household members
+      * Other household members
       % endif
-
+    
   - Edit: shared_kids.revisit
     button: |
       **Your minor children with ${other_parties[0].name.full(middle="full")}: (Edit to change names and details)**
@@ -1725,6 +1737,7 @@ review:
       % for my_var in shared_kids:
         * ${ my_var.name.full(middle="full") }
       % endfor
+    show if: minor_kids_with_respondent
 
   - Edit: petitioner_kids.revisit
     button: |
@@ -1733,6 +1746,7 @@ review:
       % for my_var in petitioner_kids:
         * ${ my_var.name.full(middle="full") }
       % endfor
+    show if: protect_petitioner_kids
 
   - Edit: other_hh_members.revisit
     button: |
@@ -1741,16 +1755,19 @@ review:
       % for my_var in other_hh_members:
         * ${ my_var.name.full(middle="full") }
       % endfor
+    show if: protect_other_hh_members
 
   - Edit: dependent_adult.name.first
     button: |
       **Dependent adult you want to protect:**
       ${dependent_adult.name.full(middle="full")}
+    show if: protect_dependent_adult
 
   - Edit: high_risk_adult.name.first
     button: |
       **High risk adult you want to protect:**
       ${high_risk_adult.name.full(middle="full")}
+    show if: protect_high_risk_adult
 
   - Edit: knows_respondent_dob
     button: |
@@ -1773,10 +1790,6 @@ review:
       % else:
       ${ "Unknown" }
       % endif
-      
-    
-      
-      
   - Edit: other_parties[0].phone_number
     button: |
       **${other_parties[0].name.full(middle="full")}'s phone number:**
@@ -1813,7 +1826,16 @@ review:
       % else:
       ${ "do not know" }
       % endif
-    
+
+
+
+
+
+
+
+
+
+
 
   - Edit: case_number
     button: |
