@@ -97,9 +97,9 @@ code: |
   other_parties[0].phone_number
   if knows_respondent_work:
     other_parties[0].work_address.address
-  if has_other_ops == "True":
+  if has_other_ops == "Yes":
     other_ops.gather()
-  if has_other_cases == "True":
+  if has_other_cases == "Yes":
     other_cases.gather()  
 
   nav.set_section('section_incidents')
@@ -430,7 +430,7 @@ sets:
     - other_parties[0].name.middle
     - other_parties[0].name.suffix
 question:  |
-  What is the name of the person you want an Order of Protection against?
+  Who is the person you want an Order of Protection against?
 subquestion: |
   This person will be called the **Respondent** in court and on the forms.
 fields:
@@ -537,7 +537,9 @@ sets:
   - shared_kids[0].name.suffix
 id: name of first child with respondent
 question: |
-  What is the name of your minor child with ${other_parties[0].name.full(middle="full")}?
+  Who is your minor child with ${other_parties[0].name.full(middle="full")}?
+subquestion: |
+  The statewide Order of Protection forms have space for up to 4 minor children with the Respondent.
 fields:
   - code: |
       shared_kids[0].name_fields()
@@ -549,7 +551,7 @@ sets:
   - shared_kids[i].name.last
   - shared_kids[i].name.suffix
 question: |
-  What is the name of your ${ ordinal(i) } minor child with ${other_parties[0].name.full(middle="full")}?
+  Who is your ${ ordinal(i) } minor child with ${other_parties[0].name.full(middle="full")}?
 fields:
   - code: |
       shared_kids[i].name_fields()
@@ -573,7 +575,9 @@ sets:
   - petitioner_kids[0].name.suffix
 id: name of first child not with respondent
 question: |
-  What is the name of your minor child **not with** ${other_parties[0].name.full(middle="full")}?
+  Who is your minor child **not with** ${other_parties[0].name.full(middle="full")} you want protected by this order?
+subquestion: |
+  If you want to include more than one, you can enter their names on following screens.
 fields:
   - code: |
       petitioner_kids[0].name_fields()
@@ -585,14 +589,14 @@ sets:
   - petitioner_kids[i].name.last
   - petitioner_kids[i].name.suffix
 question: |
-  What is the name of your ${ ordinal(i) } minor child **not with** ${other_parties[0].name.full(middle="full")}?
+  Who is your ${ ordinal(i) } minor child **not with** ${other_parties[0].name.full(middle="full")}  you want protected by this order?
 fields:
   - code: |
       petitioner_kids[i].name_fields()
 ---
 id: any other children not with respondent
 question: |
-  Do you have another minor child **not with** ${other_parties[0].name.full(middle="full")} you want to protect with this order?
+  Do you have another minor child **not with** ${other_parties[0].name.full(middle="full")} you want protected by this order?
 subquestion: |
   % if len(petitioner_kids.elements) >= 1:  
   So far you have told us about ${comma_and_list(petitioner_kids.complete_elements().full_names())}.
@@ -608,7 +612,9 @@ sets:
   - other_hh_members[0].name.suffix
 id: name of first other household member
 question: |
-  What is the name of the household member you want protected by this order?
+  Who is the household member you want protected by this order?
+subquestion: |
+  If you wanto to include more than one, you can enter their names on following screens.
 fields:
   - code: |
       other_hh_members[0].name_fields()
@@ -627,7 +633,7 @@ fields:
 ---
 id: any other household members
 question: |
-  Do you have another household member you want to protect with this order?
+  Do you have another household member you want protected by this order?
 subquestion: |
   % if len(other_hh_members.elements) >= 1:  
   So far you have told us about ${comma_and_list(other_hh_members.complete_elements().full_names())}.
@@ -665,7 +671,7 @@ sets:
   - dependent_adult.name.suffix
 id: name of dependent adult
 question: |
-  Who is the dependent adult you want to protect with this order?
+  Who is the dependent adult you want protected by this order?
 fields:
   - code: |
       dependent_adult.name_fields()
@@ -677,7 +683,7 @@ sets:
   - high_risk_adult.name.suffix
 id: name of high risk adult
 question: |
-  Who is the high risk adult you want to protect with this order?
+  Who is the high risk adult you want protected by this order?
 fields:
   - code: |
       high_risk_adult.name_fields()
@@ -716,9 +722,9 @@ fields:
   - Other Orders of Protection?: has_other_ops
     datatype: radio
     choices:
-      - Yes: True
-      - No: False
-      - I don't know: idk
+      - Yes: Yes
+      - No: No
+      - I don't know: I don't know
 #  - How many?: other_op_total
 #    datatype: number
 #    max: 9
@@ -767,9 +773,9 @@ fields:
   - Other cases?: has_other_cases
     datatype: radio
     choices:
-      - Yes: True
-      - No: False
-      - I don't know: idk
+      - Yes: Yes
+      - No: No
+      - I don't know: I don't know
 #  - How many?: other_cases_total
 #    datatype: number
 #    max: 9
@@ -785,6 +791,8 @@ question: |
   Tell us about the ${ ordinal(i) } court case
 fields:
   - Type of court case: other_cases[i].name.text
+    help: |
+      Examples include divorce, custody, child support, paternity, parenting time, guardianship, adoption, or abuse and neglect cases.
   - State: other_cases[i].state
     code: |
       states_list()
@@ -1440,9 +1448,9 @@ attachment:
       - "relationship_ot": ${ relationship_type['ot'] }
       - "relationship_pd": ${ relationship_type['pd'] }
 
-      - "has_other_ops_yes": ${ has_other_ops == "True" }
-      - "has_other_ops_no": ${ has_other_ops == "False" }
-      - "has_other_ops_idk": ${ has_other_ops == "idk" }
+      - "has_other_ops_yes": ${ has_other_ops == "Yes" }
+      - "has_other_ops_no": ${ has_other_ops == "No" }
+      - "has_other_ops_idk": ${ has_other_ops == "I don't know" }
       - "other_ops_people_1": ${ other_ops[0].name.text }
       - "other_ops_state_county_1": ${ other_ops[0].state + ", " + other_ops[0].county }
       - "other_ops_year_1": ${ other_ops[0].year }
@@ -1451,14 +1459,14 @@ attachment:
       - "other_ops_year_2": ${ other_ops[1].year }
       - "other_ops_additional": ${ other_ops.number() > 2 } 
 
-      - "has_other_cases_yes": ${ has_other_cases == "True" }
-      - "has_other_cases_no": ${ has_other_cases == "False" }
-      - "has_other_cases_idk": ${ has_other_cases == "idk" }
+      - "has_other_cases_yes": ${ has_other_cases == "Yes" }
+      - "has_other_cases_no": ${ has_other_cases == "No" }
+      - "has_other_cases_idk": ${ has_other_cases == "I don't know" }
       - "other_cases_type_1": ${ other_cases[0].name.text }
       - "other_cases_state_county_1": ${ other_cases[0].state + ", " + other_ops[0].county }
       - "other_cases_year_1": ${ other_cases[0].year }
       - "other_cases_type_2": ${ other_cases[1].name.text }
-      - "other_cases_state_county_2": ${ other_cases[1].state + ", " + other_ops[1].county }
+      - "other_cases_state_county_2": ${ other_cases[1].state + ", " + other_cases[1].county }
       - "other_cases_year_2": ${ other_cases[1].year }
       - "other_cases_additional": ${ other_cases.number() > 2 } 
 
@@ -1761,7 +1769,7 @@ review:
 
   - Edit: petitioner_kids.revisit
     button: |
-      **Your minor children **not with** ${other_parties[0].name.full(middle="full")}: (Edit to change names)**
+      **Your minor children **not with** ${other_parties[0].name.full(middle="full")}:**
 
       % for my_var in petitioner_kids:
         * ${ my_var.name.full(middle="full") }
@@ -1770,7 +1778,7 @@ review:
 
   - Edit: other_hh_members.revisit
     button: |
-      **Other household members: (Edit to change names)**
+      **Other household members:**
 
       % for my_var in other_hh_members:
         * ${ my_var.name.full(middle="full") }
@@ -1788,6 +1796,34 @@ review:
       **High risk adult you want to protect:**
       ${high_risk_adult.name.full(middle="full")}
     show if: protect_high_risk_adult
+
+  - Edit: eop
+    button: |
+      **Order type:**
+      % if eop and pop:
+      Both Emergency and Plenary Orders of Protection
+      % elif eop:
+      Emergency Order of Protection (not Plenary)
+      % else:
+      Plenary Order of Protection (not Emergency)
+      % endif
+
+
+  - Edit: has_other_ops
+    button: |
+      **Are there other Orders of protections against ${other_parties[0].name.full(middle="full")}?**
+      ${ has_other_ops }
+      
+  - Edit: other_ops.revisit
+    button: |
+      **Other Orders of Protection against ${other_parties[0].name.full(middle="full")}: (Edit to change details)**
+
+      % for my_var in other_ops:
+        * ${ my_var.name.text } in ${ my_var.year }
+      % endfor
+    show if: has_other_ops == "Yes"
+
+
 
   - Edit: knows_respondent_dob
     button: |
@@ -1878,7 +1914,7 @@ rows: shared_kids
 columns:
   - Name: |
       row_item.name.full(middle="full") if defined("row_item.name.first") else ""
-  - Details: |
+  - Details (including birthdate, residence, protected by order): |
       action_button_html(url_action(row_item.attr_name("review_shared_child_details")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
@@ -1945,6 +1981,49 @@ edit:
   - name.first
 delete buttons: True
 confirm: True
+---
+continue button field: other_ops.revisit
+question: |
+  Edit the other Orders of Protection against ${other_parties[0].name.full(middle="full")}
+subquestion: |
+  ${ other_ops.table }
+
+  ${ other_ops.add_action() }
+---
+table: other_ops.table
+rows: other_ops
+columns:
+  - People involved: |
+      row_item.name.text if defined("row_item.name.text") else ""
+  - Details (including state, county, year): |
+      action_button_html(url_action(row_item.attr_name("review_other_op_details")), label="Edit", icon="pencil-alt")
+delete buttons: True
+confirm: True
+
+---
+continue button field: x.review_other_op_details
+generic object: DAObject
+question: |
+  Edit other Order of Protection details
+review: 
+  - Edit: x.name.text
+    button: |
+      **People involved:**
+      ${ x.name.text  }
+  - Edit: x.state
+    button: |
+      **State:**
+      ${ state_name(x.state) } 
+  - Edit: x.county
+    button: |
+      **County:**
+      ${ x.county }
+  - Edit: x.year
+    button: |
+      **Year:**
+      ${ x.year }
+
+
 
 ---
 id: basic info review screen
