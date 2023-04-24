@@ -46,12 +46,12 @@ sections:
   - section_intro: Start
   - section_basic: Basic information
   - section_petitioner: Other people you want to protect
-  - section_respondent: About person who caused abuse
   - section_incidents: What happened
   - section_protections: Protections
   - section_child: About your children (optional)
   - section_property: Property details
   - section_remedies: Other remedies
+  - section_respondent: About person who caused abuse
   - section_filing_info: Case info and Next steps
   - section_download: Download
 ---
@@ -90,17 +90,6 @@ code: |
     dependent_adult.name.first
   if protect_high_risk_adult:
     high_risk_adult.name.first
-
-  nav.set_section('section_respondent')
-  knows_respondent_dob
-  other_parties[0].address.address
-  other_parties[0].phone_number
-  if knows_respondent_work:
-    other_parties[0].work_address.address
-  if has_other_ops == "Yes":
-    other_ops.gather()
-  if has_other_cases == "Yes":
-    other_cases.gather()  
 
   nav.set_section('section_incidents')
   incidents_intro
@@ -144,7 +133,16 @@ code: |
 
   nav.set_section('section_remedies')
 
-
+  nav.set_section('section_respondent')
+  knows_respondent_dob
+  other_parties[0].address.address
+  other_parties[0].phone_number
+  if knows_respondent_work:
+    other_parties[0].work_address.address
+  if has_other_ops == "Yes":
+    other_ops.gather()
+  if has_other_cases == "Yes":
+    other_cases.gather()  
 
   nav.set_section('section_filing_info')
   eop 
@@ -1797,6 +1795,14 @@ review:
       ${high_risk_adult.name.full(middle="full")}
     show if: protect_high_risk_adult
 
+  - Edit: incidents.revisit
+    button: |
+      **Incidents: (Edit to review what happened or change details)**
+
+      % for my_var in incidents:
+        * Date: ${ my_var.date }, Time: ${ my_var.time }
+      % endfor
+
   - Edit: eop
     button: |
       **Order type:**
@@ -1807,22 +1813,6 @@ review:
       % else:
       Plenary Order of Protection (not Emergency)
       % endif
-
-
-  - Edit: has_other_ops
-    button: |
-      **Are there other Orders of protections against ${other_parties[0].name.full(middle="full")}?**
-      ${ has_other_ops }
-      
-  - Edit: other_ops.revisit
-    button: |
-      **Other Orders of Protection against ${other_parties[0].name.full(middle="full")}: (Edit to change details)**
-
-      % for my_var in other_ops:
-        * ${ my_var.name.text } in ${ my_var.year }
-      % endfor
-    show if: has_other_ops == "Yes"
-
 
 
   - Edit: knows_respondent_dob
@@ -1883,6 +1873,33 @@ review:
       ${ "do not know" }
       % endif
 
+  - Edit: has_other_ops
+    button: |
+      **Are there other Orders of protections against ${other_parties[0].name.full(middle="full")}?**
+      ${ has_other_ops }
+      
+  - Edit: other_ops.revisit
+    button: |
+      **Other Orders of Protection against ${other_parties[0].name.full(middle="full")}: (Edit to change details)**
+
+      % for my_var in other_ops:
+        * ${ my_var.name.text } in ${ my_var.year }
+      % endfor
+    show if: has_other_ops == "Yes"
+
+  - Edit: has_other_cases
+    button: |
+      **Are there other cases with ${other_parties[0].name.full(middle="full")}?**
+      ${ has_other_cases }
+      
+  - Edit: other_cases.revisit
+    button: |
+      **Other cases with ${other_parties[0].name.full(middle="full")}: (Edit to change details)**
+
+      % for my_var in other_cases:
+        * ${ my_var.name.text } in ${ my_var.year }
+      % endfor
+    show if: has_other_cases == "Yes"
 
 
 
@@ -1901,6 +1918,7 @@ review:
 
 
 ---
+id: shared kids revisit
 continue button field: shared_kids.revisit
 question: |
   Edit the minor children you have with ${other_parties[0].name.full(middle="full")}
@@ -1920,6 +1938,7 @@ delete buttons: True
 confirm: True
 
 ---
+id: shared kids details
 continue button field: x.review_shared_child_details
 generic object: ALIndividual
 question: |
@@ -1941,10 +1960,8 @@ review:
     button: |
       **Include as a protected person?**
       ${ word(yesno(x.protect)) }
-
-
-
 ---
+id: petitioner kids revisit
 continue button field: petitioner_kids.revisit
 question: |
   Edit your minor children you **do not** have with ${other_parties[0].name.full(middle="full")} you want protected by this order
@@ -1964,6 +1981,7 @@ delete buttons: True
 confirm: True
 
 ---
+id: other hh members revisit
 continue button field: other_hh_members.revisit
 question: |
   Edit the household members you want protected by this order
@@ -1981,7 +1999,57 @@ edit:
   - name.first
 delete buttons: True
 confirm: True
+
 ---
+id: incidents revisit
+continue button field: incidents.revisit
+question: |
+  Edit the details of what happened
+subquestion: |
+  ${ incidents.table }
+
+  % if incidents.number_gathered() < 8:
+  ${ other_ops.add_action() }
+  % endif
+---
+table: incidents.table
+rows: incidents
+columns:
+  - Date: |
+      row_item.date if defined("row_item.date") else ""
+  - Time: |
+      row_item.time if defined("row_item.time") else ""
+  - Details (what happened): |
+      action_button_html(url_action(row_item.attr_name("review_incidents_details")), label="Edit", icon="pencil-alt")
+delete buttons: True
+confirm: True
+---
+id: incident details
+continue button field: x.review_incidents_details
+generic object: DAObject
+question: |
+  Edit details
+review: 
+  - Edit: x.date
+    button: |
+      **Date:**
+      ${ x.date  }
+  - Edit: x.time
+    button: |
+      **Time:**
+      ${ x.time } 
+  - Edit: x.name.text
+    button: |
+      **What happened:**
+      ${ x.name.text }
+---
+
+
+
+
+
+---
+id: other ops revisit
 continue button field: other_ops.revisit
 question: |
   Edit the other Orders of Protection against ${other_parties[0].name.full(middle="full")}
@@ -1999,8 +2067,8 @@ columns:
       action_button_html(url_action(row_item.attr_name("review_other_op_details")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
-
 ---
+id: edit other ops
 continue button field: x.review_other_op_details
 generic object: DAObject
 question: |
@@ -2023,6 +2091,49 @@ review:
       **Year:**
       ${ x.year }
 
+---
+id: other cases revisit
+continue button field: other_cases.revisit
+question: |
+  Edit the other court cases with ${other_parties[0].name.full(middle="full")}
+subquestion: |
+  ${ other_cases.table }
+
+  ${ other_cases.add_action() }
+---
+table: other_cases.table
+rows: other_cases
+columns:
+  - People involved: |
+      row_item.name.text if defined("row_item.name.text") else ""
+  - Details (including case type, state, county, year): |
+      action_button_html(url_action(row_item.attr_name("review_other_cases_details")), label="Edit", icon="pencil-alt")
+delete buttons: True
+confirm: True
+
+---
+id: other cases edit
+continue button field: x.review_other_cases_details
+generic object: DAObject
+question: |
+  Edit other court case details
+review: 
+  - Edit: x.name.text
+    button: |
+      **Type of court case:**
+      ${ x.name.text  }
+  - Edit: x.state
+    button: |
+      **State:**
+      ${ state_name(x.state) } 
+  - Edit: x.county
+    button: |
+      **County:**
+      ${ x.county }
+  - Edit: x.year
+    button: |
+      **Year:**
+      ${ x.year }
 
 
 ---
@@ -2043,19 +2154,6 @@ id: petitioner review screen
 event: section_petitioner
 question: |
   Other people you want to protect
-subquestion: |
-  Edit your answers below.
-review:
-  - Edit: case_number
-    button: |
-      **Case number:**
-      ${ case_number }   
-
----
-id: respondent review screen
-event: section_respondent
-question: |
-  About person who caused abuse
 subquestion: |
   Edit your answers below.
 review:
@@ -2130,6 +2228,19 @@ review:
       ${ case_number }   
 
 ---
+id: respondent review screen
+event: section_respondent
+question: |
+  About person who caused abuse
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: case_number
+    button: |
+      **Case number:**
+      ${ case_number }   
+      
+---
 id: case info review screen
 event: section_filing_info
 question: |
@@ -2141,4 +2252,3 @@ review:
     button: |
       **Case number:**
       ${ case_number }   
-
