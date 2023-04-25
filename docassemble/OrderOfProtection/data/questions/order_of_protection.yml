@@ -869,8 +869,10 @@ choices:
 ---
 id: no abuse
 question: |
-  What do you want the court to order ${other_parties[0].name.full(middle="full")} to not do or threaten to do?
+  What do you want the court to order ${other_parties[0].name.full(middle="full")} to not do?
 subquestion: |
+  This includes ordering ${other_parties[0].name.full(middle="full")} to not to threaten to do these things.
+
   Check all that apply.
 fields:
   - Harassment: no_harassment
@@ -1289,8 +1291,6 @@ subquestion: |
 
   This program does not file your ${ form_name } with the court. You will need to do this yourself.
 
-  Protected shared kids list: ${ comma_and_list(protected_minor_kids_list ) }
-
   ${ action_button_html(url_action('review_answers'), label=':edit: Make changes', color='success', size="md") }
   
   ${ al_user_bundle.download_list_html() }
@@ -1655,7 +1655,19 @@ review:
   - Edit: jurisdiction_type
     button: |
       **Filing in ${ trial_court.address.county } County because:**
-      ${ jurisdiction_type }
+      
+      % if jurisdiction_type['I live here']:
+      * I live here
+      % endif
+      % if jurisdiction_type['Respondent lives here']:
+      * Respondent lives here
+      % endif
+      % if jurisdiction_type['Abuse was here']:
+      * Abuse was here
+      % endif
+      % if jurisdiction_type['Abuse was elsewhere']:
+      * Abuse was elsewhere
+      % endif
   - Edit: relationship_type
     button: |
       **Protected party's relationship to person who caused abuse:**
@@ -1802,6 +1814,171 @@ review:
       % for my_var in incidents:
         * Date: ${ my_var.date }, Time: ${ my_var.time }
       % endfor
+
+  - Edit: no_harassment
+    button: |
+      **What you want the court to order ${other_parties[0].name.full(middle="full")} to not do:**
+      
+      % if no_harassment:
+      * Harassment
+      % endif
+      % if no_physical:
+      * Physical abuse
+      % endif
+      % if no_stalking:
+      * Stalking
+      % endif
+      % if no_willful:
+      * Willful deprivation
+      % endif
+      % if no_intimidation:
+      * Intimidation of a dependent
+      % endif
+      % if no_exploitation:
+      * Exploitation of a high-risk adult with disabilities
+      % endif
+      % if no_neglect:
+      * Neglect of a high-risk adult with disabilities
+      % endif
+      % if no_interference:
+      * Interference with personal liberty
+      % endif
+
+  - Edit: stay_away
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")} to stay away at all times?**
+      ${ word(yesno(stay_away)) }
+  - Edit: stay_away_distance
+    button: |
+      **How far do you want ${other_parties[0].name.full(middle="full")} to stay away, in feet? (optional)**
+      ${ int(stay_away_distance) }
+    show if: stay_away
+
+  - Edit: no_communication
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")} to stop communicating with you?**
+      ${ word(yesno(no_communication)) }
+
+  - Edit: hide_address
+    button: |
+      **Do you want to keep your address hidden?**
+      ${ word(yesno(hide_address)) }
+  - Edit: users[0].address.address
+    button: |
+      % if hide_address:
+      **Your mailing address (will appear on your court papers): **
+      % else:
+      **Your home address: **
+      % endif    
+      ${ users[0].address.on_one_line(bare=True) }
+  - Edit: residence_remedies
+    button: |
+      **What should the court order about where you are living?**
+      % if residence_remedies == 'exclusive possession':
+      I want **exclusive possession** of my residence.
+      % elif residence_remedies == 'provide alternate housing':
+      I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live.
+      % else:
+      Nothing. I don't want the court to give me exclusive possession or to order ${other_parties[0].name.full(middle="full")} to provide a different place for me and the protected people to live.
+      % endif    
+  - Edit: exclusive_possession_reason
+    button: |
+      **Why should the court give you exclusive possession of the residence?**
+      % if exclusive_possession_reason == 'respondent_no_right_to_stay':
+      I have a right to occupy the residence and ${other_parties[0].name.full(middle="full")} has no right.
+      % else:
+      Both of us have a right to occupy the residence, but it would be harder on me to leave.
+      % endif
+    show if: residence_remedies == 'exclusive possession'
+  - Edit: no_stay_under_influence
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")} to stay away from and not be at your residence while under the influence?**
+      ${ word(yesno(no_stay_under_influence)) }
+    show if: not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing'))
+  - Edit: stay_away_jobs
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")} to stay away from where you work?**
+      ${ word(yesno(stay_away_jobs)) }
+  - Edit: jobs[0].address
+    button: |
+      **Employer name and address:**
+      ${ jobs[0].employer + ", " + jobs[0].on_one_line(bare=True) }
+    show if: stay_away_jobs
+  - Edit: stay_away_jobs_2
+    button: |
+      **Do you have another job you want ${other_parties[0].name.full(middle="full")} to stay away from?**
+      ${ word(yesno(stay_away_jobs_2)) }
+  - Edit: jobs[1].address
+    button: |
+      **Second employer name and address:**
+      ${ jobs[1].employer }, ${ jobs[1].on_one_line(bare=True) }
+    show if: stay_away_jobs_2
+
+  - Edit: stay_away_schools
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")} to stay away from schools or daycares?**
+      ${ word(yesno(stay_away_schools)) }
+  - Edit: schools[0].address
+    button: |
+      **School name and address:**
+      ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) }
+    show if: stay_away_schools
+  - Edit: schools[0].hide
+    button: |
+      **Do you want to hide information about ${ schools[0].name } from  ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(schools[0].hide)) }
+    show if: stay_away_schools and (minor_kids_with_respondent or protect_petitioner_kids)
+  - Edit: schools[0].type
+    button: |
+      **Confidential school information about ${ schools[0].name }:**
+      ${ "Type: " + schools[0].type + ", Children who attend: " + comma_and_list(schools[0].kids_who_attend.true_values()) }
+    show if: stay_away_schools and (minor_kids_with_respondent or protect_petitioner_kids)
+
+
+
+  - Edit: stay_away_schools_2
+    button: |
+      **Do you have another school you want ${other_parties[0].name.full(middle="full")} to stay away from?**
+      ${ word(yesno(stay_away_schools_2)) }
+  - Edit: schools[1].address
+    button: |
+      **Second school name and address:**
+      ${ schools[1].name }, ${ schools[1].on_one_line(bare=True) }
+    show if: stay_away_schools_2
+  - Edit: schools[1].hide
+    button: |
+      **Do you want to hide information about ${ schools[1].name } from  ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(schools[1].hide)) }
+    show if: stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
+  - Edit: schools[1].type
+    button: |
+      **Confidential school information about ${ schools[1].name }:**
+      ${ "Type: " + schools[1].type + ", Children who attend: " + comma_and_list(schools[1].kids_who_attend.true_values()) }
+    show if: stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
+
+
+
+  - Edit: stay_away_other
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places?**
+      ${ word(yesno(stay_away_other)) }
+  - Edit: other_locations[0].address
+    button: |
+      **Other location name and address:**
+      ${ other_locations[0].name + ", " + other_locations[0].on_one_line(bare=True) }
+    show if: stay_away_other
+  - Edit: stay_away_other_2
+    button: |
+      **Do you have another place you want ${other_parties[0].name.full(middle="full")} to stay away from?**
+      ${ word(yesno(stay_away_other_2)) }
+  - Edit: other_locations[1].address
+    button: |
+      **Second location name and address:**
+      ${ other_locations[1].name }, ${ other_locations[1].on_one_line(bare=True) }
+    show if: stay_away_other_2
+
+
+
 
   - Edit: eop
     button: |
