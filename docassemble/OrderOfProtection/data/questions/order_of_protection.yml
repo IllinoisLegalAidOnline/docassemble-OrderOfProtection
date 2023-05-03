@@ -138,6 +138,8 @@ code: |
 
 
   nav.set_section('section_remedies')
+  if request_counseling:
+    dv_counseling
 
   nav.set_section('section_respondent')
   knows_respondent_dob
@@ -1317,6 +1319,50 @@ fields:
     rows: 3
     maxlength: 150
 
+---
+id: request counseling for respondent
+question: |
+  Do you want ${other_parties[0].name.full(middle="full")} to get counseling?
+subquestion: |
+  The court can order evaluation and treatment only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
+
+  ${ collapse_template(counseling_help) }  
+fields:
+  - no label: request_counseling
+    datatype: yesnoradio
+---
+template: counseling_help
+subject: |
+  **What kinds of counseling are available?**
+content: |  
+  The court can order:
+  
+  * Domestic violence partner abuse counseling,
+  * An Alcohol and substance abuse evaluation and counseling,
+  * A Mental health evaluation and counseling, and
+  * Other counseling that may be appropriate.
+---
+id: counseling types
+question: |
+  What kinds of counseling do you want the court to order ${other_parties[0].name.full(middle="full")} to participate in and complete?
+subquestion: |
+  The court can order evaluation and treatment only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
+  
+  Check all that apply.
+fields:
+  - Domestic violence partner abuse counseling: dv_counseling
+    datatype: yesnowide
+  - Alcohol and substance abuse evaluation and counseling: alcohol_counseling
+    datatype: yesnowide
+  - Mental health evaluation and counseling: mental_health_counseling 
+    datatype: yesnowide
+  - Other counseling: other_counseling
+    datatype: yesnowide
+  - Other counseling ${other_parties[0].name.full(middle="full")} should complete: other_counseling_text
+    input type: area
+    rows: 3
+    maxlength: 150
+    show if: other_counseling
 
 ---
 id: case number
@@ -1388,7 +1434,7 @@ code: |
 
 ---
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_petition, op_schools], filename="order_of_protection.pdf", title="Download all forms")
+  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_petition, op_schools], filename="order_of_protection.pdf", title="All forms")
   - al_court_bundle: ALDocumentBundle.using(elements=[op_petition, op_schools], filename="order_of_protection.pdf", title="Order of protection")
 ---
 
@@ -1611,7 +1657,13 @@ attachment:
     - "respondent_parent_help": ${respondent_parent_help}
     - "respondent_parent_name": ${ respondent_parent_name if respondent_parent_help else "" }
     - "respondent_parent_order": ${ respondent_parent_order if respondent_parent_help else "" }
-    
+    - "counseling": ${ request_counseling }    
+    - "request_counseling": ${ request_counseling }    
+    - "dv_counseling": ${ True if request_counseling and dv_counseling else '' }    
+    - "alcohol_counseling": ${ True if request_counseling and alcohol_counseling else '' }    
+    - "mental_health_counseling": ${ True if request_counseling and mental_health_counseling else '' } 
+    - "other_counseling": ${ True if request_counseling and other_counseling else '' }    
+    - "other_counseling_text": ${ other_counseling_text if request_counseling and other_counseling else '' }    
     
       
     - "care_and_possession_of_children": ${ minor_kids_with_respondent } 
@@ -1682,7 +1734,7 @@ attachment:
 
 
 ---
-############### Review page
+############### Review pages
 id: review screen
 event: review_answers
 question: |
@@ -2160,6 +2212,32 @@ review:
       ${ respondent_parent_order }
     show if: respondent_parent_help
 
+
+  - Edit: request_counseling
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")} to get counseling?**
+      ${ word(yesno(request_counseling)) }
+  - Edit: dv_counseling
+    button: |
+      **Counseling you want ${ other_parties[0].name.full(middle="full") } to do:**
+      
+      % if dv_counseling:
+      * Domestic violence partner abuse counseling
+      % endif
+      % if alcohol_counseling:
+      * Alcohol and substance abuse evaluation and counseling
+      % endif
+      % if mental_health_counseling:
+      * Mental health evaluation and counseling
+      % endif
+      % if other_counseling:
+      * Other
+      % endif
+  - Edit: other_counseling_text
+    button: |
+      **Other counseling:**
+      ${ other_counseling_text }
+    show if: other_counseling
 
 
 
