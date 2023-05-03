@@ -131,7 +131,8 @@ code: |
       same_school_name
     
   nav.set_section('section_child')
-
+  if parentage == "parentage_established_other":
+    parentage_other
 
 
   nav.set_section('section_property')
@@ -1365,6 +1366,51 @@ fields:
     show if: other_counseling
 
 ---
+id: parentage established question
+question: |
+  Has legal parentage of your minor children with ${other_parties[0].name.full(middle="full")} been established?
+subquestion: |
+  Parentage can be established in a few ways.
+  
+  Children who were born before, during or within 300 days after the marriage, are considered legal children of the married couple.
+  
+  If the parents are not married, parentage can be established by the following:  
+  
+  * Parents can be listed on the birth certificate,
+  * Parents can sign a Voluntary Acknowledgment of Paternity, also called a VAP,
+  * A court or administrative order can establish parentage, or
+  * In rare cases, another legal process can established parentage.
+fields:
+  - no label: parentage
+    datatype: radio
+    choices:
+      - Yes, the children were born before, during, or within 300 days of our marriage.: parentage_established_by_marriage
+      - Yes, we are not married but parentage was established. I will explain on the next screen.: parentage_established_other
+      - No, we are not married and parentage has not been established.: parentage_not_established
+---
+id: parentage method
+question: |
+  How was legal parentage of your minor children with ${other_parties[0].name.full(middle="full")} established?
+fields:
+  - We are listed on the birth certificate.: parentage_birth_certificate
+    datatype: yesnowide
+  - We signed a Voluntary Acknowledgment of Paternity, also called a VAP.: parentage_vap 
+    datatype: yesnowide
+  - A court or administrative order established us as the legal parents of the children.: parentage_order 
+    datatype: yesnowide
+  - Legal parentage was established another way. I will explain below.: parentage_other
+    datatype: yesnowide
+  - Other parentage method: other_parentage_method
+    input type: area
+    rows: 3
+    maxlength: 150
+    show if: parentage_other
+
+
+
+
+
+---
 id: case number
 question: |
   What is the case number?
@@ -1647,6 +1693,13 @@ attachment:
     - "stay_away_other_2": ${ other_locations[1].name + ", " + other_locations[1].on_one_line(bare=True) if stay_away_other_2 else '' }
     - "same_school_restrictions": ${ True if (same_school and same_school_restrictions != "none") else ""} 
     - "same_school_name": ${ same_school_name if (same_school and same_school_restrictions != "none") else ""}
+    - "parentage_cb": ${ minor_kids_with_respondent }
+    - "parentage_not_established": ${ True if (parentage == "parentage_not_established" and minor_kids_with_respondent) else '' }
+    - "parentage_established": ${ True if ((parentage == "parentage_established_by_marriage" or parentage == "parentage_established_other") and minor_kids_with_respondent) else '' }
+    - "parentage_established_marriage": ${ True if (parentage == "parentage_established_by_marriage" and minor_kids_with_respondent) else '' }
+    - "parentage_established_other": ${ True if (parentage == "parentage_established_other" and (parentage_birth_certificate == True or parentage_vap == True or parentage_order == True) and minor_kids_with_respondent) else '' }
+    - "parentage_other_text": ${ other_parentage_method if (minor_kids_with_respondent and parentage == "parentage_established_other") else '' }
+
 
 
       # page 5
@@ -2238,6 +2291,41 @@ review:
       **Other counseling:**
       ${ other_counseling_text }
     show if: other_counseling
+
+  - Edit: parentage
+    button: |
+      **Has parentage of the minor children been established?**
+      % if parentage == "parentage_established_by_marriage":
+      Yes, the children were born before, during, or within 300 days after the marriage.
+      % elif parentage == "parentage_established_other":
+      Yes, we are not married, but parentage was established.
+      % else:
+      No, parentage has not been established.
+      % endif
+
+  - Edit: parentage_other
+    button: |
+      **Legal parentage of the children has been established by:**
+      
+      % if parentage_birth_certificate:
+      * We are listed on the birth certificate.
+      % endif
+      % if parentage_vap:
+      * We signed a Voluntary Acknowledgement of Paternity, also called a VAP.
+      % endif
+      % if parentage_order:
+      * A court or administrative order established us as the legal parents of the children.
+      % endif
+      % if parentage_other:
+      * Legal parentage was established another way.
+      % endif
+    show if: parentage == "parentage_established_other"
+  - Edit: other_parentage_method
+    button: |
+      **Other parentage method:**
+      ${ other_parentage_method }
+    show if: parentage == "parentage_established_other" and parentage_other
+
 
 
 
