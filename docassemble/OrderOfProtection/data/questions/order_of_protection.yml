@@ -32,6 +32,8 @@ objects:
   - schools: ALAddressList.using(there_are_any=True)
   #- schools[i].kids_who_attend: DADict
   - other_locations: ALAddressList.using(there_are_any=True)
+  - other_caretaker: ALIndividual
+  - return_children_other_person: ALIndividual
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 
 ---
@@ -133,6 +135,17 @@ code: |
   nav.set_section('section_child')
   if parentage == "parentage_established_other":
     parentage_other
+  if primary_caretaker == "other":
+    other_caretaker.name.first
+    other_caretaker.address.address
+  physical_care_of_children
+  no_conceal_children
+  no_removal_school
+  confidential_schools
+  if current_possession_of_children == False:
+    return_children_to
+
+
 
 
   nav.set_section('section_property')
@@ -157,7 +170,6 @@ code: |
       respondent_parent_help
       if respondent_parent_help:
         respondent_parent_name
-
 
   nav.set_section('section_filing_info')
   eop 
@@ -1405,11 +1417,128 @@ fields:
     rows: 3
     maxlength: 150
     show if: parentage_other
+---
+id: primary caretaker
+question: |
+  Who is the primary caretaker of the children with ${other_parties[0].name.full(middle="full")}?
+fields:
+  - no label: primary_caretaker
+    datatype: radio
+    choices:
+      - I am.: petitioner
+      - ${other_parties[0].name.full(middle="full")} is.: respondent
+      - Another person is the primary caretaker of the children with ${other_parties[0].name.full(middle="full")}.: other
+---
+sets:
+  - other_caretaker.name.first
+  - other_caretaker.name.middle
+  - other_caretaker.name.last
+  - other_caretaker.name.suffix
+id: other caretaker name
+question: |
+  Who is the primary caretaker of the children with ${other_parties[0].name.full(middle="full")}?
+fields:
+  - code: |
+      other_caretaker.name_fields()
+---
+id: other caretaker address
+question: | 
+  What is ${ other_caretaker.name.full(middle="full") }'s address?
+fields:
+  - Street address: other_caretaker.address.address
+    address autocomplete: True
+  - Address line 2: other_caretaker.address.unit
+    required: False
+  - City: other_caretaker.address.city
+  - State: other_caretaker.address.state
+    code: |
+      states_list()
+  - ZIP code: other_caretaker.address.zip
+---
+id: physical care and possession of children
+question: |
+  Do you want the court to grant you physical care and possession of the children you have with ${other_parties[0].name.full(middle="full")}?
+fields:
+  - no label: physical_care_of_children
+    datatype: yesnoradio
+---
+id: concealment of children
+question: |
+  Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot hide or remove the children from Illinois?
+subquestion: |
+  You may want this if ${other_parties[0].name.full(middle="full")} has made threats or attempts to unlawfully remove the children.
+fields:
+  - no label: no_conceal_children
+    datatype: yesnoradio    
+---
+id: no removal of children from petitioner or school
+question: |
+  Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot remove the children from your care or from a school or daycare?
+subquestion: |
+  You can keep the name and location of the school or daycare hidden from ${other_parties[0].name.full(middle="full")}.
+fields:
+  - no label: no_removal_school
+    datatype: yesnoradio    
+---
+id: confidential schools
+question: |
+  Do you want the court to keep the school or daycare information confidential?
+subquestion: |
+  Placeholder - NEED TO FIGURE OUT LOGIC
+fields:
+  - no label: confidential_schools
+    datatype: yesnoradio    
+---
+id: have current possession of children
+question: |
+  Do you currently have physical care and possession of your children with  ${other_parties[0].name.full(middle="full")}?
+subquestion: |
+  The court can order ${other_parties[0].name.full(middle="full")} to return the children to you, to another person, or to bring the children to court.
+fields:
+  - no label: current_possession_of_children
+    datatype: yesnoradio
+---
+id: children returned to whom
+question: |
+  Who should ${other_parties[0].name.full(middle="full")} return the children to?
+fields:
+  - no label: return_children_to
+    datatype: radio
+    choices:
+      - ${other_parties[0].name.full(middle="full")} should bring the children to court.: court
+      - ${other_parties[0].name.full(middle="full")} should return the children to me.: petitioner
+      - ${other_parties[0].name.full(middle="full")} should return the children to someone else.: other
+  - note: |
+      Enter the name of the person ${other_parties[0].name.full(middle="full")} should return the children to. 
+    show if:
+      variable: return_children_to
+      is: "other"
+  - First: return_children_other_person.name.first
+    show if:
+      variable: return_children_to
+      is: "other"
+  - Middle: return_children_other_person.name.middle
+    required: False
+    show if:
+      variable: return_children_to
+      is: "other"
+  - Last: return_children_other_person.name.last
+    show if:
+      variable: return_children_to
+      is: "other"
+  - Suffix: return_children_other_person.name.suffix
+    required: False
+    code: |
+      name_suffix()
+    show if:
+      variable: return_children_to
+      is: "other"
 
 
 
 
-
+    
+    
 ---
 id: case number
 question: |
@@ -1693,13 +1822,6 @@ attachment:
     - "stay_away_other_2": ${ other_locations[1].name + ", " + other_locations[1].on_one_line(bare=True) if stay_away_other_2 else '' }
     - "same_school_restrictions": ${ True if (same_school and same_school_restrictions != "none") else ""} 
     - "same_school_name": ${ same_school_name if (same_school and same_school_restrictions != "none") else ""}
-    - "parentage_cb": ${ minor_kids_with_respondent }
-    - "parentage_not_established": ${ True if (parentage == "parentage_not_established" and minor_kids_with_respondent) else '' }
-    - "parentage_established": ${ True if ((parentage == "parentage_established_by_marriage" or parentage == "parentage_established_other") and minor_kids_with_respondent) else '' }
-    - "parentage_established_marriage": ${ True if (parentage == "parentage_established_by_marriage" and minor_kids_with_respondent) else '' }
-    - "parentage_established_other": ${ True if (parentage == "parentage_established_other" and (parentage_birth_certificate == True or parentage_vap == True or parentage_order == True) and minor_kids_with_respondent) else '' }
-    - "parentage_other_text": ${ other_parentage_method if (minor_kids_with_respondent and parentage == "parentage_established_other") else '' }
-
 
 
       # page 5
@@ -1717,7 +1839,6 @@ attachment:
     - "mental_health_counseling": ${ True if request_counseling and mental_health_counseling else '' } 
     - "other_counseling": ${ True if request_counseling and other_counseling else '' }    
     - "other_counseling_text": ${ other_counseling_text if request_counseling and other_counseling else '' }    
-    
       
     - "care_and_possession_of_children": ${ minor_kids_with_respondent } 
     - "minor_kids_with_respondent": ${ minor_kids_with_respondent }
@@ -1741,8 +1862,20 @@ attachment:
     - "shared_kids_4_state": ${ shared_kids[3].address.state }
     - "shared_kids_4_include_yes": ${ shared_kids[3].protect }
     - "shared_kids_4_include_no": ${ shared_kids[3].protect is False }
+    - "parentage_cb": ${ minor_kids_with_respondent }
+    - "parentage_not_established": ${ True if (parentage == "parentage_not_established" and minor_kids_with_respondent) else '' }
+    - "parentage_established": ${ True if ((parentage == "parentage_established_by_marriage" or parentage == "parentage_established_other") and minor_kids_with_respondent) else '' }
+    - "parentage_established_marriage": ${ True if (parentage == "parentage_established_by_marriage" and minor_kids_with_respondent) else '' }
+    - "parentage_established_other": ${ True if (parentage == "parentage_established_other" and (parentage_birth_certificate == True or parentage_vap == True or parentage_order == True) and minor_kids_with_respondent) else '' }
+    - "parentage_other_text": ${ other_parentage_method if (minor_kids_with_respondent and parentage == "parentage_established_other") else '' }
+    - "caretaker_cb": ${ minor_kids_with_respondent }
+    - "caretaker_petitioner": ${ True if (primary_caretaker == "petitioner" and minor_kids_with_respondent) else '' }
 
-
+      # page 6
+    - "caretaker_respondent": ${ True if (primary_caretaker == "respondent" and minor_kids_with_respondent) else '' }
+    - "caretaker_other": ${ True if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
+    - "other_caretaker_name": ${ other_caretaker.name.full(middle="full") if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
+    - "other_caretaker_address": ${ other_caretaker.address.on_one_line(bare=True) if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
 
       # page 9
     - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
@@ -2302,7 +2435,6 @@ review:
       % else:
       No, parentage has not been established.
       % endif
-
   - Edit: parentage_other
     button: |
       **Legal parentage of the children has been established by:**
@@ -2325,7 +2457,26 @@ review:
       **Other parentage method:**
       ${ other_parentage_method }
     show if: parentage == "parentage_established_other" and parentage_other
-
+  - Edit: primary_caretaker
+    button: |
+      **Primary caretaker of the children with ${ other_parties[0].name.full(middle="full") }:**
+      % if primary_caretaker == "petitioner":
+      Me
+      % elif primary_caretaker == "respondent":
+      ${ other_parties[0].name.full(middle="full") }
+      % else:
+      Another person, not me or ${ other_parties[0].name.full(middle="full") }
+      % endif
+  - Edit: other_caretaker.name.first
+    button: |
+      **Other caretaker:**
+      ${ other_caretaker.name.full(middle="full") }
+    show if: primary_caretaker == "other"
+  - Edit: other_caretaker.address.address
+    button: |
+      **${other_caretaker.name.full(middle="full")}'s address: **
+      ${ other_caretaker.address.on_one_line(bare=True) }
+    show if: primary_caretaker == "other"
 
 
 
