@@ -144,6 +144,8 @@ code: |
   confidential_schools
   if current_possession_of_children == False:
     return_children_to
+    if return_children_to == "court":
+      appear_with_children_prevent
 
 
 
@@ -1458,6 +1460,8 @@ fields:
 id: physical care and possession of children
 question: |
   Do you want the court to grant you physical care and possession of the children you have with ${other_parties[0].name.full(middle="full")}?
+subquestion: |
+  Note: This is not the same as primary decisionmaking responsibility, or what used to be called "custody" in Illinois. This just means getting the children back to you.
 fields:
   - no label: physical_care_of_children
     datatype: yesnoradio
@@ -1533,7 +1537,19 @@ fields:
     show if:
       variable: return_children_to
       is: "other"
-
+---
+id: reason respondent should bring childrent to court
+question: |
+  Why should ${other_parties[0].name.full(middle="full")} be ordered to bring the children to court?
+subquestion: |
+  Check all that apply.
+fields:
+  - To prevent abuse, neglect, removal, or concealment of the children: appear_with_children_prevent
+    datatype: checkbox
+  - To return the children to you: appear_with_children_return
+    datatype: checkbox
+  - To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}: appear_with_children_exam
+    datatype: checkbox
 
 
 
@@ -1876,6 +1892,23 @@ attachment:
     - "caretaker_other": ${ True if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "other_caretaker_name": ${ other_caretaker.name.full(middle="full") if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "other_caretaker_address": ${ other_caretaker.address.on_one_line(bare=True) if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
+    - "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or confidential_schools else '' }
+
+    - "physical_care_of_children": ${ True if confidential_schools and minor_kids_with_respondent else '' }
+    - "return_children_possession": ${ True if (return_children_to == "petitioner" or return_children_to == "other") and minor_kids_with_respondent else '' }
+    - "return_children_other_person": ${ return_children_other_person.name.full(middle="full") if return_children_to == "other" and minor_kids_with_respondent else '' }
+    - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
+    - "confidential_schools": ${ True if confidential_schools and minor_kids_with_respondent else '' }
+ 
+ 
+
+      # page 7
+    - "appear_with_children_cb": ${ True if return_children_to == "court" and minor_kids_with_respondent else '' }
+    - "appear_with_children_prevent": ${ True if appear_with_children_prevent and return_children_to == "court" and minor_kids_with_respondent else '' }
+    - "appear_with_children_return": ${ True if appear_with_children_return and return_children_to == "court" and minor_kids_with_respondent else '' }
+    - "appear_with_children_exam": ${ True if appear_with_children_exam and return_children_to == "court" and minor_kids_with_respondent else '' }
+    - "no_conceal_children_cb": ${ True if no_conceal_children and minor_kids_with_respondent else '' }
+
 
       # page 9
     - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
@@ -2477,6 +2510,56 @@ review:
       **${other_caretaker.name.full(middle="full")}'s address: **
       ${ other_caretaker.address.on_one_line(bare=True) }
     show if: primary_caretaker == "other"
+
+  - Edit: physical_care_of_children
+    button: |
+      **Do you want the court to give you possession of the children you have with ${ other_parties[0].name.full(middle="full") }?**
+      ${ word(yesno(physical_care_of_children)) }
+  - Edit: no_conceal_children
+    button: |
+      **Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot hide or remove the children from Illinois?**
+      ${ word(yesno(no_conceal_children)) }
+  - Edit: no_removal_school
+    button: |
+      **Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot remove the children from your care or from a school or daycare?**
+      ${ word(yesno(no_removal_school)) }
+  - Edit: confidential_schools
+    button: |
+      **Do you want the court to keep the school or daycare information confidential?**
+      ${ word(yesno(confidential_schools)) }
+  - Edit: current_possession_of_children
+    button: |
+      **Do you currently have physical care and possession of your children with  ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(current_possession_of_children)) }
+  - Edit: return_children_to
+    button: |
+      **Who should ${other_parties[0].name.full(middle="full")} return the children to?**
+      % if return_children_to == "petitioner":
+      Me
+      % elif return_children_to == "court":
+      ${other_parties[0].name.full(middle="full")} should bring them to court
+      % else:
+      Another person
+      % endif
+  - Edit: return_children_to
+    button: |
+      **Other parentage method:**
+      ${ return_children_other_person.name.full(middle="full") }
+    show if: return_children_to == "other"
+  - Edit: appear_with_children_prevent
+    button: |
+      **${other_parties[0].name.full(middle="full")} should be ordered to bring the children to court:**
+      
+      % if appear_with_children_prevent:
+      * To prevent abuse, neglect, removal, or concealment of the children
+      % endif
+      % if appear_with_children_return:
+      * To return the children to me
+      % endif
+      % if appear_with_children_exam:
+      * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}
+      % endif
+
 
 
 
