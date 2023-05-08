@@ -138,6 +138,7 @@ code: |
   if primary_caretaker == "other":
     other_caretaker.name.first
     other_caretaker.address.address
+  temp_custody_of_children  
   physical_care_of_children
   no_conceal_children
   no_removal_school
@@ -178,6 +179,10 @@ code: |
   case_number
   nav.set_section('section_download')  
   get_docs_screen
+---
+terms:
+  - "advance written notice": |
+      **Advance written notice** means they received a copy of the Petition for Order of Protection and Summons before the court hearing. These include the date and time of the court hearing.
 ---
 id: welcome
 question: |
@@ -1361,7 +1366,7 @@ id: counseling types
 question: |
   What kinds of counseling do you want the court to order ${other_parties[0].name.full(middle="full")} to participate in and complete?
 subquestion: |
-  The court can order evaluation and treatment only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
+  The court can order evaluation and treatment only after ${other_parties[0].name.full(middle="full")} has received **{advance written notice}** or attended the court hearing where this is decided.
   
   Check all that apply.
 fields:
@@ -1457,11 +1462,23 @@ fields:
       states_list()
   - ZIP code: other_caretaker.address.zip
 ---
+id: temporary custody
+question: |
+  Do you want the court to grant you temporary decisionmaking responsibility of the children you have with ${other_parties[0].name.full(middle="full")}?
+subquestion: |
+  This used to be called "custody" in Illinois.
+  
+  Note: The court can order this only after ${other_parties[0].name.full(middle="full")} received **{advance written notice}** or attended the court hearing where this is decided.
+
+fields:
+  - no label: temp_custody_of_children
+    datatype: yesnoradio
+---
 id: physical care and possession of children
 question: |
   Do you want the court to grant you physical care and possession of the children you have with ${other_parties[0].name.full(middle="full")}?
 subquestion: |
-  Note: This is not the same as primary decisionmaking responsibility, or what used to be called "custody" in Illinois. This just means getting the children back to you.
+  Note: This is **not** the same as primary decisionmaking responsibility, or what used to be called "custody" in Illinois. This just means getting the children back to you.
 fields:
   - no label: physical_care_of_children
     datatype: yesnoradio
@@ -1545,11 +1562,11 @@ subquestion: |
   Check all that apply.
 fields:
   - To prevent abuse, neglect, removal, or concealment of the children: appear_with_children_prevent
-    datatype: checkbox
+    datatype: yesnowide
   - To return the children to you: appear_with_children_return
-    datatype: checkbox
+    datatype: yesnowide
   - To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}: appear_with_children_exam
-    datatype: checkbox
+    datatype: yesnowide
 
 
 
@@ -1899,6 +1916,8 @@ attachment:
     - "return_children_other_person": ${ return_children_other_person.name.full(middle="full") if return_children_to == "other" and minor_kids_with_respondent else '' }
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
     - "confidential_schools": ${ True if confidential_schools and minor_kids_with_respondent else '' }
+    - "temp_custody_cb": ${ True if temp_custody_of_children and minor_kids_with_respondent else '' }
+    - "requests_temp_custody": ${ True if temp_custody_of_children and minor_kids_with_respondent else '' }
  
  
 
@@ -2248,7 +2267,10 @@ review:
       **Do you want to hide information about ${ schools[0].name } from  ${other_parties[0].name.full(middle="full")}?**
       ${ word(yesno(schools[0].hide)) }
     show if: stay_away_schools and (minor_kids_with_respondent or protect_petitioner_kids)
-  - Edit: schools[0].type
+  - Edit: 
+      - schools[0].type
+      - recompute:
+        - schools[0].kids_who_attend
     button: |
       **Confidential school information about ${ schools[0].name }:**
       ${ "Type: " + schools[0].type + ", Children who attend: " + comma_and_list(schools[0].kids_who_attend.true_values()) }
@@ -2510,6 +2532,12 @@ review:
       **${other_caretaker.name.full(middle="full")}'s address: **
       ${ other_caretaker.address.on_one_line(bare=True) }
     show if: primary_caretaker == "other"
+
+  - Edit: temp_custody_of_children
+    button: |
+      **Do you want the court to grant you temporary decisionmaking responsibility (custody) of the children you have with ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(temp_custody_of_children)) }
+
 
   - Edit: physical_care_of_children
     button: |
