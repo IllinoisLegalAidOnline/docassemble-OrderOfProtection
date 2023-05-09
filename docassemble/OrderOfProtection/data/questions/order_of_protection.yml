@@ -143,11 +143,17 @@ code: |
   no_conceal_children
   no_removal_school
   confidential_schools
+  no_records_no_contact
   if current_possession_of_children == False:
     return_children_to
     if return_children_to == "court":
       appear_with_children_prevent
-
+  if parenting_time != "reserve":
+    if parenting_time == "restrict" or parenting_time == "deny":
+      restrict_or_deny_pt_reasons
+    if parenting_time == "restrict" or parenting_time == "allow":
+      if pt_interview:
+        pt_weekdays
 
 
 
@@ -1567,10 +1573,83 @@ fields:
     datatype: yesnowide
   - To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}: appear_with_children_exam
     datatype: yesnowide
+---
+id: childrens records
+question: |
+  Do you want the court to prevent ${other_parties[0].name.full(middle="full")} from accessing your children's records?
+subquestion: |
+  These include school records, health care records, or any other records. 
 
+  If you want to deny ${other_parties[0].name.full(middle="full")} accessing to your children's records, select the reasons why. Check all that apply.
+fields:
+  - I am requesting that ${other_parties[0].name.full(middle="full")} not be allowed to have contact with the minor children.: no_records_no_contact
+    datatype: yesnowide
+  - My address is not included on the court forms to avoid further abuse. (Select if you are hiding your address.): no_records_hide_address
+    datatype: yesnowide
+  - It is necessary to prevent abuse or wrongful removal or concealment of the minor children.: no_records_no_removal
+    datatype: yesnowide
+---
+id: parenting time
+question: |
+  How do you want the court to handle parenting time?
+subquestion: |
+  This used to be called "visitation" in Illinois.
+fields:
+  - The court should:: parenting_time
+    datatype: radio
+    choices:
+      - Deny ${other_parties[0].name.full(middle="full")} parenting time (no visits at all): deny
+        help: |
+          You can enter reasons why you want to deny parenting time on the next screen.
+      - Restrict ${other_parties[0].name.full(middle="full")}'s parenting time (allow visits with limits): restrict
+        help: |
+          You can enter reasons why you want to restrict parenting time on the next screen.
+      - Grant ${other_parties[0].name.full(middle="full")} parenting (allow visits according to schedule): grant
+      - Reserve ${other_parties[0].name.full(middle="full")}'s parenting time until a later hearing: reserve
 
-
-    
+---
+id: restrict or deny parenting time reasons
+question: |
+  % if parenting_time == "restrict":
+  Why do you want to restrict ${other_parties[0].name.full(middle="full")}'s parenting time?
+  % else:
+  Why do you want to deny ${other_parties[0].name.full(middle="full")} any parenting time?
+  % endif  
+subquestion: |
+  Check all that apply.
+fields:
+  - ${other_parties[0].name.full(middle="full")} is likely to:: restrict_or_deny_pt_reasons
+    datatype: checkboxes
+    none of the above: False
+    choices:
+      - Abuse or endanger the children during parenting time.: no_pt_no_abuse
+      - Use parenting time to abuse or harass me, my family, or household members.: no_pt_no_harass
+      - Improperly hide or detain the children.: no_pt_no_hide
+      - Act in a way that is not in the best interest of the children.: no_pt_no_best_interest
+---
+id: parenting time format
+question: |
+  How do you want to tell the court about your parenting time schedule?
+subquestion: |
+  Your parenting time schedule should include days and times when ${other_parties[0].name.full(middle="full")} will be able to visit the children.
+fields:
+  - I will answer questions on the next screens.: pt_interview
+    datatype: yesnowide
+  - I have a written parenting time schedule that I will attach to my court forms.: pt_attach
+    datatype: yesnowide
+    help: |
+      Be sure your parenting time schedule includes:
+      
+      * Days of week when parenting time will happen, 
+      * Start and end times for each day, and
+      * Any changes because of holidays.
+---
+id: parenting time weekdays
+question: |
+  Weekdays
+fields:
+  - Weekdays?: pt_weekdays
+    datatype: yesnoradio
     
 ---
 id: case number
@@ -1918,7 +1997,18 @@ attachment:
     - "confidential_schools": ${ True if confidential_schools and minor_kids_with_respondent else '' }
     - "temp_custody_cb": ${ True if temp_custody_of_children and minor_kids_with_respondent else '' }
     - "requests_temp_custody": ${ True if temp_custody_of_children and minor_kids_with_respondent else '' }
- 
+    - "parenting_time_cb": ${ True if parenting_time and minor_kids_with_respondent else '' }
+    - "parenting_time_grant": ${ True if parenting_time == "grant" and minor_kids_with_respondent else '' }
+    - "parenting_time_reserve": ${ True if parenting_time == "reserve" and minor_kids_with_respondent else '' }
+    - "parenting_time_deny": ${ True if parenting_time == "deny" and minor_kids_with_respondent else '' }
+    - "parenting_time_restrict": ${ True if parenting_time == "restrict" and minor_kids_with_respondent else '' }
+    - "no_pt_no_abuse": ${ True if (parenting_time == "restrict" or parenting_time == "deny") and restrict_or_deny_pt_reasons["no_pt_no_abuse"] and minor_kids_with_respondent else '' }
+    - "no_pt_no_harass": ${ True if (parenting_time == "restrict" or parenting_time == "deny") and restrict_or_deny_pt_reasons["no_pt_no_harass"] and minor_kids_with_respondent else '' }
+    - "no_pt_no_hide": ${ True if (parenting_time == "restrict" or parenting_time == "deny") and restrict_or_deny_pt_reasons["no_pt_no_hide"] and minor_kids_with_respondent else '' }
+    - "no_pt_no_best_interest": ${ True if (parenting_time == "restrict" or parenting_time == "deny") and restrict_or_deny_pt_reasons["no_pt_no_best_interest"] and minor_kids_with_respondent else '' }
+    - "pt_format": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and minor_kids_with_respondent else '' }
+    - "pt_attach": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_attach and minor_kids_with_respondent else ''  }
+    - "pt_interview": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_interview and minor_kids_with_respondent else ''  }
  
 
       # page 7
@@ -1928,9 +2018,14 @@ attachment:
     - "appear_with_children_exam": ${ True if appear_with_children_exam and return_children_to == "court" and minor_kids_with_respondent else '' }
     - "no_conceal_children_cb": ${ True if no_conceal_children and minor_kids_with_respondent else '' }
 
-
       # page 9
     - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
+    - "childrens_records_cb": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and ( no_records_no_contact or no_records_hide_address or no_records_no_removal ) else "" }
+    - "no_records_no_contact": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_contact else "" }
+    - "no_records_hide_address": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_hide_address else "" }
+    - "no_records_no_removal": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_removal else "" }
+
+
 
 ---
 attachment:
@@ -2587,6 +2682,72 @@ review:
       % if appear_with_children_exam:
       * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}
       % endif
+  - Edit: no_records_no_contact
+    button: |
+      **${other_parties[0].name.full(middle="full")} should not have access to the children's records for the following reasons:**
+      
+      % if no_records_no_contact:
+      * I am requesting ${other_parties[0].name.full(middle="full")} have no contact with the children.
+      % endif
+      % if no_records_hide_address:
+      * My address is not listed on the court forms to prevent further abuse.
+      % endif
+      % if no_records_no_removal:
+      * It is necessary to prevent abuse or wrongful removal or concealment of the minor children.
+      % endif
+      % if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_contact == False and no_records_hide_address == False and no_records_no_removal == False:
+      * I am not asking for this protection.
+      % endif
+  - Edit: parenting_time
+    button: |
+      **What should the court do about parenting time?**
+      % if parenting_time == "deny":
+      Deny ${other_parties[0].name.full(middle="full")} any parenting time
+      % endif 
+      % if parenting_time == "restrict":
+      Restrict ${other_parties[0].name.full(middle="full")}'s parenting time
+      % endif 
+      % if parenting_time == "grant":
+      Grant or allow ${other_parties[0].name.full(middle="full")} parenting time
+      % endif 
+      % if parenting_time == "reserve":
+      Reserve ${other_parties[0].name.full(middle="full")}'s parenting time until a later hearing
+      % endif 
+  - Edit: restrict_or_deny_pt_reasons
+    button: |
+      % if parenting_time == "restrict":
+      **Why do you want to restrict ${other_parties[0].name.full(middle="full")}'s parenting time?**
+      % else:
+      **Why do you want to deny ${other_parties[0].name.full(middle="full")} any parenting time?**
+      % endif  
+      
+      % if restrict_or_deny_pt_reasons["no_pt_no_abuse"]:
+      * They might abuse or endanger the children during parenting time.
+      % endif
+      % if restrict_or_deny_pt_reasons["no_pt_no_harass"]:
+      * They might use parenting time to abuse or harass me, my family, or household members.
+      % endif
+      % if restrict_or_deny_pt_reasons["no_pt_no_hide"]:
+      * They might improperly hide or detain the children.
+      % endif
+      % if restrict_or_deny_pt_reasons["no_pt_no_best_interest"]:
+      * They might act in a way that is not in the best interest of the children.
+      % endif
+    show if: parenting_time == "restrict" or parenting_time == "deny"
+    
+  - Edit: pt_interview
+    button: |
+      **How do you want to tell the court about your parenting time schedule?**
+      % if pt_interview:
+      I will answer questions in this program.
+      % else:
+      I will attach a written parenting time to my court forms.
+      % endif
+    show if: parenting_time == "restrict" or parenting_time == "grant"
+
+
+
+
 
 
 
