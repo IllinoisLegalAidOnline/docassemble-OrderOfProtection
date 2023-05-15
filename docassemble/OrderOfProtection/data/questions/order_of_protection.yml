@@ -195,11 +195,16 @@ code: |
   eop 
   case_number
   nav.set_section('section_download')  
+  #clean_up
   get_docs_screen
 ---
 terms:
   - "advance written notice": |
       **Advance written notice** means they received a copy of the Petition for Order of Protection and Summons before the court hearing. These include the date and time of the court hearing.
+---
+#code: |
+#  del pt_weekday_days
+#  clean_up = True
 ---
 id: welcome
 question: |
@@ -1744,16 +1749,19 @@ fields:
     datatype: checkboxes
     none of the above: False
     choices:
-      - Monday: Mon
-      - Tuesday: Tue
-      - Wednesday: Wed
-      - Thursday: Thu
-      - Friday: Fri
+      - Monday: 1
+      - Tuesday: 2
+      - Wednesday: 3
+      - Thursday: 4
+      - Friday: 5
   - Start time: pt_weekday_start
     datatype: time
   - End time: pt_weekday_end
     datatype: time
-    
+---
+code: |
+  dow_full = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  dow_abb = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 ---
 id: parenting time weekends
 question: |
@@ -1773,15 +1781,14 @@ fields:
     choices:
       - Every weekend: every
       - Every other weekend: other
-  - Days: pt_weekend_days
-    datatype: checkboxes
-    none of the above: False
+  - Which days?: pt_weekend_days
+    datatype: radio
     choices:
       - Friday to Saturday: frisat
       - Friday to Sunday: frisun
-      - Saturday no overnight: sat
+      - Saturday only, no overnight: sat
       - Saturday to Sunday: satsun
-      - Sunday no overnight: sun
+      - Sunday only, no overnight: sun
   - Start time: pt_weekend_start
     datatype: time
   - End time: pt_weekend_end
@@ -1805,7 +1812,7 @@ fields:
     rows: 3
     maxlength: 150
     help: |
-      For example: New Years Day, Fourth of July, Thanksgiving
+      For example: New Years Day, Fourth of July, and Thanksgiving
   - Start time: pt_holiday_start
     datatype: time
   - End time: pt_holiday_end
@@ -2200,10 +2207,38 @@ attachment:
     - "no_pt_no_best_interest": ${ True if (parenting_time == "restrict" or parenting_time == "deny") and restrict_or_deny_pt_reasons["no_pt_no_best_interest"] and minor_kids_with_respondent else '' }
     - "pt_format": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and minor_kids_with_respondent else '' }
     - "pt_attach": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "attach" and minor_kids_with_respondent else ''  }
-    - "pt_interview": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''  }
- 
+    - "pt_interview": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekdays": ${ True if pt_weekdays and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekday_list": ${ comma_and_list(dow_abb[int(y)] for y in pt_weekday_days.true_values()) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekday_start": ${ format_time(pt_weekday_start) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekday_end": ${ format_time(pt_weekday_end) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_every": ${ True if pt_weekend_cadence == "every" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_every_other": ${ True if pt_weekend_cadence == "other" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sat": ${ True if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sat_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sat_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sun": ${ True if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat": ${ True if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_sun": ${ True if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sun": ${ True if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_start_date_cb": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_start_date": ${ pt_start_date if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+
 
       # page 7
+    - "pt_holidays": ${ pt_holidays if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_holiday_list": ${ pt_holiday_list if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+    - "pt_holiday_start": ${ format_time(pt_holiday_start) if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+    - "pt_holiday_end": ${ format_time(pt_holiday_end) if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+
     - "appear_with_children_cb": ${ True if return_children_to == "court" and minor_kids_with_respondent else '' }
     - "appear_with_children_prevent": ${ True if appear_with_children_prevent and return_children_to == "court" and minor_kids_with_respondent else '' }
     - "appear_with_children_return": ${ True if appear_with_children_return and return_children_to == "court" and minor_kids_with_respondent else '' }
@@ -2962,22 +2997,10 @@ review:
       **Weekday parenting time schedule:**
       From ${ format_time(pt_weekday_start) } to ${ format_time(pt_weekday_end) } on:
 
-      % if pt_weekday_days["Mon"] == True:
-        * Monday
-      % endif
-      % if pt_weekday_days["Tue"] == True:
-        * Tuesday
-      % endif
-      % if pt_weekday_days["Wed"] == True:
-        * Wednesday
-      % endif
-      % if pt_weekday_days["Thu"] == True:
-        * Thursday
-      % endif
-      % if pt_weekday_days["Fri"] == True:
-        * Friday
-      % endif
-    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_weekdays
+      % for day in pt_weekday_days.true_values():
+      * ${ dow_full[int(day)] }
+      % endfor
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_weekdays == True
     
   - Edit: pt_weekends
     button: |
@@ -2988,29 +3011,26 @@ review:
     button: |
       **Weekend parenting time schedule:**
       % if pt_weekend_cadence == "every":
-      Every weekend:
+      Every weekend 
       % else:
-      Every other weekend:
+      Every other weekend 
       % endif
-
-      % if pt_weekend_days["frisat"] == True:
-        * Friday to Saturday
+      % if pt_weekend_days == "frisat":
+      from Friday at ${ format_time(pt_weekend_start) } to Saturday at ${ format_time(pt_weekend_end) }.
       % endif
-      % if pt_weekend_days["frisun"] == True:
-        * Friday to Sunday
+      % if pt_weekend_days == "frisun":
+      from Friday at ${ format_time(pt_weekend_start) } to Sunday at ${ format_time(pt_weekend_end) }.
       % endif
-      % if pt_weekend_days["sat"] == True:
-        * Saturday no overnight
+      % if pt_weekend_days == "sat":
+      from Saturday at ${ format_time(pt_weekend_start) } to Saturday at ${ format_time(pt_weekend_end) }.
       % endif
-      % if pt_weekend_days["satsun"] == True:
-        * Saturday to Sunday
+      % if pt_weekend_days == "satsun":
+      from Saturday at ${ format_time(pt_weekend_start) } to Sunday at ${ format_time(pt_weekend_end) }.
       % endif
-      % if pt_weekend_days["sun"] == True:
-        * Sunday no overnight
+      % if pt_weekend_days == "sun":
+      from Sunday at ${ format_time(pt_weekend_start) } to Sunday at ${ format_time(pt_weekend_end) }.
       % endif
-      
-      From ${ format_time(pt_weekend_start) } to ${ format_time(pt_weekend_end) }.
-    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_weekends
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_weekends == True
 
   - Edit: pt_holidays
     button: |
@@ -3022,7 +3042,7 @@ review:
       **Holday parenting time schedule:**
       From ${ format_time(pt_holiday_start) } to ${ format_time(pt_holiday_end) } on: 
       ${ pt_holiday_list }
-    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_holidays
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_holidays == True
   - Edit: pt_start_date
     button: |
       **When do you want the parenting time schedule to start?**
