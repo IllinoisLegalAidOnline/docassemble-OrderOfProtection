@@ -34,6 +34,12 @@ objects:
   - other_locations: ALAddressList.using(there_are_any=True)
   - other_caretaker: ALIndividual
   - return_children_other_person: ALIndividual
+  - pt_supervisor: ALIndividual
+  - pt_location: ALAddress
+  - pt_pickup_location: ALAddress
+  - pt_transportation_person: ALIndividual
+  - pt_return_location: ALAddress
+  - pt_return_person: ALIndividual
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 
 ---
@@ -167,6 +173,11 @@ code: |
         if pt_holidays:
           pt_holiday_list
         pt_start_date
+        if pt_supervised:
+          if pt_supervisor_type == "person":
+            pt_supervisor.name.first
+        pt_location.address.address
+        pt_transportation
 
   nav.set_section('section_property')
 
@@ -1825,6 +1836,107 @@ fields:
   - Date: pt_start_date
     datatype: date
     min: ${ today().format("yyyy-MM-dd") }
+---
+id: parenting time supervised
+question: |
+  Do you want ${other_parties[0].name.full(middle="full")}'s parenting time to be supervised?
+subquestion: |
+  You can name an adult to supervise parenting time. In some places, an official supervised visitation center may be available.
+fields:
+  - no label: pt_supervised
+    datatype: yesnoradio
+---
+id: parenting time supervisor type
+question: |
+  Who do you want to supervise parenting time?
+fields:
+  - no label: pt_supervisor_type
+    datatype: radio
+    choices:
+    - A person I know will supervise parenting time.: person
+    - I want parenting time to happen at an official supervised visitation center, if available.: agency
+---
+id: supervisor name
+sets:
+  - pt_supervisor.name.first
+  - pt_supervisor.name.last
+  - pt_supervisor.name.middle
+  - pt_supervisor.name.suffix
+question:  |
+  Who is the adult you want to supervise parenting time?
+subquestion: |
+  Note: They will have to complate an *Affidavit of Parenting Time Supervisor*. You can get this form at the end of the program.
+fields:
+  - code: |
+      pt_supervisor.name_fields()
+---
+id: parenting time location
+question: |
+  Where will parenting time happen?
+subquestion: |
+  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+fields:
+  - Name of location (if any): pt_location.name
+    required: False
+  - Street address: pt_location.address
+    address autocomplete: True
+  - Address line 2: pt_location.unit
+  - City: pt_location.city
+  - State: pt_location.state
+    code: |
+      states_list()
+---
+id: parenting time transportation person
+sets:
+  - pt_transportation_person.name.first
+  - pt_transportation_person.name.last
+  - pt_transportation_person.name.middle
+  - pt_transportation_person.name.suffix
+question: |
+  Who will provide transportation to take children to and from parenting time?
+fields:
+  - no label: pt_transportation
+    datatype: radio
+    choices:
+      - I will provide transportation.: petitioner
+      - ${other_parties[0].name.full(middle="full")} will provide transportation.: respondent
+      - Someone else will provide transportation.: other
+  - note: |
+      Enter the name of the person who will provide transporation. 
+    show if:
+      variable: pt_transportation
+      is: "other"
+  - First: pt_transportation_person.name.first
+    show if:
+      variable: pt_transportation
+      is: "other"
+  - Middle: pt_transportation_person.name.middle
+    required: False
+    show if:
+      variable: pt_transportation
+      is: "other"
+  - Last: pt_transportation_person.name.last
+    show if:
+      variable: pt_transportation
+      is: "other"
+  - Suffix: pt_transportation_person.name.suffix
+    required: False
+    code: |
+      name_suffix()
+    show if:
+      variable: pt_transportation
+      is: "other"
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1845,6 +1957,14 @@ question: |
 subquestion: |
   
   Your forms are ready. View and download your forms below. Click **Make changes** to fix any mistakes.
+
+  TESTING:
+  ${ pt_supervised }
+  ${ pt_supervisor_type }
+  ${ pt_supervisor.name.full(middle="full") }
+  ${ pt_location }
+  ${ pt_transportation }
+  ${ pt_transportation_person.name.full(middle="full") }
 
   This program does not file your ${ form_name } with the court. You will need to do this yourself.
 
