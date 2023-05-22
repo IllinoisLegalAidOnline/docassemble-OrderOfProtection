@@ -39,7 +39,7 @@ objects:
   - pt_pickup_location: ALAddress
   - pt_transportation_person: ALIndividual
   - pt_return_location: ALAddress
-  - pt_return_person: ALIndividual
+  #- pt_return_person: ALIndividual   ### Removed because not needed on forms
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 
 ---
@@ -164,7 +164,7 @@ code: |
   if parenting_time != "reserve":
     if parenting_time == "restrict" or parenting_time == "deny":
       restrict_or_deny_pt_reasons
-    if parenting_time == "restrict" or parenting_time == "allow":
+    if parenting_time == "restrict" or parenting_time == "grant":
       if pt_format == "interview":
         if pt_weekdays:
           pt_weekday_days
@@ -173,11 +173,17 @@ code: |
         if pt_holidays:
           pt_holiday_list
         pt_start_date
-        if pt_supervised:
-          if pt_supervisor_type == "person":
-            pt_supervisor.name.first
-        pt_location.address.address
-        pt_transportation
+      if pt_supervised:
+        if pt_supervisor_type == "person":
+          pt_supervisor.name.first
+      if pt_location_identified:
+        pt_location.address
+      pt_transportation
+      if pt_separate_pickup_location:
+        pt_pickup_location.address
+      if pt_separate_return_location:
+        pt_return_location.address
+      pt_immediate_return
 
   nav.set_section('section_property')
 
@@ -1870,6 +1876,14 @@ fields:
   - code: |
       pt_supervisor.name_fields()
 ---
+id: parenting time location identified
+question: |
+  Do you know where you want ${other_parties[0].name.full(middle="full")}'s parenting time to happen?
+fields:
+  - no label: pt_location_identified
+    datatype: yesnoradio
+
+---
 id: parenting time location
 question: |
   Where will parenting time happen?
@@ -1881,6 +1895,7 @@ fields:
   - Street address: pt_location.address
     address autocomplete: True
   - Address line 2: pt_location.unit
+    required: False
   - City: pt_location.city
   - State: pt_location.state
     code: |
@@ -1901,6 +1916,7 @@ fields:
       - I will provide transportation.: petitioner
       - ${other_parties[0].name.full(middle="full")} will provide transportation.: respondent
       - Someone else will provide transportation.: other
+      - I will figure this out later.: later
   - note: |
       Enter the name of the person who will provide transporation. 
     show if:
@@ -1926,8 +1942,67 @@ fields:
     show if:
       variable: pt_transportation
       is: "other"
-
-
+---
+id: separate pickup location
+question: |
+  Is there a pickup location for parenting time?
+subquestion: |
+  This is where your children will be picked up from before going to parenting time.
+fields:
+  - no label: pt_separate_pickup_location
+    datatype: yesnoradio
+---
+id: pickup location
+question: |
+  Where will pickup for parenting time happen?
+subquestion: |
+  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+fields:
+  - Name of location (if any): pt_pickup_location.name
+    required: False
+  - Street address: pt_pickup_location.address
+    address autocomplete: True
+  - Address line 2: pt_pickup_location.unit
+    required: False
+  - City: pt_pickup_location.city
+  - State: pt_pickup_location.state
+    code: |
+      states_list()
+---
+id: separate return location
+question: |
+  Is there a return location for parenting time?
+subquestion: |
+  This is where your children will be returned to you after parenting time.
+fields:
+  - no label: pt_separate_return_location
+    datatype: yesnoradio
+---
+id: return location
+question: |
+  Where will the return from parenting time happen?
+subquestion: |
+  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+fields:
+  - Name of location (if any): pt_return_location.name
+    required: False
+  - Street address: pt_return_location.address
+    address autocomplete: True
+  - Address line 2: pt_return_location.unit
+    required: False
+  - City: pt_return_location.city
+  - State: pt_return_location.state
+    code: |
+      states_list()
+---
+id: immediate return after parenting time
+question: |
+  Do you want ${other_parties[0].name.full(middle="full")} to return the children immediately after parenting time?
+subquestion: |
+  You can ask that the children are returned directly to you or to someone you choose. 
+fields:
+  - no label: pt_immediate_return
+    datatype: yesnoradio
 
 
 
@@ -1957,14 +2032,6 @@ question: |
 subquestion: |
   
   Your forms are ready. View and download your forms below. Click **Make changes** to fix any mistakes.
-
-  TESTING:
-  ${ pt_supervised }
-  ${ pt_supervisor_type }
-  ${ pt_supervisor.name.full(middle="full") }
-  ${ pt_location }
-  ${ pt_transportation }
-  ${ pt_transportation_person.name.full(middle="full") }
 
   This program does not file your ${ form_name } with the court. You will need to do this yourself.
 
@@ -2358,6 +2425,59 @@ attachment:
     - "pt_holiday_list": ${ pt_holiday_list if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
     - "pt_holiday_start": ${ format_time(pt_holiday_start) if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
     - "pt_holiday_end": ${ format_time(pt_holiday_end) if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+    - "pt_transportation_cb": ${ True if pt_transportation != "later" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_transportation_person_name": |
+        % if pt_transportation == "petitioner" and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ "Petitioner" }
+        % elif pt_transportation == "respondent" and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ "Respondent" }
+        % elif pt_transportation == "other" and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_transportation_person.name.full(middle="full") }
+        % else:
+        ${ "" }
+        % endif
+    - "pt_pickup_location_cb": ${ True if pt_separate_pickup_location == True and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_pickup_location": |
+        % if pt_pickup_location.name == "" and pt_separate_pickup_location == True and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_pickup_location.on_one_line(bare=True) }
+        % elif pt_separate_pickup_location == True and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_pickup_location.name + ", " + pt_pickup_location.on_one_line(bare=True) }
+        % else:
+        ${ "" }
+        % endif          
+    - "pt_return_location_cb": ${ True if pt_separate_return_location == True and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_return_location": |
+        % if pt_return_location.name == "" and pt_separate_return_location == True and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_return_location.on_one_line(bare=True) }
+        % elif pt_separate_return_location == True and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_return_location.name + ", " + pt_return_location.on_one_line(bare=True) }
+        % else:
+        ${ "" }
+        % endif          
+    - "pt_location_cb": ${ True if pt_location_identified == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_location": |
+        % if pt_location.name == "" and pt_location_identified == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_location.on_one_line(bare=True) }
+        % elif pt_location_identified == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_location.name + ", " + pt_location.on_one_line(bare=True) }
+        % else:
+        ${ "" }
+        % endif          
+    - "pt_supervised": ${ True if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_supervisor_name": ${ pt_supervisor.name.full(middle="full") if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_supervised_center_cb": ${ True if pt_supervised == True and pt_supervisor_type == "agency" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_immediate_return_cb": ${ True if pt_immediate_return == True and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+
+
+
+
+
+
+
+
+
+
+
 
     - "appear_with_children_cb": ${ True if return_children_to == "court" and minor_kids_with_respondent else '' }
     - "appear_with_children_prevent": ${ True if appear_with_children_prevent and return_children_to == "court" and minor_kids_with_respondent else '' }
@@ -3023,7 +3143,7 @@ review:
       % if return_children_to == "petitioner":
       Me
       % elif return_children_to == "court":
-      ${other_parties[0].name.full(middle="full")} should bring them to court
+      ${other_parties[0].name.full(middle="full")} should bring them to court.
       % else:
       Another person
       % endif
@@ -3151,7 +3271,6 @@ review:
       from Sunday at ${ format_time(pt_weekend_start) } to Sunday at ${ format_time(pt_weekend_end) }.
       % endif
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_weekends == True
-
   - Edit: pt_holidays
     button: |
       **Do you want parenting time to be different on holidays?**
@@ -3167,11 +3286,87 @@ review:
     button: |
       **When do you want the parenting time schedule to start?**
       ${ pt_start_date }
-
-
-
-
-
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
+  - Edit: pt_supervised
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")}'s parenting time to be supervised?**
+      ${ word(yesno(pt_supervised)) }
+    show if: (parenting_time == "restrict" or parenting_time == "grant")
+  - Edit: pt_supervisor_type
+    button: |
+      **Who do you want to supervise parenting time?**
+      % if pt_supervisor_type == "person":
+      A person I know will supervise parenting time.
+      % else:
+      I want parenting time to happen at an official supervised visitation center, if available.
+      % endif
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervised == True
+  - Edit: pt_supervisor.name.first
+    button: |
+      **Adult who will supervise parenting time:**
+      ${ pt_supervisor.name.full(middle="full") }
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervised == True and pt_supervisor_type == "person"
+  - Edit: pt_location_identified
+    button: |
+      **Do you know where you want ${other_parties[0].name.full(middle="full")}'s parenting time to happen?**
+      ${ word(yesno(pt_location_identified)) }
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervisor_type == "person"
+  - Edit: pt_location.address
+    button: |
+      **Parenting time location:**
+      ${ pt_location.on_one_line(bare=True) }
+    show if: pt_location_identified == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant")
+  - Edit: pt_transportation
+    button: |
+      **Who will take the children to and from parenting time?**
+      % if pt_transportation == "petitioner":
+      I will provide transportation.
+      % elif pt_transportation == "respondent":
+      ${other_parties[0].name.full(middle="full")} will provide transportation.
+      % elif pt_transportation == "other":
+      Someone else will provide transportation.
+      % else:
+      I will figure this out later.
+      % endif
+    show if: (parenting_time == "restrict" or parenting_time == "grant")
+  - Edit: pt_transportation_person.name.first
+    button: |
+      **Person who will provide transportation to and from parenting time:**
+      ${ pt_transportation_person.name.full(middle="full") }
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_transportation == "other"
+  - Edit: pt_separate_pickup_location
+    button: |
+      **Is there a pickup location for parenting time?**
+      ${ word(yesno(pt_separate_pickup_location)) }
+    show if: (parenting_time == "restrict" or parenting_time == "grant")
+  - Edit: pt_pickup_location.address
+    button: |
+      **Parenting time pickup location:**
+      % if pt_pickup_location.name == "":
+      ${ pt_pickup_location.on_one_line(bare=True) }
+      % else:
+      ${ pt_pickup_location.name }, ${ pt_pickup_location.on_one_line(bare=True) }
+      % endif      
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_separate_pickup_location == True
+  - Edit: pt_separate_return_location
+    button: |
+      **Is there a return location after parenting time?**
+      ${ word(yesno(pt_separate_return_location)) }
+    show if: (parenting_time == "restrict" or parenting_time == "grant")
+  - Edit: pt_return_location.address
+    button: |
+      **Parenting time return location:**
+      % if pt_return_location.name == "":
+      ${ pt_return_location.on_one_line(bare=True) }
+      % else:
+      ${ pt_return_location.name }, ${ pt_return_location.on_one_line(bare=True) }
+      % endif      
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_separate_return_location == True
+  - Edit: pt_immediate_return
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")} to return the children immediately after parenting time?**
+      ${ word(yesno(pt_immediate_return)) }
+    show if: (parenting_time == "restrict" or parenting_time == "grant")
 
   - Edit: case_number
     button: |
