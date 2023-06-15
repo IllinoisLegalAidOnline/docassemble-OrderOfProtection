@@ -40,7 +40,8 @@ objects:
   - pt_transportation_person: ALIndividual
   - pt_return_location: ALAddress
   #- pt_return_person: ALIndividual   ### Removed because not needed on forms
-  - petitioner_personal_property: DAList.using(object_type=Thing, there_are_any=True)
+  - petitioner_personal_property: DAList.using(object_type=Thing, there_are_any=True, complete_attribute='complete')
+  - other_return_property_person: ALIndividual
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 
 ---
@@ -188,7 +189,10 @@ code: |
 
   nav.set_section('section_property')
   if award_personal_property:
-    petitioner_personal_property[0].respo_has  
+    petitioner_personal_property[0].respo_has
+    if return_property:
+      if return_property_person == "other":
+        other_return_property_person.name.first
 
   nav.set_section('section_remedies')
   if request_counseling:
@@ -2021,14 +2025,14 @@ id: list collect petitioner personal property
 question: |
   Personal property you want possession of
 subquestion: |
-  List each item below. Check the box if ${other_parties[0].name.full(middle="full")} has the item and you want the court to order it returned to you.
+  List each item below. If ${other_parties[0].name.full(middle="full")} has the item and you want the court to order it returned to you, click **Yes**.
   
   If you need to add more items, click **+ Add more**.
 #list collect: True
 fields:
   - Item name: petitioner_personal_property[i].name
-  - ${other_parties[0].name.full(middle="full")} has this, and I want the court to order it returned to me.: petitioner_personal_property[i].respo_has
-    datatype: yesnowide
+  - Do you want the court to order ${other_parties[0].name.full(middle="full")} to return it to you?: petitioner_personal_property[i].respo_has
+    datatype: yesnoradio
 list collect:
   allow delete: True
   add another label: Add more
@@ -2036,6 +2040,52 @@ list collect:
     Item ${ i+1 }:
 #add another label: Add more
   #enable: not petitioner_personal_property.has_been_gathered()
+---
+code: |
+  petitioner_personal_property[i].name
+  petitioner_personal_property[i].respo_has
+  petitioner_personal_property[i].complete = True
+
+
+---
+depends on: 
+  - petitioner_personal_property[i].respo_has
+code: |
+  return_items_qty = 0
+  for item in petitioner_personal_property:
+    if item.respo_has == True:
+	    return_items_qty += 1
+  if return_items_qty > 0:
+    return_property = True
+  else:
+    return_property = False
+---
+id: return petitioner property to whom
+question: |
+  Who should ${other_parties[0].name.full(middle="full")} return your property to?
+fields:
+  - no label: return_property_person
+    datatype: radio
+    choices:
+      - Me: petitioner
+      - ${other_parties[0].name.full(middle="full")}: respondent
+      - Another person: other
+---
+sets:
+  - other_return_property_person.name.first
+  - other_return_property_person.name.middle
+  - other_return_property_person.name.last
+  - other_return_property_person.name.suffix
+id: other return property person name
+question: |
+  Who is the person ${other_parties[0].name.full(middle="full")} should return your property to?
+fields:
+  - code: |
+      other_return_property_person.name_fields()
+---
+
+
+
 
 
 ---
@@ -2494,8 +2544,8 @@ attachment:
     - "return_property_cb": ${ True if award_personal_property else "" }
     - "award_petitioner_property_cb": ${ True if award_personal_property else "" }
     - "petitioner_property_awarded_list": ${ comma_and_list([item.name for item in petitioner_personal_property]) if award_personal_property else "" }
-    - "respondent_ordered_return_property_cb": ${ "" }
-    - "petitioner_property_ordered_return_list": ${ "" }
+    - "respondent_ordered_return_property_cb": ${ True if award_personal_property == True and return_property == True else "" }
+    - "petitioner_property_ordered_return_list": ${ comma_and_list([item.name for item in petitioner_personal_property if item.respo_has == True]) if (award_personal_property == True and return_property == True) else "" }
 
 
 
@@ -3394,6 +3444,43 @@ review:
       **Do you want ${other_parties[0].name.full(middle="full")} to return the children immediately after parenting time?**
       ${ word(yesno(pt_immediate_return)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant")
+
+  - Edit: award_personal_property
+    button: |
+      **Is there personal property you want the court to give to you?**
+      ${ word(yesno(award_personal_property)) }
+  - Edit: petitioner_personal_property[0].name
+    button: |
+      **Property you want possession of:** (Edit to change items and if ${other_parties[0].name.full(middle="full")} has it)
+
+      % for item in petitioner_personal_property:
+      * ${ item.name }
+      % endfor
+    show if: (award_personal_property == True)
+  - Edit: return_property_person
+    button: |
+      **Who should ${other_parties[0].name.full(middle="full")} return your property to?**
+      % if return_property_person == "petitioner":
+      Me
+      % elif return_property_person == "respondent":
+      ${other_parties[0].name.full(middle="full")}
+      % else:
+      Someone else
+      % endif
+    show if: (award_personal_property == True and return_property == True)
+  - Edit: other_return_property_person.name.first
+    button: |
+      **Other person who ${other_parties[0].name.full(middle="full")} will return property to:**
+      ${ other_return_property_person.name.full(middle="full") }
+    show if: (award_personal_property == True and return_property == True) and return_property_person == "other"
+
+
+
+
+
+
+
+
 
   - Edit: case_number
     button: |
