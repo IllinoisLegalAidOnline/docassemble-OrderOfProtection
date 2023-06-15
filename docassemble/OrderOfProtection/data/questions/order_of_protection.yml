@@ -40,6 +40,7 @@ objects:
   - pt_transportation_person: ALIndividual
   - pt_return_location: ALAddress
   #- pt_return_person: ALIndividual   ### Removed because not needed on forms
+  - petitioner_personal_property: DAList.using(object_type=Thing, there_are_any=True)
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 
 ---
@@ -186,7 +187,8 @@ code: |
       pt_immediate_return
 
   nav.set_section('section_property')
-
+  if award_personal_property:
+    petitioner_personal_property[0].respo_has  
 
   nav.set_section('section_remedies')
   if request_counseling:
@@ -2003,16 +2005,37 @@ subquestion: |
 fields:
   - no label: pt_immediate_return
     datatype: yesnoradio
-
-
-
-
-
-
-
-
-
-
+---
+id: any personal property to petitioner
+question: |
+  Is there personal property you want the court to give to you?
+subquestion: |
+  The court can order that you will get control of personal property. This is called getting possession of the property.
+  
+  For example: your car, clothing, or phone.
+fields:
+  - no label: award_personal_property
+    datatype: yesnoradio
+---
+id: list collect petitioner personal property
+question: |
+  Personal property you want possession of
+subquestion: |
+  List each item below. Check the box if ${other_parties[0].name.full(middle="full")} has the item and you want the court to order it returned to you.
+  
+  If you need to add more items, click **+ Add more**.
+#list collect: True
+fields:
+  - Item name: petitioner_personal_property[i].name
+  - ${other_parties[0].name.full(middle="full")} has this, and I want the court to order it returned to me.: petitioner_personal_property[i].respo_has
+    datatype: yesnowide
+list collect:
+  allow delete: True
+  add another label: Add more
+  label: |
+    Item ${ i+1 }:
+#add another label: Add more
+  #enable: not petitioner_personal_property.has_been_gathered()
 
 
 ---
@@ -2468,7 +2491,11 @@ attachment:
     - "pt_supervised_center_cb": ${ True if pt_supervised == True and pt_supervisor_type == "agency" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_immediate_return_cb": ${ True if pt_immediate_return == True and (parenting_time == "restrict" or parenting_time == "grant") else "" }
 
-
+    - "return_property_cb": ${ True if award_personal_property else "" }
+    - "award_petitioner_property_cb": ${ True if award_personal_property else "" }
+    - "petitioner_property_awarded_list": ${ comma_and_list([item.name for item in petitioner_personal_property]) if award_personal_property else "" }
+    - "respondent_ordered_return_property_cb": ${ "" }
+    - "petitioner_property_ordered_return_list": ${ "" }
 
 
 
