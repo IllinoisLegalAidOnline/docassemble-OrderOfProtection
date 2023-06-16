@@ -40,7 +40,7 @@ objects:
   - pt_transportation_person: ALIndividual
   - pt_return_location: ALAddress
   #- pt_return_person: ALIndividual   ### Removed because not needed on forms
-  - petitioner_personal_property: DAList.using(object_type=Thing, there_are_any=True, complete_attribute='complete')
+  - petitioner_personal_property: DAList.using(object_type=Thing, there_are_any=True)
   - other_return_property_person: ALIndividual
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 
@@ -138,11 +138,11 @@ code: |
       other_locations_hidden_description_1
     else:  
       other_locations[0].name
+    if stay_away_other_2:
       if hide_other_address_2:
         other_locations_hidden_description_2
       else:
-        if stay_away_other_2:
-          other_locations[1].name
+        other_locations[1].name
   if same_school:
     if same_school_restrictions != "none":
       same_school_name
@@ -156,8 +156,8 @@ code: |
   temp_custody_of_children  
   physical_care_of_children
   no_conceal_children
-  no_removal_school
-  keep_schools_confidential
+  if no_removal_school:
+    keep_schools_confidential
   no_records_no_contact
   if current_possession_of_children == False:
     return_children_to
@@ -189,7 +189,7 @@ code: |
 
   nav.set_section('section_property')
   if award_personal_property:
-    petitioner_personal_property[0].respo_has
+    petitioner_personal_property.gather()
     if return_property:
       if return_property_person == "other":
         other_return_property_person.name.first
@@ -273,27 +273,27 @@ subquestion: |
   
   Read the "How to Ask for an Order of Protection" instructions you can download at the end of this program. 
 ---
-id: accept terms
-question: |
-  Terms of use
-subquestion: |
-  This program does not provide legal advice. It does not take the place of advice from a lawyer.
-
-  Using this program does not create an attorney-client relationship between you and Illinois Legal Aid Online or its employees.
-
-  ${ collapse_template(get_legal_help) }  
-
-fields:
-  - To continue, you must accept the [**terms of use**](https://www.illinoislegalaid.org/about/terms-of-use).: accept
-    datatype: checkboxes
-    none of the above: False
-    minlength: 1
-    choices:
-      - I accept the terms of use.
-    validation messages:
-      minlength: |
-        You cannot continue unless you agree to the terms of use. 
-continue button field: accept_terms
+#id: accept terms
+#question: |
+#  Terms of use
+#subquestion: |
+#  This program does not provide legal advice. It does not take the place of advice from a lawyer.
+#
+#  Using this program does not create an attorney-client relationship between you and Illinois Legal Aid Online or its employees.
+#
+#  ${ collapse_template(get_legal_help) }  
+#
+#fields:
+#  - To continue, you must accept the [**terms of use**](https://www.illinoislegalaid.org/about/terms-of-use).: accept
+#    datatype: checkboxes
+#    none of the above: False
+#    minlength: 1
+#    choices:
+#      - I accept the terms of use.
+#    validation messages:
+#      minlength: |
+#        You cannot continue unless you agree to the terms of use. 
+#continue button field: accept_terms
 ---
 template: get_legal_help
 subject: |
@@ -555,14 +555,15 @@ code: |
   if minor_kids_with_respondent == False:
     protect_shared_kids = False
 ---
-reconsider: True
-code: |
-  protected_minor_kids_list = []
-  if minor_kids_with_respondent:
-    if shared_kids.number() > 0:
-      for person in shared_kids:
-        if person.protect == True:
-          protected_minor_kids_list.append( person.name.full(middle="full") )
+# code to build protected shared kids list put into attachment blocks
+#reconsider: True
+#code: |
+#  if minor_kids_with_respondent:
+#    if shared_kids.number() > 0:
+#      protected_minor_kids_list = []
+#      for person in shared_kids:
+#        if person.protect == True:
+#          protected_minor_kids_list.append( person.name.full(middle="full") )
 #---
 #sets:
 #  - protect_shared_kids
@@ -1782,6 +1783,7 @@ fields:
   - End time: pt_weekday_end
     datatype: time
 ---
+mandatory: True
 code: |
   dow_full = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   dow_abb = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -2021,30 +2023,54 @@ fields:
   - no label: award_personal_property
     datatype: yesnoradio
 ---
-id: list collect petitioner personal property
+#id: list collect petitioner personal property
+#question: |
+#  Personal property you want possession of
+#subquestion: |
+#  List each item below. If ${other_parties[0].name.full(middle="full")} has the item and you want the court to order it returned to you, click **Yes**.
+#  
+#  If you need to add more items, click **+ Add more**.
+##list collect: True
+#fields:
+#  - Item name: petitioner_personal_property[i].name
+#  - Do you want the court to order ${other_parties[0].name.full(middle="full")} to return it to you?: petitioner_personal_property[i].respo_has
+#    datatype: yesnoradio
+#list collect:
+#  allow delete: True
+#  add another label: Add more
+#  label: |
+#    Item ${ i+1 }:
+##add another label: Add more
+#  #enable: not petitioner_personal_property.has_been_gathered()
+---
+#code: |
+#  petitioner_personal_property[i].name
+#  petitioner_personal_property[i].respo_has
+#  petitioner_personal_property[i].complete = True
+---
+id: petitioner personal property to protect
 question: |
+  % if i == 0:
   Personal property you want possession of
-subquestion: |
-  List each item below. If ${other_parties[0].name.full(middle="full")} has the item and you want the court to order it returned to you, click **Yes**.
-  
-  If you need to add more items, click **+ Add more**.
-#list collect: True
+  % else:
+  Next item you want possession of
+  % endif
 fields:
-  - Item name: petitioner_personal_property[i].name
+  - Item name: petitioner_personal_property[i].name.text
   - Do you want the court to order ${other_parties[0].name.full(middle="full")} to return it to you?: petitioner_personal_property[i].respo_has
     datatype: yesnoradio
-list collect:
-  allow delete: True
-  add another label: Add more
-  label: |
-    Item ${ i+1 }:
-#add another label: Add more
-  #enable: not petitioner_personal_property.has_been_gathered()
 ---
-code: |
-  petitioner_personal_property[i].name
-  petitioner_personal_property[i].respo_has
-  petitioner_personal_property[i].complete = True
+id: any other petitioner personal property
+question: |
+  Do you have another item you want protected by this order?
+subquestion: |
+  % if len(petitioner_personal_property.elements) >= 1:  
+  So far you have told us about ${comma_and_list([item.name.text for item in petitioner_personal_property])}.
+  % endif
+fields:
+  - "Any other items?": petitioner_personal_property.there_is_another
+    datatype: yesnoradio
+---
 
 
 ---
@@ -2068,7 +2094,6 @@ fields:
     datatype: radio
     choices:
       - Me: petitioner
-      - ${other_parties[0].name.full(middle="full")}: respondent
       - Another person: other
 ---
 sets:
@@ -2151,9 +2176,11 @@ code: |
   op_petition.enabled = True
   op_schools.enabled = False
   
-  if minor_kids_with_respondent or protect_petitioner_kids:
-    if schools[0].hide or schools[1].hide:
-      op_schools.enabled = True
+  
+  if stay_away_schools or no_removal_school:
+    if minor_kids_with_respondent or protect_petitioner_kids:
+      if schools[0].hide or schools[1].hide:
+        op_schools.enabled = True
 
 
 ---
@@ -2199,7 +2226,8 @@ attachment:
     - "case_number__11": ${ case_number }
     - "protect_petitioner": ${ protect_petitioner }
     - "protect_shared_kids": ${ protect_shared_kids }
-    - "shared_kids_list": ${ comma_and_list(protected_minor_kids_list ) if protect_shared_kids else ''}
+    #- "shared_kids_list": ${ comma_and_list(protected_minor_kids_list ) if protect_shared_kids else ''}
+    - "shared_kids_list": ${ comma_and_list([person.name.full(middle="full") for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
     - "protect_petitioner_kids": ${ protect_petitioner_kids }
     - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
     - "protect_dependent_adult": ${ protect_dependent_adult }
@@ -2449,7 +2477,7 @@ attachment:
     - "other_caretaker_address": ${ other_caretaker.address.on_one_line(bare=True) if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or keep_schools_confidential else '' }
 
-    - "physical_care_of_children": ${ True if keep_schools_confidential and minor_kids_with_respondent else '' }
+    - "physical_care_of_children": ${ True if physical_care_of_children and minor_kids_with_respondent else '' }
     - "return_children_possession": ${ True if (return_children_to == "petitioner" or return_children_to == "other") and minor_kids_with_respondent else '' }
     - "return_children_other_person": ${ return_children_other_person.name.full(middle="full") if return_children_to == "other" and minor_kids_with_respondent else '' }
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
@@ -2469,7 +2497,7 @@ attachment:
     - "pt_attach": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "attach" and minor_kids_with_respondent else ''  }
     - "pt_interview": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekdays": ${ True if pt_weekdays and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekday_list": ${ comma_and_list(dow_abb[int(y)] for y in pt_weekday_days.true_values()) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekday_list": ${ comma_and_list(dow_abb[int(y)] for y in pt_weekday_days.true_values()) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent == True else '' }
     - "pt_weekday_start": ${ format_time(pt_weekday_start) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekday_end": ${ format_time(pt_weekday_end) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_every": ${ True if pt_weekend_cadence == "every" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
@@ -2543,9 +2571,9 @@ attachment:
 
     - "return_property_cb": ${ True if award_personal_property else "" }
     - "award_petitioner_property_cb": ${ True if award_personal_property else "" }
-    - "petitioner_property_awarded_list": ${ comma_and_list([item.name for item in petitioner_personal_property]) if award_personal_property else "" }
+    - "petitioner_property_awarded_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property]) if award_personal_property else "" }
     - "respondent_ordered_return_property_cb": ${ True if award_personal_property == True and return_property == True else "" }
-    - "petitioner_property_ordered_return_list": ${ comma_and_list([item.name for item in petitioner_personal_property if item.respo_has == True]) if (award_personal_property == True and return_property == True) else "" }
+    - "petitioner_property_ordered_return_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property if item.respo_has == True]) if (award_personal_property == True and return_property == True) else "" }
 
 
 
@@ -2586,7 +2614,7 @@ attachment:
     - "case_number__1": ${ case_number }
     - "protect_petitioner": ${ protect_petitioner }
     - "protect_shared_kids": ${ protect_shared_kids }
-    - "shared_kids_list": ${ comma_and_list(protected_minor_kids_list ) if protect_shared_kids else ''}
+    - "shared_kids_list": ${ comma_and_list([person.name.full(middle="full") for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
     - "protect_petitioner_kids": ${ protect_petitioner_kids }
     - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
     - "protect_dependent_adult": ${ protect_dependent_adult }
@@ -2596,16 +2624,16 @@ attachment:
     - "dependent_adult": ${ dependent_adult.name.full(middle="full") if protect_dependent_adult else '' }
     - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") if protect_high_risk_adult else '' }
 
-    - "school_1_kids": ${ comma_and_list(schools[0].kids_who_attend.true_values()) }
-    - "school_1_name": ${ schools[0].name }
-    - "school_1_type_school": ${ True if schools[0].type=='school' else '' }
-    - "school_1_type_daycare": ${ True if schools[0].type=='daycare' else '' }
-    - "school_1_address": ${ schools[0].on_one_line(bare=True) }
-    - "school_2_kids": ${ comma_and_list(schools[1].kids_who_attend.true_values()) }
-    - "school_2_name": ${ schools[1].name }
-    - "school_2_type_school": ${ True if schools[1].type=='school' else '' }
-    - "school_2_type_daycare": ${ True if schools[1].type=='daycare' else '' }
-    - "school_2_address": ${ schools[1].on_one_line(bare=True) }
+    - "school_1_kids": ${ comma_and_list(schools[0].kids_who_attend.true_values()) if schools[0].hide == True else '' }
+    - "school_1_name": ${ schools[0].name if schools[0].hide == True else ''}
+    - "school_1_type_school": ${ True if (schools[0].hide == True and schools[0].type=='school') else '' }
+    - "school_1_type_daycare": ${ True if (schools[0].hide == True and schools[0].type=='daycare') else '' }
+    - "school_1_address": ${ schools[0].on_one_line(bare=True) if schools[0].hide == True else '' }
+    - "school_2_kids": ${ comma_and_list(schools[1].kids_who_attend.true_values())  if schools[1].hide == True else ''}
+    - "school_2_name": ${ schools[1].name if schools[1].hide == True else '' }
+    - "school_2_type_school": ${ True if (schools[1].hide == True and schools[1].type=='school') else '' }
+    - "school_2_type_daycare": ${ True if (schools[1].hide == True and schools[1].type=='daycare') else '' }
+    - "school_2_address": ${ schools[1].on_one_line(bare=True) if schools[1].hide == True else '' }
 
 
 
@@ -3449,21 +3477,32 @@ review:
     button: |
       **Is there personal property you want the court to give to you?**
       ${ word(yesno(award_personal_property)) }
-  - Edit: petitioner_personal_property[0].name
-    button: |
-      **Property you want possession of:** (Edit to change items and if ${other_parties[0].name.full(middle="full")} has it)
 
-      % for item in petitioner_personal_property:
-      * ${ item.name }
+  - Edit: petitioner_personal_property.revisit
+    button: |
+      **Personal property you want possession of:**
+
+      % for my_var in petitioner_personal_property:
+        * ${ my_var.name.text }
       % endfor
     show if: (award_personal_property == True)
+  - Edit: petitioner_personal_property.revisit
+    button: |
+      **Personal property ${other_parties[0].name.full(middle="full")} should return to you:**
+
+      % for my_var in petitioner_personal_property:
+      % if my_var.respo_has == True:
+        * ${ my_var.name.text }
+      % endif  
+      % endfor
+    show if: (award_personal_property == True)
+
+
   - Edit: return_property_person
     button: |
       **Who should ${other_parties[0].name.full(middle="full")} return your property to?**
       % if return_property_person == "petitioner":
       Me
-      % elif return_property_person == "respondent":
-      ${other_parties[0].name.full(middle="full")}
       % else:
       Someone else
       % endif
@@ -3673,9 +3712,9 @@ subquestion: |
 table: other_cases.table
 rows: other_cases
 columns:
-  - People involved: |
+  - Case type: |
       row_item.name.text if defined("row_item.name.text") else ""
-  - Details (including case type, state, county, year): |
+  - Details (including state, county, year): |
       action_button_html(url_action(row_item.attr_name("review_other_cases_details")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
@@ -3704,6 +3743,28 @@ review:
       **Year:**
       ${ x.year }
 
+
+---
+id: personal property revisit
+continue button field: petitioner_personal_property.revisit
+question: |
+  Edit the personal property you want to protect
+subquestion: |
+  ${ petitioner_personal_property.table }
+
+  ${ petitioner_personal_property.add_action() }
+---
+table: petitioner_personal_property.table
+rows: petitioner_personal_property
+columns:
+  - Item name: |
+      row_item.name.text if defined("row_item.name.text") else ""
+  - ${other_parties[0].name.full(middle="full")} should return: |
+      word(yesno(row_item.respo_has)) if defined("row_item.respo_has") else ""
+edit:
+  - petitioner_personal_property.name.text
+delete buttons: True
+confirm: True
 
 ---
 id: basic info review screen
