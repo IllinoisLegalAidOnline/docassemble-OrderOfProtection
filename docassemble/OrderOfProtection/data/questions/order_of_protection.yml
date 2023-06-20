@@ -193,6 +193,7 @@ code: |
     if return_property:
       if return_property_person == "other":
         other_return_property_person.name.first
+      return_property_reason
 
   nav.set_section('section_remedies')
   if request_counseling:
@@ -2108,10 +2109,23 @@ fields:
   - code: |
       other_return_property_person.name_fields()
 ---
-
-
-
-
+id: why respondent should return property
+question: |
+  Why should ${other_parties[0].name.full(middle="full")} return the property?
+subquestion: | 
+  You said ${other_parties[0].name.full(middle="full")} should return these items: ${ comma_and_list([item.name.text for item in petitioner_personal_property if item.respo_has == True]) }.
+fields:
+  - no label: return_property_reason
+    datatype: radio
+    choices:
+      - I own the property.: petitioner_owns
+      - We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.: both_own
+      - I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.: divorce
+  - Has a divorce been filed yet?: divorce_filed
+    datatype: yesnoradio
+    show if:
+      variable: return_property_reason
+      is: "divorce"
 
 ---
 id: case number
@@ -2569,26 +2583,31 @@ attachment:
     - "pt_supervised_center_cb": ${ True if pt_supervised == True and pt_supervisor_type == "agency" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_immediate_return_cb": ${ True if pt_immediate_return == True and (parenting_time == "restrict" or parenting_time == "grant") else "" }
 
-    - "return_property_cb": ${ True if award_personal_property else "" }
-    - "award_petitioner_property_cb": ${ True if award_personal_property else "" }
-    - "petitioner_property_awarded_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property]) if award_personal_property else "" }
-    - "respondent_ordered_return_property_cb": ${ True if award_personal_property == True and return_property == True else "" }
-    - "petitioner_property_ordered_return_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property if item.respo_has == True]) if (award_personal_property == True and return_property == True) else "" }
-
-
-
-
-
-
-
-
-
-
     - "appear_with_children_cb": ${ True if return_children_to == "court" and minor_kids_with_respondent else '' }
     - "appear_with_children_prevent": ${ True if appear_with_children_prevent and return_children_to == "court" and minor_kids_with_respondent else '' }
     - "appear_with_children_return": ${ True if appear_with_children_return and return_children_to == "court" and minor_kids_with_respondent else '' }
     - "appear_with_children_exam": ${ True if appear_with_children_exam and return_children_to == "court" and minor_kids_with_respondent else '' }
     - "no_conceal_children_cb": ${ True if no_conceal_children and minor_kids_with_respondent else '' }
+
+    - "return_property_cb": ${ True if award_personal_property else "" }
+    - "award_petitioner_property_cb": ${ True if award_personal_property else "" }
+    - "petitioner_property_awarded_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property]) if award_personal_property else "" }
+    - "respondent_ordered_return_property_cb": ${ True if award_personal_property == True and return_property == True else "" }
+    - "petitioner_property_ordered_return_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property if item.respo_has == True]) if (award_personal_property == True and return_property == True) else "" }
+    - "return_property_reason_petitioner_owns": ${ True if (return_property_reason == "petitioner_owns" and award_personal_property == True and return_property == True) else "" }
+    - "return_property_reason_both_own": ${ True if (return_property_reason == "both_own" and award_personal_property == True and return_property == True) else "" }
+
+     # page 8
+    - "return_property_reason_divorce": ${ True if (return_property_reason == "divorce" and award_personal_property == True and return_property == True) else "" }
+    - "divorce_filed_yes": ${ True if (divorce_filed == True and award_personal_property == True and return_property == True and return_property_reason == "divorce") else "" }
+    - "divorce_filed_no": ${ True if (divorce_filed == False and award_personal_property == True and return_property == True and return_property_reason == "divorce") else "" }
+
+
+
+
+
+
+
 
       # page 9
     - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
@@ -3512,12 +3531,22 @@ review:
       **Other person who ${other_parties[0].name.full(middle="full")} will return property to:**
       ${ other_return_property_person.name.full(middle="full") }
     show if: (award_personal_property == True and return_property == True) and return_property_person == "other"
-
-
-
-
-
-
+  - Edit: return_property_reason
+    button: |
+      **Why should ${other_parties[0].name.full(middle="full")} return the property?**
+      % if return_property_reason == "petitioner_owns":
+      I own the property.
+      % elif return_property_reason == "both_own":      
+      We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.
+      % else:
+      I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.      
+      % endif
+    show if: (award_personal_property == True and return_property == True)
+  - Edit: return_property_reason
+    button: |
+      **Has a divorce been filed yet?**
+      ${ word(yesno(divorce_filed)) }
+    show if: (award_personal_property == True and return_property == True) and return_property_reason == "divorce"
 
 
 
