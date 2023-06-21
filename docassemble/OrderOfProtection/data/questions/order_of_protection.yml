@@ -42,6 +42,8 @@ objects:
   #- pt_return_person: ALIndividual   ### Removed because not needed on forms
   - petitioner_personal_property: DAList.using(object_type=Thing, there_are_any=True)
   - other_return_property_person: ALIndividual
+  - other_transfer_property_person: ALIndividual
+  - property_transfer_location: ALAddress
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 
 ---
@@ -194,7 +196,19 @@ code: |
       if return_property_person == "other":
         other_return_property_person.name.first
       return_property_reason
-
+  if return_respo_property:
+    respo_property
+  respondent_one_time_entry
+  if property_transfer_present_cb:
+    property_transfer_person
+  if return_property == True or return_respo_property == True: 
+    if property_transfer_location_cb:
+      property_transfer_location.address
+  if property_transfer_know_date:
+    property_transfer_date
+ 
+ 
+ 
   nav.set_section('section_remedies')
   if request_counseling:
     dv_counseling
@@ -2126,6 +2140,139 @@ fields:
     show if:
       variable: return_property_reason
       is: "divorce"
+---
+id: any property to return to respondent
+question: |
+  Is there any personal property ${other_parties[0].name.full(middle="full")} will need returned to them right away?
+subquestion: |
+  This can be things like clothes, medicine, or other items.
+fields:
+  - no label: return_respo_property
+    datatype: yesnoradio
+---
+id: respondent property
+question: |
+  What personal property should ${other_parties[0].name.full(middle="full")} be returned?
+fields:
+  - no label: respo_property
+    datatype: checkboxes
+    none of the above: False
+    choices:
+      - Clothes: clothes
+      - Medicine: medicine
+      - Other items (you can list items below): other
+  - Other items (separate by commas): respo_property_other
+    input type: area
+    rows: 2
+    maxlength: 160
+    show if:
+      variable: respo_property['other']
+      is: True
+---
+id: respondent one time right to enter
+question: |
+  Should ${other_parties[0].name.full(middle="full")} be allowed to enter the home **only one time** to get their personal property?
+subquestion: |
+  You can require that a law enforcement officer or another person is present when ${other_parties[0].name.full(middle="full")} gets their property.
+fields:
+  - no label: respondent_one_time_entry
+    datatype: yesnoradio
+---
+id: know property transfer address
+question: |
+  Do you know where you want the personal property transfer to happen?
+subquestion: |
+  You can enter the address on the next screen.
+fields:
+  - no label: property_transfer_location_cb
+    datatype: yesnoradio
+---
+id: property transfer location
+question: |
+  Where should the property transfer happen?
+fields:
+  - Street address: property_transfer_location.address
+    address autocomplete: True
+  - Address line 2: property_transfer_location.unit
+    required: False
+  - City: property_transfer_location.city
+  - State: property_transfer_location.state
+    code: |
+      states_list()
+  - ZIP code: property_transfer_location.zip
+    required: False
+---
+id: property transfer anyone present
+question: |
+  Do you want anyone else present at the property transfer?
+subquestion: |
+  It may be safer if a law enforcement officer or another person is present when the property is transferred.
+fields:
+  - no label: property_transfer_present_cb
+    datatype: yesnoradio
+---
+id: property transfer person name
+question: |
+  Who should be present at the property transfer?
+subquestion: |
+  It may be safer if a law enforcement officer is present when the property is transferred.
+fields:
+  - no label: property_transfer_person
+    datatype: radio
+    choices:
+      - Law enforcement: police
+      - Another person: other
+  - Law enforcement agency: property_transfer_police
+    help: |
+      Example: Chicago Police Department
+    show if:
+      variable: property_transfer_person
+      is: "police"
+  - First: other_transfer_property_person.name.first
+    show if:
+      variable: property_transfer_person
+      is: "other"
+  - Middle: other_transfer_property_person.name.middle
+    required: False
+    show if:
+      variable: property_transfer_person
+      is: "other"
+  - Last: other_transfer_property_person.name.last
+    show if:
+      variable: property_transfer_person
+      is: "other"
+  - Suffix: other_transfer_property_person.name.suffix
+    required: False
+    code: |
+      name_suffix()
+    show if:
+      variable: property_transfer_person
+      is: "other"
+---
+id: know property transfer date
+question: |
+  Do you know when you want the property transfer to happen?
+subquestion: |
+  If you do not know this now, you can decide later.
+fields:
+  - no label: property_transfer_know_date
+    datatype: yesnoradio
+---
+id: property transfer date
+question: |
+  When do you want the property transfer to happen?
+subquestion: |
+  If you do not know the exact date and time, take your best guess.
+fields:
+  - Date: property_transfer_date
+    datatype: date
+    min: ${ today().format("yyyy-MM-dd") }
+  - Time: property_transfer_time
+    datatype: time
+
+
+
+
 
 ---
 id: case number
@@ -2601,7 +2748,21 @@ attachment:
     - "return_property_reason_divorce": ${ True if (return_property_reason == "divorce" and award_personal_property == True and return_property == True) else "" }
     - "divorce_filed_yes": ${ True if (divorce_filed == True and award_personal_property == True and return_property == True and return_property_reason == "divorce") else "" }
     - "divorce_filed_no": ${ True if (divorce_filed == False and award_personal_property == True and return_property == True and return_property_reason == "divorce") else "" }
-
+    - "return_respo_property": ${ True if return_respo_property else '' }
+    - "return_respo_clothes": ${ True if (return_respo_property == True and respo_property['clothes'] == True) else '' }
+    - "return_respo_medicine": ${ True if (return_respo_property == True and respo_property['medicine'] == True) else '' }
+    - "return_respo_property_other": ${ True if (return_respo_property == True and respo_property['other'] == True) else '' }
+    - "return_respo_property_list": ${ respo_property_other if (return_respo_property == True and respo_property['other'] == True) else '' }
+    - "respondent_one_time_entry": ${ True if respondent_one_time_entry == True else '' }
+    - "property_transfer_location_cb": ${ True if property_transfer_location_cb == True else '' }
+    - "property_transfer_location": ${ property_transfer_location.on_one_line(bare=True) if property_transfer_location_cb == True else '' }
+    - "property_transfer_present_cb": ${ True if property_transfer_present_cb == True else '' }
+    - "property_transfer_present_police_cb": ${ True if property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
+    - "property_transfer_present_police_name": ${ property_transfer_police if property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
+    - "property_transfer_present_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
+    - "property_transfer_time": ${ format_time(property_transfer_time) if property_transfer_know_date == True else ''  }
 
 
 
@@ -3547,7 +3708,65 @@ review:
       **Has a divorce been filed yet?**
       ${ word(yesno(divorce_filed)) }
     show if: (award_personal_property == True and return_property == True) and return_property_reason == "divorce"
+  - Edit: return_respo_property
+    button: |
+      **Any personal property ${other_parties[0].name.full(middle="full")} will need returned to them right away?**
+      ${ word(yesno(return_respo_property)) }
+  - Edit: respo_property
+    button: |
+      **Personal property of ${other_parties[0].name.full(middle="full")} that should be returned:**
 
+      % if respo_property['clothes'] == True:
+      * Clothes
+      % endif
+      % if respo_property['medicine'] == True:
+      * Medicine
+      % endif
+      % if respo_property['other'] == True:
+      * Other items
+      % endif
+    show if: (return_respo_property == True)
+  - Edit: respo_property_other
+    button: |
+      **Other personal property of ${other_parties[0].name.full(middle="full")}:**
+      ${ respo_property_other }
+    show if: (return_respo_property == True and respo_property['other'] == True)
+  - Edit: respondent_one_time_entry
+    button: |
+      **Should ${other_parties[0].name.full(middle="full")} be allowed to enter the home only one time to get their personal property?**
+      ${ word(yesno(respondent_one_time_entry)) }
+  - Edit: property_transfer_present_cb
+    button: |
+      **Do you want anyone else present at the property transfer?**
+      ${ word(yesno(property_transfer_present_cb)) }
+  - Edit: property_transfer_person
+    button: |
+      **Who should be present at the property transfer?**
+      % if property_transfer_person == 'police':
+      ${ property_transfer_police }
+      % else:
+      ${ other_transfer_property_person.name.full(middle="full") }
+      % endif
+    show if: property_transfer_present_cb == True
+  - Edit: property_transfer_location_cb
+    button: |
+      **Do you know where you want the personal property transfer to happen?**
+      ${ word(yesno(property_transfer_location_cb)) }
+    show if: return_property == True or return_respo_property == True
+  - Edit: property_transfer_location.address
+    button: |
+      **Property transfer location:**
+      ${ property_transfer_location.on_one_line(bare=True) }
+    show if: (return_property == True or return_respo_property == True) and property_transfer_location_cb == True
+  - Edit: property_transfer_know_date
+    button: |
+      **Do you know when you want the property transfer to happen?**
+      ${ word(yesno(property_transfer_know_date)) }
+  - Edit: property_transfer_date
+    button: |
+      **Property transfer should happen on:**
+      ${ property_transfer_date } at ${ format_time(property_transfer_time) }
+    show if: property_transfer_know_date == True
 
 
   - Edit: case_number
