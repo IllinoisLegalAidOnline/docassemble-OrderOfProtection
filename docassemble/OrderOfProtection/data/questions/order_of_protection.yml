@@ -153,44 +153,45 @@ code: |
       same_school_name
     
   nav.set_section('section_child')
-  if parentage == "parentage_established_other":
-    parentage_other
-  if primary_caretaker == "other":
-    other_caretaker.name.first
-    other_caretaker.address.address
-  temp_custody_of_children  
-  physical_care_of_children
-  no_conceal_children
-  if no_removal_school:
-    keep_schools_confidential
-  no_records_no_contact
-  if current_possession_of_children == False:
-    return_children_to
-    if return_children_to == "court":
-      appear_with_children_prevent
-  if parenting_time != "reserve":
-    if parenting_time == "restrict" or parenting_time == "deny":
-      restrict_or_deny_pt_reasons
-    if parenting_time == "restrict" or parenting_time == "grant":
-      if pt_format == "interview":
-        if pt_weekdays:
-          pt_weekday_days
-        if pt_weekends:
-          pt_weekend_days
-        if pt_holidays:
-          pt_holiday_list
-        pt_start_date
-      if pt_supervised:
-        if pt_supervisor_type == "person":
-          pt_supervisor.name.first
-      if pt_location_identified:
-        pt_location.address
-      pt_transportation
-      if pt_separate_pickup_location:
-        pt_pickup_location.address
-      if pt_separate_return_location:
-        pt_return_location.address
-      pt_immediate_return
+  if minor_kids_with_respondent:
+    if parentage == "parentage_established_other":
+      parentage_other
+    if primary_caretaker == "other":
+      other_caretaker.name.first
+      other_caretaker.address.address
+    temp_custody_of_children  
+    physical_care_of_children
+    no_conceal_children
+    if no_removal_school:
+      keep_schools_confidential
+    no_records_no_contact
+    if current_possession_of_children == False:
+      return_children_to
+      if return_children_to == "court":
+        appear_with_children_prevent
+    if parenting_time != "reserve":
+      if parenting_time == "restrict" or parenting_time == "deny":
+        restrict_or_deny_pt_reasons
+      if parenting_time == "restrict" or parenting_time == "grant":
+        if pt_format == "interview":
+          if pt_weekdays:
+            pt_weekday_days
+          if pt_weekends:
+            pt_weekend_days
+          if pt_holidays:
+            pt_holiday_list
+          pt_start_date
+        if pt_supervised:
+          if pt_supervisor_type == "person":
+            pt_supervisor.name.first
+        if pt_location_identified:
+          pt_location.address
+        pt_transportation
+        if pt_separate_pickup_location:
+          pt_pickup_location.address
+        if pt_separate_return_location:
+          pt_return_location.address
+        pt_immediate_return
 
   nav.set_section('section_property')
   if award_personal_property:
@@ -215,16 +216,22 @@ code: |
     phone_account_holder
     phone_provider
     cell_numbers.gather()
-      
   if restrict_other_property:
     restricted_property
     restrict_property_reason
   restrict_elderly_petitioner_resources 
  
- 
   nav.set_section('section_remedies')
+  if minor_kids_with_respondent:
+    temp_child_support
+  if relationship_type['se'] == True or relationship_type['xs'] == True:
+    temp_maintenance    
+  expenses_none    
+    
   if request_counseling:
     dv_counseling
+  misc_remedies_text
+
 
   nav.set_section('section_respondent')
   knows_respondent_dob
@@ -2374,18 +2381,6 @@ code: |
     cell_numbers.there_is_another = False
 ---
 
-
-
-
-
-
-
-
-
-
-
-
----
 id: restrict other property
 question: |
   Is there other property you want the court to protect?
@@ -2432,6 +2427,136 @@ subquestion: |
 fields:
   - no label: restrict_elderly_petitioner_resources
     datatype: yesnoradio
+---
+
+---
+id: request temporary support
+question: |
+  Do you want ${other_parties[0].name.full(middle="full")} to pay temporary child support?
+subquestion: |
+  The court can order temporary child support only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
+
+fields:
+  - no label: temp_child_support
+    datatype: yesnoradio
+---
+id: request maintenance
+question: |
+  Do you want ${other_parties[0].name.full(middle="full")} to pay temporary maintenance?
+subquestion: |
+  Maintenance used to be called "spousal support" or "alimony."
+  
+  The court can order temporary maintenance only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
+
+fields:
+  - no label: temp_maintenance
+    datatype: yesnoradio
+---
+id: expenses
+question: |
+  Do you want ${other_parties[0].name.full(middle="full")} to pay for losses caused by abuse, neglect, or exploitation?
+subquestion: |
+  The court can order ${other_parties[0].name.full(middle="full")} to pay only after they have received written notice or attended the court hearing where this is decided.
+
+  If you do not know the exact amount you can estimate. Bring receipts and proof of payment to court if you have them.
+fields:
+  - I do not want to request any repayment: expenses_none
+    datatype: yesnowide
+    disable others: True
+  - Medical_expenses: expenses_medical
+    datatype: yesnowide
+  - "Amount": expenses_medical_amount
+    datatype: currency
+    min: 0
+    show if: expenses_medical
+  - "Lost income": expenses_lost_income
+    datatype: yesnowide
+  - "Amount": expenses_lost_income_amount
+    datatype: currency
+    min: 0
+    show if: expenses_lost_income
+  - "Repair or replace property damaged or taken": expenses_property
+    datatype: yesnowide
+  - "Amount": expenses_property_amount
+    datatype: currency
+    min: 0
+    show if: expenses_property    
+  - "Moving and other travel expenses": expenses_moving
+    datatype: yesnowide
+  - "Amount": expenses_moving_amount
+    datatype: currency
+    min: 0
+    show if: expenses_moving
+  - "Temporary housing or counseling at a domestic violence shelter": expenses_shelter
+    datatype: yesnowide
+  - "Amount": expenses_shelter_amount
+    datatype: currency
+    min: 0
+    show if: expenses_shelter
+  - "Expenses for housing and meals, other than a domestic violence shelter": expenses_housing
+    datatype: yesnowide
+  - "Amount": expenses_housing_amount
+    datatype: currency
+    min: 0
+    show if: expenses_housing
+  - "Expenses for search and recovery of children": expenses_children
+    datatype: yesnowide
+  - "Amount": expenses_children_amount
+    datatype: currency
+    min: 0
+    show if: expenses_children
+  - "Attorney's fees": expenses_lawyer
+    datatype: yesnowide
+  - "Amount": expenses_lawyer_amount
+    datatype: currency
+    min: 0
+    show if: expenses_lawyer
+  - "Other expenses (describe below)": expenses_other
+    datatype: yesnowide
+  - "Other expenses (if more than one, list all)": expenses_other_kind
+    maxlength: 40
+    show if: expenses_other
+  - "Amount (if more than one, enter total)": expenses_other_amount
+    datatype: currency
+    min: 0
+    show if: expenses_other
+validation code: |
+  if not (expenses_none or expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_shelter or expenses_housing or expenses_children or expenses_other):
+    validation_error("Check at least one option.", field="expenses_other")
+
+---
+reconsider: True
+code: |
+  if stay_away or no_communication:
+    no_contact_text = "No contact by any means with protected parties. "
+    add_no_contact_language = True
+  else: 
+    no_contact_text = ""
+    add_no_contact_language = False
+---
+id: misc remedies
+question: |
+  What else do you want the court to order ${other_parties[0].name.full(middle="full")} to do or to stop doing?
+subquestion: |
+  % if add_no_contact_language:
+  Because you are asking the court to order ${other_parties[0].name.full(middle="full")} to stay away or to stop communication, "No contact by any means with protected parties" will be added. You can change this below.
+  % endif
+fields:
+  - ${other_parties[0].name.full(middle="full")} should be ordered to:: misc_remedies_text
+    input type: area
+    rows: 4
+    maxlength: 400
+    required: False
+    default: |
+      ${ no_contact_text }
+  - Because:: misc_remedies_because_text
+    input type: area
+    rows: 4
+    maxlength: 400
+    required: False
+    
+
+
 
 
 
@@ -2939,24 +3064,109 @@ attachment:
     - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == True else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }
     - "animals_list": ${ comma_and_list([item.name.text + " (a " + item.description + ")" for item in pets]) if possession_of_animals else "" }
+    - "temp_support_cb": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) or (temp_maintenance == True and (relationship_type['se'] == True or relationship_type['xs'] == True)) else '' }
+    - "temp_child_support": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) else '' }
+    - "temp_maintenance": ${ True if (temp_maintenance == True and (relationship_type['se'] == True or relationship_type['xs'] == True)) else '' }
 
-
-
-
-
-
-
-
+    - "payment_for_losses_cb":  |
+        % if not expenses_none and (expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_housing or expenses_children or expenses_lawyer or expenses_other):
+        ${ True }
+        % endif
+    - "expenses_any_cb":  |
+        % if not expenses_none and (expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_housing or expenses_children or expenses_lawyer or expenses_other):
+        ${ True }
+        % endif
+    - "expenses_medical": |
+        % if not expenses_none:
+        ${ expenses_medical }
+        % endif
+    - "expenses_medical_amount":  |
+        % if not expenses_none:
+        ${ thousands(expenses_medical_amount, show_decimals=True) }
+        % endif
 
       # page 9
+    - "expenses_lost_income":  |
+        % if not expenses_none:
+        ${ expenses_lost_income }
+        % endif
+    - "expenses_lost_income_amount":  |
+        % if not expenses_none:
+        ${ thousands(expenses_lost_income_amount, show_decimals=True) }
+        % endif
+    - "expenses_property":  |
+        % if not expenses_none:
+        ${ expenses_property }
+        % endif
+    - "expenses_property_amount":  |
+        % if not expenses_none:
+        ${ thousands(expenses_property_amount, show_decimals=True) }
+        % endif
+    - "expenses_moving":  |
+        % if not expenses_none:
+        ${ expenses_moving }
+        % endif
+    - "expenses_moving_amount":  |
+        % if not expenses_none:
+        ${ thousands(expenses_moving_amount, show_decimals=True) }
+        % endif
+    - "expenses_housing":  |
+        % if not expenses_none:
+        ${ expenses_housing }
+        % endif
+    - "expenses_housing_amount":  |
+        % if not expenses_none:
+        ${ thousands(expenses_housing_amount, show_decimals=True) }
+        % endif
+    - "expenses_children":  |
+        % if not expenses_none:
+        ${ expenses_children }
+        % endif
+    - "expenses_children_amount":  |
+        % if not expenses_none:
+        ${ thousands(expenses_children_amount, show_decimals=True) }
+        % endif
+    - "expenses_lawyer":  |
+        % if not expenses_none:
+        ${ expenses_lawyer }
+        % endif
+    - "expenses_lawyer_amount":  |
+        % if not expenses_none:
+        ${ thousands(expenses_lawyer_amount, show_decimals=True) }
+        % endif
+    - "expenses_other":  |
+        % if not expenses_none:
+        ${ expenses_other }
+        % endif
+    - "expenses_other_kind":  |
+        % if not expenses_none:
+        ${ expenses_other_kind }
+        % endif
+    - "expenses_other_amount":  |
+        % if not expenses_none:
+        ${ thousands(expenses_other_amount, show_decimals=True) }
+        % endif      
+        
     - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
     - "childrens_records_cb": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and ( no_records_no_contact or no_records_hide_address or no_records_no_removal ) else "" }
     - "no_records_no_contact": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_contact else "" }
     - "no_records_hide_address": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_hide_address else "" }
     - "no_records_no_removal": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_removal else "" }
+    - "expenses_shelter":  |
+        % if not expenses_none:
+        ${ expenses_shelter }
+        % endif
+    - "expenses_shelter_amount":  |
+        % if not expenses_none:
+        ${ thousands(expenses_shelter_amount, show_decimals=True) }
+        % endif
+
+    - "misc_remedies_cb": ${ True if misc_remedies_text != '' else '' }
+    - "misc_remedies_text": ${ misc_remedies_text }
 
 
       # page 10
+    - "misc_remedies_because_text": ${ misc_remedies_because_text if misc_remedies_text != '' else '' }
     - "separate_phone_service_cb": ${ True if separate_phone_service else '' }
     - "phone_provider": ${ phone_provider if separate_phone_service else '' }
     - "phone_account_holder": |
@@ -4035,7 +4245,62 @@ review:
       **Should the court protect an elderly person's resources from  ${other_parties[0].name.full(middle="full")}?**
       ${ word(yesno(restrict_elderly_petitioner_resources)) }
 
+  - Edit: temp_child_support
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary child support?**
+      ${ word(yesno(temp_child_support)) }
+    show if: minor_kids_with_respondent == True
+  - Edit: temp_maintenance
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary maintenance?**
+      ${ word(yesno(temp_maintenance)) }
+    show if: (relationship_type['se'] == True or relationship_type['xs'] == True)
+  - Edit: expenses_none
+    button: |
+      **Losses you want ${other_parties[0].name.full(middle="full")} to pay for:**
 
+      % if expenses_none:
+      * None
+      % else:
+      % if expenses_medical:
+      * Medical expenses - ${ currency(expenses_medical_amount) }
+      % endif
+      % if expenses_lost_income:
+      * Lost income - ${ currency(expenses_lost_income_amount) }
+      % endif
+      % if expenses_property:
+      * Repair or replace property damaged or taken - ${ currency(expenses_property_amount) }
+      % endif
+      % if expenses_moving:
+      * Moving and other travel expenses - ${ currency(expenses_moving_amount) }
+      % endif
+      % if expenses_shelter:
+      * Temporary housing or counseling at a domestic violence shelter - ${ currency(expenses_shelter_amount) }
+      % endif
+      % if expenses_housing:
+      * Expenses for housing and meals, other than a domestic violence shelter - ${ currency(expenses_housing_amount) }
+      % endif
+      % if expenses_children:
+      * Expenses for search and recovery of children - ${ currency(expenses_children_amount) }
+      % endif
+      % if expenses_lawyer:
+      * Attorney's fees - ${ currency(expenses_lawyer_amount) }
+      % endif
+      % if expenses_other:
+      * Other: ${ expenses_other_kind } - ${ currency(expenses_other_amount) }
+      % endif
+      % endif
+
+
+
+  - Edit: misc_remedies_text
+    button: |
+      **What else do you want the court to order ${other_parties[0].name.full(middle="full")} to do or to stop doing?**
+      % if misc_remedies_text == "":
+      Nothing
+      % else:
+      ${ misc_remedies_text } Because: ${ misc_remedies_because_text }
+      % endif
 
 
 
