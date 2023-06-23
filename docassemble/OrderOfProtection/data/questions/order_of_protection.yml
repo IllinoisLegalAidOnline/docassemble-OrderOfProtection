@@ -44,6 +44,9 @@ objects:
   - other_return_property_person: ALIndividual
   - other_transfer_property_person: ALIndividual
   - property_transfer_location: ALAddress
+  - pets: DAList.using(object_type=Thing, there_are_any=True)
+  - other_phone_account_holder: ALIndividual
+  - cell_numbers: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 
 ---
@@ -206,7 +209,17 @@ code: |
       property_transfer_location.address
   if property_transfer_know_date:
     property_transfer_date
- 
+  if possession_of_animals:
+    pets.gather()
+  if separate_phone_service:
+    phone_account_holder
+    phone_provider
+    cell_numbers.gather()
+      
+  if restrict_other_property:
+    restricted_property
+    restrict_property_reason
+  restrict_elderly_petitioner_resources 
  
  
   nav.set_section('section_remedies')
@@ -287,28 +300,6 @@ subquestion: |
   After you download your ${ form_name } forms, you must file them with the court. This program does not file your ${ form_name } for you.
   
   Read the "How to Ask for an Order of Protection" instructions you can download at the end of this program. 
----
-#id: accept terms
-#question: |
-#  Terms of use
-#subquestion: |
-#  This program does not provide legal advice. It does not take the place of advice from a lawyer.
-#
-#  Using this program does not create an attorney-client relationship between you and Illinois Legal Aid Online or its employees.
-#
-#  ${ collapse_template(get_legal_help) }  
-#
-#fields:
-#  - To continue, you must accept the [**terms of use**](https://www.illinoislegalaid.org/about/terms-of-use).: accept
-#    datatype: checkboxes
-#    none of the above: False
-#    minlength: 1
-#    choices:
-#      - I accept the terms of use.
-#    validation messages:
-#      minlength: |
-#        You cannot continue unless you agree to the terms of use. 
-#continue button field: accept_terms
 ---
 template: get_legal_help
 subject: |
@@ -2269,6 +2260,180 @@ fields:
     min: ${ today().format("yyyy-MM-dd") }
   - Time: property_transfer_time
     datatype: time
+---
+id: any pets to protect
+question: |
+  Do you want the court to give you possession of all family pets or other animals?
+fields:
+  - no label: possession_of_animals
+    datatype: yesnoradio
+---
+id: pet details
+question: |
+  % if i == 0:
+  Pet you want possession of
+  % else:
+  Next pet you want possession of
+  % endif
+fields:
+  - Pet name: pets[i].name.text
+  - Description: pets[i].description
+---
+id: any other pets
+question: |
+  Do you have another pets you want to protect?
+subquestion: |
+  % if len(pets.elements) >= 1:  
+  So far you have told us about ${comma_and_list([item.name.text + " (a " + item.description + ")" for item in pets])}.
+  % endif
+fields:
+  - "Any other pets?": pets.there_is_another
+    datatype: yesnoradio
+---
+id: want cell phone account separation
+question: |
+  Do you want the court to order that your cell phone accounts be separated?
+subquestion: |
+  If you or your children are on ${other_parties[0].name.full(middle="full")}'s cell phone account, you can ask the court to separate the accounts. You will be responsible for paying the cell phone service of the separate account. 
+fields:
+  - no label: separate_phone_service
+    datatype: yesnoradio
+---
+id: cell phone account holder name
+question: |
+  Who is the cell phone account holder?
+subquestion: |
+  This is also called the billing account holder.
+fields:
+  - no label: phone_account_holder
+    datatype: radio
+    choices:
+      - ${other_parties[0].name.full(middle="full")}: respondent
+      - Someone else: other
+  - First: other_phone_account_holder.name.first
+    show if:
+      variable: phone_account_holder
+      is: "other"
+  - Middle: other_phone_account_holder.name.middle
+    required: False
+    show if:
+      variable: phone_account_holder
+      is: "other"
+  - Last: other_phone_account_holder.name.last
+    show if:
+      variable: phone_account_holder
+      is: "other"
+  - Suffix: other_phone_account_holder.name.suffix
+    required: False
+    code: |
+      name_suffix()
+    show if:
+      variable: phone_account_holder
+      is: "other"
+---
+id: cell phone account details
+question: |
+  Cell phone account details
+fields:
+  - Cell phone service provider: phone_provider
+    help: |
+      Examples: Verizon or T-Mobile
+  - Billing phone number: billing_phone_number
+    datatype: al_international_phone
+---
+id: cell phone number to separate
+question: |
+  % if i == 0:
+  Cell phone number you want to separate 
+  % else:
+  Next cell phone number you want to separate 
+  % endif
+subquestion: |
+  You can enter up to 4 phone numbers. This is the ${ ordinal(i) } number.
+fields:
+  - Phone number: cell_numbers[i].name.text
+    datatype: al_international_phone
+---
+id: any other phone numbers
+question: |
+  Do you have another phone number you want to separate?
+subquestion: |
+  % if len(cell_numbers.elements) >= 1:  
+  You can enter up to 4 phone numbers. So far you have told us about ${comma_and_list([phone_number_formatted(item.name.text) for item in cell_numbers])}.
+  % endif
+fields:
+  - "Any other phone numbers?": cell_numbers.there_is_another
+    datatype: yesnoradio
+---
+code: |
+  cell_numbers[i].name.text
+  cell_numbers[i].complete = True
+---
+code: |
+  if cell_numbers.number_gathered() >= 4:
+    cell_numbers.there_is_another = False
+---
+
+
+
+
+
+
+
+
+
+
+
+
+---
+id: restrict other property
+question: |
+  Is there other property you want the court to protect?
+subquestion: |
+  The court can order ${other_parties[0].name.full(middle="full")} not to take, hide, damage, or dispose of property. This can include personal property or real estate. 
+fields:
+  - no label: restrict_other_property
+    datatype: yesnoradio
+---
+id: restricted property
+question: |
+  What property should ${other_parties[0].name.full(middle="full")} be protected?
+subquestion: |
+  The court can order ${other_parties[0].name.full(middle="full")} not to take, hide, damage, or dispose of property. This can include personal property or real estate. 
+fields:
+  - Other property to protect (separate by commas): restricted_property
+    input type: area
+    rows: 2
+    maxlength: 160
+---
+id: why property should be restricted
+question: |
+  Why should the property be protected from ${other_parties[0].name.full(middle="full")}?
+subquestion: | 
+  You said this property should be protected: ${ restricted_property.rstrip('.') }.
+fields:
+  - no label: restrict_property_reason
+    datatype: radio
+    choices:
+      - I own the property.: petitioner_owns
+      - We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.: both_own
+      - I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.: divorce
+  - Has a divorce been filed yet?: restrict_divorce_filed
+    datatype: yesnoradio
+    show if:
+      variable: restrict_property_reason
+      is: "divorce"
+---
+id: restrict resources of elderly petitioner
+question: |
+  Should ${other_parties[0].name.full(middle="full")} be ordered not to use an elderly person's money or property for themselves?
+subquestion: |
+  If the Order of Protection will include any elderly people, this can protect their financial resources and property.
+fields:
+  - no label: restrict_elderly_petitioner_resources
+    datatype: yesnoradio
+
+
 
 
 
@@ -2763,6 +2928,19 @@ attachment:
     - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
     - "property_transfer_time": ${ format_time(property_transfer_time) if property_transfer_know_date == True else ''  }
+    - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == True else "" }
+    - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
+    - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
+    - "restrict_property_reason_petitioner_owns": ${ True if (restrict_property_reason == "petitioner_owns" and restrict_other_property == True ) else "" }
+    - "restrict_property_reason_both_own": ${ True if (restrict_property_reason == "both_own" and restrict_other_property == True ) else "" }
+    - "restrict_property_reason_divorce": ${ True if (restrict_property_reason == "divorce" and restrict_other_property == True ) else "" }
+    - "restrict_divorce_filed_yes": ${ True if (restrict_divorce_filed == True and restrict_other_property == True and restrict_property_reason == "divorce") else "" }
+    - "restrict_divorce_filed_no": ${ True if (restrict_divorce_filed == False and restrict_other_property == True and  restrict_property_reason == "divorce") else "" }
+    - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == True else '' }
+    - "possession_of_animals": ${ True if possession_of_animals else "" }
+    - "animals_list": ${ comma_and_list([item.name.text + " (a " + item.description + ")" for item in pets]) if possession_of_animals else "" }
+
+
 
 
 
@@ -2776,6 +2954,24 @@ attachment:
     - "no_records_no_contact": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_contact else "" }
     - "no_records_hide_address": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_hide_address else "" }
     - "no_records_no_removal": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_removal else "" }
+
+
+      # page 10
+    - "separate_phone_service_cb": ${ True if separate_phone_service else '' }
+    - "phone_provider": ${ phone_provider if separate_phone_service else '' }
+    - "phone_account_holder": |
+        % if phone_account_holder == 'respondent' and separate_phone_service == True:
+        ${other_parties[0].name.full(middle="full")}
+        % elif phone_account_holder == 'other' and separate_phone_service == True:
+        ${ other_phone_account_holder.name.full(middle="full") }
+        % else:
+        ${ "" }
+        % endif
+    - "billing_phone_number": ${ phone_number_formatted(billing_phone_number) if separate_phone_service else '' }
+    - "cell_number_1": ${ phone_number_formatted(cell_numbers[0].name.text) if separate_phone_service else '' }
+    - "cell_number_2": ${ phone_number_formatted(cell_numbers[1].name.text) if separate_phone_service else '' }
+    - "cell_number_3": ${ phone_number_formatted(cell_numbers[2].name.text) if separate_phone_service else '' }
+    - "cell_number_4": ${ phone_number_formatted(cell_numbers[3].name.text) if separate_phone_service else '' }
 
 
 
@@ -3767,6 +3963,85 @@ review:
       **Property transfer should happen on:**
       ${ property_transfer_date } at ${ format_time(property_transfer_time) }
     show if: property_transfer_know_date == True
+  - Edit: possession_of_animals
+    button: |
+      **Do you want court to give you possession of family pets or other animals?**
+      ${ word(yesno(possession_of_animals)) }
+  - Edit: pets.revisit
+    button: |
+      **Pets you want possession of:**
+
+      % for my_var in pets:
+        * ${ my_var.name.text } (a ${ my_var.description })
+      % endfor
+    show if: (possession_of_animals == True)
+  - Edit: separate_phone_service
+    button: |
+      **Do you want the court to order that your cell phone accounts be separated?**
+      ${ word(yesno(separate_phone_service)) }
+  - Edit: phone_account_holder
+    button: |
+      **Who is the cell phone account holder?**
+      % if phone_account_holder == 'respondent':
+      ${other_parties[0].name.full(middle="full")}
+      % else:
+      ${ other_phone_account_holder.name.full(middle="full") }
+      % endif
+    show if: separate_phone_service == True
+  - Edit: phone_provider
+    button: |
+      **Cell phone account details:**
+      
+      * Provider: ${ phone_provider }
+      * Billing phone number: ${ phone_number_formatted(billing_phone_number) }
+    show if: separate_phone_service == True
+  - Edit: cell_numbers.revisit
+    button: |
+      **Phone numbers you want to separate:**
+
+      % for my_var in cell_numbers:
+        * ${ phone_number_formatted(my_var.name.text) }
+      % endfor
+    show if: separate_phone_service == True
+
+
+  - Edit: restrict_other_property
+    button: |
+      **Is there other property you want the court to protect?**
+      ${ word(yesno(restrict_other_property)) }
+  - Edit: restricted_property
+    button: |
+      **Other property you want to protect:**
+      ${ restricted_property.rstrip('.') }
+    show if: (restrict_other_property == True and respo_property['other'] == True)
+  - Edit: restrict_property_reason
+    button: |
+      **Why should the other property be protected?**
+      % if restrict_property_reason == "petitioner_owns":
+      I own the property.
+      % elif restrict_property_reason == "both_own":      
+      We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.
+      % else:
+      I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.      
+      % endif
+    show if: restrict_other_property == True
+  - Edit: restrict_property_reason
+    button: |
+      **Has a divorce been filed yet?**
+      ${ word(yesno(restrict_divorce_filed)) }
+    show if: (restrict_other_property == True and restrict_property_reason == "divorce")
+  - Edit: restrict_elderly_petitioner_resources
+    button: |
+      **Should the court protect an elderly person's resources from  ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(restrict_elderly_petitioner_resources)) }
+
+
+
+
+
+
+
+
 
 
   - Edit: case_number
@@ -3816,6 +4091,7 @@ review:
     button: |
       **Include as a protected person?**
       ${ word(yesno(x.protect)) }
+continue button label: Next
 ---
 id: petitioner kids revisit
 continue button field: petitioner_kids.revisit
@@ -3898,6 +4174,8 @@ review:
     button: |
       **What happened:**
       ${ x.name.text }
+continue button label: Next
+
 ---
 
 
@@ -3946,6 +4224,7 @@ review:
     button: |
       **Year:**
       ${ x.year }
+continue button label: Next
 
 ---
 id: other cases revisit
@@ -3990,6 +4269,7 @@ review:
     button: |
       **Year:**
       ${ x.year }
+continue button label: Next
 
 
 ---
@@ -4009,10 +4289,109 @@ columns:
       row_item.name.text if defined("row_item.name.text") else ""
   - ${other_parties[0].name.full(middle="full")} should return: |
       word(yesno(row_item.respo_has)) if defined("row_item.respo_has") else ""
-edit:
-  - petitioner_personal_property.name.text
+  - Edit: |
+      action_button_html(url_action(row_item.attr_name("review_personal_property_details")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
+---
+id: personal property edit
+continue button field: x.review_personal_property_details
+generic object: DAObject
+question: |
+  Edit personal property details
+review: 
+  - Edit: x.name.text
+    button: |
+      **Item name:**
+      ${ x.name.text  }
+  - Edit: x.respo_has
+    button: |
+      **${other_parties[0].name.full(middle="full")} should return:**
+      ${ word(yesno(x.respo_has)) } 
+continue button label: Next
+---
+
+
+
+
+
+
+---
+id: pets revisit
+continue button field: pets.revisit
+question: |
+  Edit the pet you want to protect
+subquestion: |
+  ${ pets.table }
+
+  ${ pets.add_action() }
+---
+table: pets.table
+rows: pets
+columns:
+  - Pet name: |
+      row_item.name.text if defined("row_item.name.text") else ""
+  - Description: |
+      row_item.description if defined("row_item.name.text") else ""
+  - Edit: |
+      action_button_html(url_action(row_item.attr_name("review_pet_details")), label="Edit", icon="pencil-alt")
+delete buttons: True
+confirm: True
+---
+id: pet edit
+continue button field: x.review_pet_details
+generic object: DAObject
+question: |
+  Edit pet details
+review: 
+  - Edit: x.name.text
+    button: |
+      **Name:**
+      ${ x.name.text  }
+  - Edit: x.description
+    button: |
+      **Description:**
+      ${ x.description } 
+continue button label: Next
+
+
+
+
+---
+id: cell phone numbers revisit
+continue button field: cell_numbers.revisit
+question: |
+  Edit the phone numbers you want to separate
+subquestion: |
+  ${ cell_numbers.table }
+
+  % if cell_numbers.number() < 4:
+  ${ cell_numbers.add_action() }
+  % endif
+---
+table: cell_numbers.table
+rows: cell_numbers
+columns:
+  - Phone number: |
+      phone_number_formatted(row_item.name.text) if defined("row_item.name.text") else ""
+  - Edit: |
+      action_button_html(url_action(row_item.attr_name("review_cell_number_details")), label="Edit", icon="pencil-alt")
+delete buttons: True
+confirm: True
+---
+id: cell number edit
+continue button field: x.review_cell_number_details
+generic object: DAObject
+question: |
+  Edit cell phone numbers
+review: 
+  - Edit: x.name.text
+    button: |
+      **Cell phone number:**
+      ${ phone_number_formatted(x.name.text)  }
+continue button label: Next
+
+
 
 ---
 id: basic info review screen
