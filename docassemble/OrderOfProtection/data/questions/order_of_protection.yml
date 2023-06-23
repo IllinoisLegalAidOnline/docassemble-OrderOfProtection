@@ -232,6 +232,9 @@ code: |
     dv_counseling
   misc_remedies_text
 
+  if firearms_turnover:
+    firearms_threat
+    firearms_reasons
 
   nav.set_section('section_respondent')
   knows_respondent_dob
@@ -251,6 +254,10 @@ code: |
 
   nav.set_section('section_filing_info')
   eop 
+  e_signature
+  if users[0].email_notice == True:
+    users[0].email
+
   case_number
   nav.set_section('section_download')  
   #clean_up
@@ -2435,7 +2442,6 @@ question: |
   Do you want ${other_parties[0].name.full(middle="full")} to pay temporary child support?
 subquestion: |
   The court can order temporary child support only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
-
 fields:
   - no label: temp_child_support
     datatype: yesnoradio
@@ -2523,6 +2529,72 @@ fields:
 validation code: |
   if not (expenses_none or expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_shelter or expenses_housing or expenses_children or expenses_other):
     validation_error("Check at least one option.", field="expenses_other")
+---
+id: remove firearms
+question: |
+  Do you want the court to order ${other_parties[0].name.full(middle="full")} to turn over their guns?
+subquestion: |
+  The court may require that ${other_parties[0].name.full(middle="full")} receives written notice or attends a court hearing before deciding that their guns should be taken away.
+fields:
+  - no label: firearms_turnover
+    datatype: yesnoradio
+---
+id: threatened with firearms
+question: |
+  Has ${other_parties[0].name.full(middle="full")} threatened you or other people you want to protect with a weapon?
+subquestion: |
+  Just knowing that ${other_parties[0].name.full(middle="full")} has a weapon can be a threat if you are afraid they could use it.
+  
+  Note: If ${other_parties[0].name.full(middle="full")} threatened with a weapon, be sure to explain that in the [**What happened**](${ url_action('section_incidents') }) section. Threats are incidents of abuse that are important to your case.
+fields:
+  - no label: firearms_threat
+    datatype: yesnoradio
+---
+id: remove firearms additional reasons
+question: |
+  Are there other reasons why the court should take away ${other_parties[0].name.full(middle="full")}'s guns?
+subquestion: |
+  Check all that apply.
+fields:
+  - ${other_parties[0].name.full(middle="full")}:: firearms_reasons
+    datatype: checkboxes
+    none of the above: False
+    required: False
+    choices:
+      - Has a history of violence.: violence
+      - Has a history of possession or use of firearms.: use
+      - May be a threat to the safety of the public or police officers.: safety
+      - Is now or has been suicidal.: suicidal
+      - Carries a firearm on their person or in a vehicle. (Enter car details below, if known.): vehicle
+  - Car make: respondent_car_make
+    help: |
+      Examples: Chevrolet, Honda, and Ford
+    required: False
+    maxlength: 30
+    show if:
+      variable: firearms_reasons['vehicle']
+      is: True
+  - Car model: respondent_car_model
+    help: |
+      Examples: Malibu, Civic, and Mustang
+    required: False
+    maxlength: 30
+    show if:
+      variable: firearms_reasons['vehicle']
+      is: True
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ---
 reconsider: True
@@ -2554,7 +2626,57 @@ fields:
     rows: 4
     maxlength: 400
     required: False
-    
+---
+id: e-signature
+question: |
+  Do you want to add your e-signature to your Petition for Order of Protection?
+subquestion: |
+  If you do not add your **{e-signature}**, you must sign your paper form before you file it.
+
+  ${ collapse_template(signature_help) }  
+fields:
+  - "Add e-signature?": e_signature
+    datatype: yesnoradio
+terms:
+  - "e-signature": |
+      An e-signature is an electronic signature. It is a digital version of a signature that has the same effect as a hand-written signature. 
+---
+template: signature_help
+subject: |
+  **What does it mean to sign the *Petition for Order of Protection*?**
+content: |  
+  By signing your *Petition for Order of Protection*, you are certifying that:
+  
+  * Everything on the form is true and correct, and
+  * You understand that making a false statement on the form is perjury, which can result in criminal penalties.
+  
+  See the [**Code of Civil Procedure, 735 ILCS 5/1-109**](https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm), for more information.
+---    
+id: notice by email
+question: |
+  Do you have an email address?
+subquestion: |
+  If you have an email address, you must list it so the court and other parties can contact you about this case.
+fields:
+  - "Email?": users[0].email_notice
+    datatype: yesnoradio
+---
+id: email address
+question: |
+  What email address do you want to list on your court forms?
+subquestion: |
+  **This email will appear on your court forms.** If you do not want to enter your personal email address, you can create a new email account to get email about your case.
+  
+  Try one of these email services to make a new account:
+  
+  * [**Gmail**](https://accounts.google.com/SignUp)
+  * [**Outlook**](https://outlook.live.com/owa/?nlp=1&signup=1)
+  * [**Yahoo**](https://login.yahoo.com/account/create?.lang=en-US&.intl=us)
+  
+  Be sure to check your email daily, otherwise you may miss important information about your case.
+fields:
+  - Email address: users[0].email    
+    datatype: email
 
 
 
@@ -2693,8 +2815,12 @@ attachment:
 
     - "hide_address": ${ hide_address }
     - "notice_address_one_line": ${ users[0].address.on_one_line(bare=True) if hide_address else ""}
+    - "petitioner_notice_email": ${ users[0].email if (users[0].email_notice and hide_address) else ""}
     - "show_address": ${ not hide_address }
     - "home_address_one_line": ${ users[0].address.on_one_line(bare=True) if not hide_address else "" }
+    - "petitioner_home_email": ${ users[0].email if (users[0].email_notice and not hide_address) else ""}
+    
+    
       # page 2
     - "respondent_dob": |
         % if knows_respondent_dob == 'exact' and other_parties[0].birthdate != "":
@@ -3148,6 +3274,23 @@ attachment:
         % endif      
         
     - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
+    
+    - "firearms_cb": ${ True if firearms_turnover else '' }
+    - "firearms_turnover": ${ True if firearms_turnover else '' }
+    - "respondent_violent": ${ True if (firearms_turnover and firearms_reasons['violence'] == True) else ''  }
+    - "respondent_firearms_history": ${ True if (firearms_turnover and firearms_reasons['use'] == True) else ''  }
+    - "respondent_firearms_on_person": ${ True if (firearms_turnover and firearms_reasons['vehicle'] == True) else ''  }
+    - "respondent_car_details": |
+        % if (firearms_turnover and firearms_reasons['vehicle'] == True):
+        ${ respondent_car_make } ${ respondent_car_model }
+        % endif
+    - "respondent_threat": ${ True if (firearms_turnover and firearms_reasons['safety'] == True) else ''  }
+    - "respondent_suicidal": ${ True if (firearms_turnover and firearms_reasons['suicidal'] == True) else ''  }    
+    
+    
+    
+    
+    
     - "childrens_records_cb": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and ( no_records_no_contact or no_records_hide_address or no_records_no_removal ) else "" }
     - "no_records_no_contact": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_contact else "" }
     - "no_records_hide_address": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_hide_address else "" }
@@ -3174,14 +3317,13 @@ attachment:
         ${other_parties[0].name.full(middle="full")}
         % elif phone_account_holder == 'other' and separate_phone_service == True:
         ${ other_phone_account_holder.name.full(middle="full") }
-        % else:
-        ${ "" }
         % endif
     - "billing_phone_number": ${ phone_number_formatted(billing_phone_number) if separate_phone_service else '' }
     - "cell_number_1": ${ phone_number_formatted(cell_numbers[0].name.text) if separate_phone_service else '' }
     - "cell_number_2": ${ phone_number_formatted(cell_numbers[1].name.text) if separate_phone_service else '' }
     - "cell_number_3": ${ phone_number_formatted(cell_numbers[2].name.text) if separate_phone_service else '' }
     - "cell_number_4": ${ phone_number_formatted(cell_numbers[3].name.text) if separate_phone_service else '' }
+    - "petitioner_signature": ${ users[0].name.full(middle="full") if e_signature else '' }
 
 
 
@@ -4290,9 +4432,47 @@ review:
       * Other: ${ expenses_other_kind } - ${ currency(expenses_other_amount) }
       % endif
       % endif
+      
+  - Edit: firearms_turnover
+    button: |
+      **Do you want the court to order ${other_parties[0].name.full(middle="full")} to turn over their guns?**
+      ${ word(yesno(firearms_turnover)) }
+  - Edit: firearms_turnover
+    button: |
+      **Has ${other_parties[0].name.full(middle="full")} threatened you or other people you want to protect with a weapon?**
+      ${ word(yesno(firearms_threat)) }
+  - Edit: firearms_reasons
+    button: |
+      **Other reasons why the court should take away ${other_parties[0].name.full(middle="full")}'s guns:**
 
-
-
+      % if firearms_reasons['violence'] and firearms_turnover:
+      * ${other_parties[0].name.full(middle="full")} has a history of violence.
+      % endif
+      % if firearms_reasons['use'] and firearms_turnover:
+      * ${other_parties[0].name.full(middle="full")} has a history of possession or use of firearms.
+      % endif
+      % if firearms_reasons['safety'] and firearms_turnover:
+      * ${other_parties[0].name.full(middle="full")} may be a threat to the safety of the public or police officers.
+      % endif
+      % if firearms_reasons['suicidal'] and firearms_turnover:
+      * ${other_parties[0].name.full(middle="full")} is now or has been suicidal.
+      % endif
+      % if firearms_reasons['vehicle'] and firearms_turnover:
+      * ${other_parties[0].name.full(middle="full")} carries a firearm on their person or in a vehicle.
+      % endif
+      % if firearms_reasons['vehicle'] and firearms_turnover and respondent_car_make == "":
+      Car make: None entered.
+      % else:
+      Car make: ${respondent_car_make }.
+      % endif
+      % if firearms_reasons['vehicle'] and firearms_turnover and respondent_car_model == "":
+      Car model: None entered.
+      % else:
+      Car model: ${respondent_car_model }.
+      % endif
+      
+      
+      
   - Edit: misc_remedies_text
     button: |
       **What else do you want the court to order ${other_parties[0].name.full(middle="full")} to do or to stop doing?**
@@ -4302,7 +4482,20 @@ review:
       ${ misc_remedies_text } Because: ${ misc_remedies_because_text }
       % endif
 
+  - Edit: e_signature
+    button: |
+      **Do you want to add your e-signature to your forms?**
+      ${ word(yesno(e_signature)) }
 
+  - Edit: users[0].email_notice
+    button: |
+      **Do you have an email address?**
+      ${ word(yesno(users[0].email_notice)) }
+  - Edit: users[0].email
+    button: |
+      **Your email:**
+      ${ users[0].email }
+    show if: users[0].email_notice
 
 
 
