@@ -25,9 +25,9 @@ objects:
   - other_hh_members: ALPeopleList.using(there_are_any=True)
   - dependent_adult: ALIndividual
   - high_risk_adult: ALIndividual
-  - other_ops: DAList.using(object_type=Thing, there_are_any=True)
-  - other_cases: DAList.using(object_type=Thing, there_are_any=True)
-  - incidents: DAList.using(object_type=Thing, there_are_any=True)
+  - other_ops: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
+  - other_cases: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
+  - incidents: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
   - jobs: ALAddressList.using(there_are_any=True)
   - schools: ALAddressList.using(there_are_any=True)
   #- schools[i].kids_who_attend: DADict
@@ -823,21 +823,12 @@ fields:
       - Yes: Yes
       - No: No
       - I don't know: I don't know
-#  - How many?: other_op_total
-#    datatype: number
-#    max: 9
-#    validation messages:
-#      max: |
-#        You can list up to 9 other Orders of Protection on the forms.
-#    show if: 
-#      variable: has_other_ops
-#      is: True
 ---
 id: other ops detail
 question: |
   Tell us about the ${ ordinal(i) } Order of Protection
 fields:
-  - Names of people involved: other_ops[i].name.text
+  - Names of people involved (separate by commas): other_ops[i].name.text
   - State: other_ops[i].state
     code: |
       states_list()
@@ -854,12 +845,31 @@ fields:
 id: more ops
 question: |
   Are there any more Orders of Protection you would like to list?
+subquestion: |
+  You can enter up to 9 orders of protection in total.
+  % if len(other_ops.elements) == 1:  
+  So far you told us about 1 other order of protection. 
+  % else:
+  So far you told us about ${ str(i+1) } other orders of protection. 
+  % endif
 field: other_ops.there_is_another
 choices:
   - Yes: True
   - No: False
 
 ---
+code: |
+  other_ops[i].name.text
+  other_ops[i].state
+  other_ops[i].county
+  other_ops[i].year
+  other_ops[i].complete = True
+---
+code: |
+  if other_ops.number_gathered() >= 9:
+    other_ops.there_is_another = False
+---
+
 id: other cases
 question: |
   Other court cases
@@ -874,15 +884,7 @@ fields:
       - Yes: Yes
       - No: No
       - I don't know: I don't know
-#  - How many?: other_cases_total
-#    datatype: number
-#    max: 9
-#    validation messages:
-#      max: |
-#        You can list up to 9 other court cases on the forms.
-#    show if: 
-#      variable: has_other_cases
-#      is: True
+
 ---
 id: other cases detail
 question: |
@@ -907,10 +909,30 @@ fields:
 id: more cases
 question: |
   Are there any more court cases you would like to list?
+subquestion: |
+  You can enter up to 9 cases in total.
+  % if len(other_cases.elements) == 1:  
+  So far you told us about 1 other case. 
+  % else:
+  So far you told us about ${ str(i+1) } other cases. 
+  % endif
 field: other_cases.there_is_another
 choices:
   - Yes: True
   - No: False
+---
+code: |
+  other_cases[i].state
+  other_cases[i].county
+  other_cases[i].year
+  other_cases[i].complete = True
+---
+code: |
+  if other_cases.number_gathered() >= 9:
+    other_cases.there_is_another = False
+---
+
+
 ---
 id: incidents intro
 continue button field: incidents_intro
@@ -961,12 +983,31 @@ content: |
 ---
 id: more cases
 question: |
-  Are there any more events of abuse you would like to list?
+  Are there any more incidents of abuse you would like to list?
+subquestion: |
+  You can enter up to 9 incidents in total.
+  % if len(incidents.elements) == 1:  
+  So far you told us about 1 incident. 
+  % else:
+  So far you told us about ${ str(i+1) } incidents. 
+  % endif
 field: incidents.there_is_another
 choices:
   - Yes: True
   - No: False
 ---
+code: |
+  incidents[i].date
+  incidents[i].time
+  incidents[i].name.text
+  incidents[i].complete = True
+---
+code: |
+  if incidents.number_gathered() >= 9:
+    incidents.there_is_another = False
+---
+
+
 id: no abuse
 question: |
   What do you want the court to order ${other_parties[0].name.full(middle="full")} to not do?
@@ -2363,7 +2404,7 @@ question: |
   Next cell phone number you want to separate 
   % endif
 subquestion: |
-  You can enter up to 4 phone numbers. This is the ${ ordinal(i) } number.
+  You can enter up to 4 phone numbers in total. This is the ${ ordinal(i) } number.
 fields:
   - Phone number: cell_numbers[i].name.text
     datatype: al_international_phone
@@ -2743,13 +2784,24 @@ objects:
   - op_instructions: ALDocument.using(title="Instructions", filename="instructions.pdf", has_addendum=False)
   - op_petition: ALDocument.using(title="Petition", filename="petition.pdf", has_addendum=False)
   - op_schools: ALDocument.using(title="Confidential School or Daycare", filename="confidential_schools.pdf", has_addendum=False)
+  - additional_incidents: ALDocument.using(title="Additional Incidents of Abuse", filename="additional_incidents.pdf", has_addendum=False)
+  - additional_cases: ALDocument.using(title="Additional Case Information", filename="additional_cases.pdf", has_addendum=False)
 ---
 code: |
   op_instructions.enabled = True
   op_petition.enabled = True
   op_schools.enabled = False
+  additional_incidents.enabled = False
+  additional_cases = False
   
-  
+  if incidents.number() > 4:
+    additional_incidents.enabled = True
+
+  if other_ops.number() > 2 or other_cases.number() > 2:
+    additional_cases = True
+
+
+
   if stay_away_schools or no_removal_school:
     if minor_kids_with_respondent or protect_petitioner_kids:
       if schools[0].hide or schools[1].hide:
@@ -2758,8 +2810,9 @@ code: |
 
 ---
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_petition, op_schools], filename="order_of_protection.pdf", title="All forms")
-  - al_court_bundle: ALDocumentBundle.using(elements=[op_petition, op_schools], filename="order_of_protection.pdf", title="Order of protection")
+  - op_single_pdf_bundle: ALDocumentBundle.using(elements=[op_petition, additional_incidents, additional_cases], filename="petition.pdf", title="Petition")
+  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_single_pdf_bundle, op_schools], filename="order_of_protection.pdf", title="All forms")
+  - al_court_bundle: ALDocumentBundle.using(elements=[op_single_pdf_bundle, op_schools], filename="order_of_protection.pdf", title="Order of protection")
 ---
 
 ---
@@ -3362,6 +3415,115 @@ attachment:
     - "school_2_type_school": ${ True if (schools[1].hide == True and schools[1].type=='school') else '' }
     - "school_2_type_daycare": ${ True if (schools[1].hide == True and schools[1].type=='daycare') else '' }
     - "school_2_address": ${ schools[1].on_one_line(bare=True) if schools[1].hide == True else '' }
+---
+attachment:
+  variable name: additional_incidents[i]
+  name: additional_incidents
+  filename: additional_incidents
+  skip undefined: True
+  editable: False
+  pdf template file: additional_incidents.pdf
+  fields:
+    - "county": ${ trial_court.address.county.upper() }
+    - "petitioner__1": ${ users[0].name.full(middle="full") }
+    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "case_number__1": ${ case_number }
+    - "case_number__2": ${ case_number }
+    - "protect_petitioner": ${ protect_petitioner }
+    - "protect_shared_kids": ${ protect_shared_kids }
+    #- "shared_kids_list": ${ comma_and_list(protected_minor_kids_list ) if protect_shared_kids else ''}
+    - "shared_kids_list": ${ comma_and_list([person.name.full(middle="full") for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
+    - "protect_petitioner_kids": ${ protect_petitioner_kids }
+    - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
+    - "protect_dependent_adult": ${ protect_dependent_adult }
+    - "protect_high_risk_adult": ${ protect_high_risk_adult }
+    - "protect_other_hh_members": ${ protect_other_hh_members }
+    - "other_hh_members_list": ${ other_hh_members.full_names() if protect_other_hh_members else '' }
+    - "dependent_adult": ${ dependent_adult.name.full(middle="full") if protect_dependent_adult else '' }
+    - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") if protect_high_risk_adult else '' }
+    - "incident_date_1": ${ incidents[4].date }
+    - "incident_time_1": ${ incidents[4].time }
+    - "incident_reason_1": ${ incidents[4].name.text }
+    - "incident_date_2": ${ incidents[5].date }
+    - "incident_time_2": ${ incidents[5].time }
+    - "incident_reason_2": ${ incidents[5].name.text }
+    - "incident_date_3": ${ incidents[6].date }
+    - "incident_time_3": ${ incidents[6].time }
+    - "incident_reason_3": ${ incidents[6].name.text }
+    - "incident_date_4": ${ incidents[7].date }
+    - "incident_time_4": ${ incidents[7].time }
+    - "incident_reason_4": ${ incidents[7].name.text }
+    - "incident_date_5": ${ incidents[8].date }
+    - "incident_time_5": ${ incidents[8].time }
+    - "incident_reason_5": ${ incidents[8].name.text }
+---
+attachment:
+  variable name: additional_cases[i]
+  name: additional_cases
+  filename: additional_cases
+  skip undefined: True
+  editable: False
+  pdf template file: additional_cases.pdf
+  fields:
+    - "county": ${ trial_court.address.county.upper() }
+    - "petitioner__1": ${ users[0].name.full(middle="full") }
+    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "case_number__1": ${ case_number }
+    - "protect_petitioner": ${ protect_petitioner }
+    - "protect_shared_kids": ${ protect_shared_kids }
+    #- "shared_kids_list": ${ comma_and_list(protected_minor_kids_list ) if protect_shared_kids else ''}
+    - "shared_kids_list": ${ comma_and_list([person.name.full(middle="full") for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
+    - "protect_petitioner_kids": ${ protect_petitioner_kids }
+    - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
+    - "protect_dependent_adult": ${ protect_dependent_adult }
+    - "protect_high_risk_adult": ${ protect_high_risk_adult }
+    - "protect_other_hh_members": ${ protect_other_hh_members }
+    - "other_hh_members_list": ${ other_hh_members.full_names() if protect_other_hh_members else '' }
+    - "dependent_adult": ${ dependent_adult.name.full(middle="full") if protect_dependent_adult else '' }
+    - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") if protect_high_risk_adult else '' }
+    - "other_ops_people_1": ${ other_ops[2].name.text }
+    - "other_ops_state_county_1": ${ other_ops[2].state + ", " + other_ops[0].county }
+    - "other_ops_year_1": ${ other_ops[2].year }
+    - "other_ops_people_2": ${ other_ops[3].name.text }
+    - "other_ops_state_county_2": ${ other_ops[3].state + ", " + other_ops[1].county }
+    - "other_ops_year_2": ${ other_ops[3].year }
+    - "other_ops_people_3": ${ other_ops[4].name.text }
+    - "other_ops_state_county_3": ${ other_ops[4].state + ", " + other_ops[0].county }
+    - "other_ops_year_3": ${ other_ops[4].year }
+    - "other_ops_people_4": ${ other_ops[5].name.text }
+    - "other_ops_state_county_4": ${ other_ops[5].state + ", " + other_ops[1].county }
+    - "other_ops_year_4": ${ other_ops[5].year }
+    - "other_ops_people_5": ${ other_ops[6].name.text }
+    - "other_ops_state_county_5": ${ other_ops[6].state + ", " + other_ops[0].county }
+    - "other_ops_year_5": ${ other_ops[6].year }
+    - "other_ops_people_6": ${ other_ops[7].name.text }
+    - "other_ops_state_county_6": ${ other_ops[7].state + ", " + other_ops[1].county }
+    - "other_ops_year_6": ${ other_ops[7].year }
+    - "other_ops_people_7": ${ other_ops[8].name.text }
+    - "other_ops_state_county_7": ${ other_ops[8].state + ", " + other_ops[0].county }
+    - "other_ops_year_7": ${ other_ops[8].year }
+
+    - "other_cases_type_1": ${ other_cases[2].name.text }
+    - "other_cases_state_county_1": ${ other_cases[2].state + ", " + other_ops[0].county }
+    - "other_cases_year_1": ${ other_cases[2].year }
+    - "other_cases_type_2": ${ other_cases[3].name.text }
+    - "other_cases_state_county_2": ${ other_cases[3].state + ", " + other_cases[1].county }
+    - "other_cases_year_2": ${ other_cases[3].year }
+    - "other_cases_type_3": ${ other_cases[4].name.text }
+    - "other_cases_state_county_3": ${ other_cases[4].state + ", " + other_ops[0].county }
+    - "other_cases_year_3": ${ other_cases[4].year }
+    - "other_cases_type_4": ${ other_cases[5].name.text }
+    - "other_cases_state_county_4": ${ other_cases[5].state + ", " + other_cases[1].county }
+    - "other_cases_year_4": ${ other_cases[5].year }
+    - "other_cases_type_5": ${ other_cases[6].name.text }
+    - "other_cases_state_county_5": ${ other_cases[6].state + ", " + other_ops[0].county }
+    - "other_cases_year_5": ${ other_cases[6].year }
+    - "other_cases_type_6": ${ other_cases[7].name.text }
+    - "other_cases_state_county_6": ${ other_cases[7].state + ", " + other_cases[1].county }
+    - "other_cases_year_6": ${ other_cases[7].year }
+    - "other_cases_type_7": ${ other_cases[8].name.text }
+    - "other_cases_state_county_7": ${ other_cases[8].state + ", " + other_ops[0].county }
+    - "other_cases_year_7": ${ other_cases[8].year }
 
 
 
@@ -4598,8 +4760,8 @@ question: |
 subquestion: |
   ${ incidents.table }
 
-  % if incidents.number_gathered() < 8:
-  ${ other_ops.add_action() }
+  % if incidents.number_gathered() < 9:
+  ${ incidents.add_action() }
   % endif
 ---
 table: incidents.table
@@ -4648,7 +4810,9 @@ question: |
 subquestion: |
   ${ other_ops.table }
 
+  % if other_ops.number_gathered() < 9:
   ${ other_ops.add_action() }
+  % endif
 ---
 table: other_ops.table
 rows: other_ops
@@ -4692,7 +4856,9 @@ question: |
 subquestion: |
   ${ other_cases.table }
 
+  % if other_cases.number_gathered() < 9:
   ${ other_cases.add_action() }
+  % endif
 ---
 table: other_cases.table
 rows: other_cases
