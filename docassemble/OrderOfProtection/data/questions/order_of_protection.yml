@@ -262,6 +262,8 @@ code: |
       second_service_address.address
       other_parties[0].phone_number_alt
   service_method
+  if service_method == "sheriff" and service_state != "IL":
+    service_county
 
   nav.set_section('section_filing_info')
   eop 
@@ -2811,7 +2813,33 @@ code: |
     alt_service_list.append({ "work": other_parties[0].name.full(middle="full")+ "'s work address (" + other_parties[0].work_address.on_one_line(bare=True) + ")" })
   alt_service_list.append({ "other": "An address I will enter" })
 ---
-
+id: out of state county
+question: |
+  In which county can the sheriff find ${other_parties[0].name.full(middle="full")}?
+subquestion: |
+  You said the sheriff can serve court papers on ${other_parties[0].name.full(middle="full")} at:
+  
+  % if service_address_choice == "other":
+  * ${ service_address.on_one_line(bare=True) }
+  % elif service_address_choice == "home":
+  * ${ other_parties[0].address.on_one_line(bare=True) }        
+  % else:
+  * ${ other_parties[0].work_address.on_one_line(bare=True) }        
+  % endif
+  
+  Enter the county below so the sheriff can find ${other_parties[0].name.full(middle="full")}.
+  
+  ${ collapse_template(county_lookup_help) }
+fields:
+  - County where ${other_parties[0].name.full(middle="full")} can be served: service_county
+    maxlength: 40
+---
+template: county_lookup_help
+subject: |
+  **How do I look up the county?**
+content: |  
+  You can use this **[City-to-County Finder](https://www.statsamerica.org/CityCountyFinder/)** to find the county.
+---
 
 
 
@@ -2941,6 +2969,7 @@ objects:
   - op_schools: ALDocument.using(title="Confidential School or Daycare", filename="confidential_schools.pdf", has_addendum=False)
   - additional_incidents: ALDocument.using(title="Additional Incidents of Abuse", filename="additional_incidents.pdf", has_addendum=False)
   - additional_cases: ALDocument.using(title="Additional Case Information", filename="additional_cases.pdf", has_addendum=False)
+  - op_summons: ALDocument.using(title="Summons", filename="summons.pdf", has_addendum=False)
   - affidavit_pt_supervisor: ALDocument.using(title="Affidavit of Parenting Time Supervisor", filename="affidavit_pt_supervisor.pdf", has_addendum=False)
   - efiling_exemption: ALDocument.using(title="E-filing exemption (optional)", filename="e-filing_exemption.pdf", has_addendum=False)
 ---
@@ -2950,6 +2979,7 @@ code: |
   op_single_pdf_bundle.enabled = True
   additional_cases.enabled = False
   additional_incidents.enabled = False
+  op_summons.enabled = True
   op_schools.enabled = False
   affidavit_pt_supervisor.enabled = False
   efiling_exemption.enabled = True
@@ -2990,8 +3020,8 @@ code: |
 ---
 objects:
   - op_single_pdf_bundle: ALDocumentBundle.using(elements=[op_petition, additional_cases, additional_incidents], filename="petition.pdf", title="Petition")
-  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_single_pdf_bundle, op_schools, affidavit_pt_supervisor, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
-  - al_court_bundle: ALDocumentBundle.using(elements=[op_single_pdf_bundle, op_schools, efiling_exemption], filename="order_of_protection.pdf", title="Order of protection")
+  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_single_pdf_bundle, op_schools, op_summons, affidavit_pt_supervisor, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
+  - al_court_bundle: ALDocumentBundle.using(elements=[op_single_pdf_bundle, op_schools, op_summons, efiling_exemption], filename="order_of_protection.pdf", title="Order of protection")
 ---
 
 ---
@@ -3756,6 +3786,78 @@ attachment:
     - "user_mail_address_city_state_zip": ${ users[0].address.line_two() }
     - "user_phone_number": ${ phone_number_formatted(users[0].phone_number) }
     - "user_email": ${ users[0].email if users[0].email_notice else ""}
+---
+attachment:
+  variable name: op_summons[i]
+  name: op_summons
+  filename: op_summons
+  skip undefined: True
+  editable: False
+  pdf template file: op_summons.pdf
+  fields:
+    - "county__1": ${ trial_court.address.county.upper() }
+    - "county__2": ${ trial_court.address.county.upper() }
+    - "petitioner__1": ${ users[0].name.full(middle="full") }
+    - "petitioner__2": ${ users[0].name.full(middle="full") }
+    - "respondent__1": ${other_parties[0].name.full(middle="full")}
+    - "respondent__4": ${other_parties[0].name.full(middle="full")}
+    - "case_number__1": ${ case_number }
+    - "case_number__2": ${ case_number }
+    - "case_number__3": ${ case_number }
+    - "respondent__2": ${other_parties[0].name.full(middle="full")}
+    - "service_address_line_1": |
+        % if service_address_choice == "other":
+        ${ service_address.line_one(bare=True) }
+        % elif service_address_choice == "home":
+        ${ other_parties[0].address.line_one(bare=True) }        
+        % else:
+        ${ other_parties[0].work_address.line_one(bare=True) }        
+        % endif
+    - "service_address_csz": |
+        % if service_address_choice == "other":
+        ${ service_address.line_two() }
+        % elif service_address_choice == "home":
+        ${ other_parties[0].address.line_two() }        
+        % else:
+        ${ other_parties[0].work_address.line_two() }        
+        % endif
+    - "respondent_phone": ${ phone_number_formatted(other_parties[0].phone_number) }
+    - "respondent_email": ${ other_parties[0].email }
+    - "respondent__3": ${other_parties[0].name.full(middle="full") if has_second_service_address == True else ""}
+    - "service_alt_address_line_1": |
+        % if has_second_service_address == True:
+        % if second_service_address_choice == "other":
+        ${ second_service_address.line_one(bare=True) }
+        % elif second_service_address_choice == "home":
+        ${ other_parties[0].address.line_one(bare=True) }        
+        % else:
+        ${ other_parties[0].work_address.line_one(bare=True) }        
+        % endif
+        % endif
+    - "service_alt_address_csz": |
+        % if has_second_service_address == True:
+        % if second_service_address_choice == "other":
+        ${ second_service_address.line_two() }
+        % elif second_service_address_choice == "home":
+        ${ other_parties[0].address.line_two() }        
+        % else:
+        ${ other_parties[0].work_address.line_two() }        
+        % endif
+        % endif
+    - "respondent_alt_phone": ${ phone_number_formatted(other_parties[0].phone_number_alt) if has_second_service_address == True else "" }
+    - "respondent_alt_email": ${ other_parties[0].email_alt if has_second_service_address == True else "" }
+
+    - "service_method_sheriff": ${ True if service_method == "sheriff" and service_state == "IL" else ""}
+    - "service_method_sheriff_outside_il": ${ True if service_method == "sheriff" and service_state != "IL" else ""}
+    - "service_location_outside_il": |
+        % if service_method == "sheriff" and service_state != "IL":
+        ${ service_county + ", " + service_state }
+        % endif
+    - "service_method_sps": ${ True if service_method == "sps" else "" }
+    - "service_method_detective": ${ True if service_method == "detective" else "" }
+    - "protective_order_type_op": ${ True }
+    - "court_date_on_attached": ${ True }
+
 
 
 
