@@ -3238,7 +3238,7 @@ attachment:
         % else:
         ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
-    - "confidential_schools": ${ True if (schools[0].hide or schools[1].hide) else False }
+    - "confidential_schools__1": ${ True if (schools[0].hide or schools[1].hide) else False }
     
     - "stay_away_other": ${ stay_away_other }
     - "stay_away_other_1": |
@@ -3320,7 +3320,7 @@ attachment:
     - "return_children_possession": ${ True if (return_children_to == "petitioner" or return_children_to == "other") and minor_kids_with_respondent else '' }
     - "return_children_other_person": ${ return_children_other_person.name.full(middle="full") if return_children_to == "other" and minor_kids_with_respondent else '' }
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
-    - "confidential_schools": ${ True if keep_schools_confidential and minor_kids_with_respondent else '' }
+    - "confidential_schools__2": ${ True if keep_schools_confidential and minor_kids_with_respondent else '' }
     - "temp_custody_cb": ${ True if temp_custody_of_children and minor_kids_with_respondent else '' }
     - "requests_temp_custody": ${ True if temp_custody_of_children and minor_kids_with_respondent else '' }
     - "parenting_time_cb": ${ True if parenting_time and minor_kids_with_respondent else '' }
