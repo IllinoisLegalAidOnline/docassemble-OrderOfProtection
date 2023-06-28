@@ -241,6 +241,8 @@ code: |
 
   nav.set_section('section_respondent')
   knows_respondent_dob
+  other_parties[0].gender
+  other_parties[0].race
   if knows_respondent_home:
     other_parties[0].address.address
   other_parties[0].phone_number
@@ -1265,6 +1267,10 @@ question: |
 subquestion: |
 fields:
   - Employer or company: other_parties[0].employer
+  - Work hours: other_parties[0].work_hours
+    required: False
+    help: |
+      If you don't know the exact hours, you can say something like "weekdays" or "nights."
   - Street address: other_parties[0].work_address.address
     address autocomplete: True
   - Address line 2: other_parties[0].work_address.unit
@@ -2909,6 +2915,46 @@ fields:
       - Special process server: sps
       - Licensed private detective: detective
       - I don't know. I will decide and complete the Summons later.: idk
+---
+id: respondent gender
+question: |
+  What is ${other_parties[0].name.full(middle="full")}'s gender?
+fields:
+  - Gender: other_parties[0].gender
+    datatype: radio
+    choices:
+      - Male: male
+      - Female: female
+      - Other: other
+  - ${other_parties[0].name.full(middle="full")}'s gender: respondent_gender_other
+    maxlength: 30
+    show if:
+      variable: other_parties[0].gender['other']
+      is: True
+---
+id: respondent race
+question: |
+  What is ${other_parties[0].name.full(middle="full")}'s race?
+fields:
+  - Gender: other_parties[0].race
+    datatype: radio
+    choices:
+      - White: White
+      - Black: Black
+      - Asian: Asian
+      - American Indian: American Indian
+      - Alaskan Native: Alaskan Native
+      - Multiracial: Multiracial
+      - Hispanic: Hispanic
+      - Other: other
+      - Unknown: unknown
+  - ${other_parties[0].name.full(middle="full")}'s race: respondent_race_other
+    maxlength: 30
+    show if:
+      variable: other_parties[0].race['other']
+      is: True
+
+
 
 ---
 id: case number
@@ -3905,8 +3951,8 @@ attachment:
     - "hide_address": ${ hide_address }
     - "notice_address_one_line": ${ users[0].address.on_one_line(bare=True) }
     - "petitioner_notice_email": ${ users[0].email if users[0].email_notice else ""}
-    - "respondent_gender": ${ "" }
-    - "respondent_race": ${ "" }
+    - "respondent_gender": ${ respondent_gender_other if other_parties[0].gender == 'other' else other_parties[0].gender }
+    - "respondent_race": ${ respondent_race_other if other_parties[0].race == 'other' else other_parties[0].race }
     - "respondent_dob": |
         % if knows_respondent_dob == 'exact' and other_parties[0].birthdate != "":
         ${ other_parties[0].birthdate }
@@ -3928,8 +3974,8 @@ attachment:
         ${ "do not know" }
         % endif
     - "respondent_work_hours": |
-        % if knows_respondent_work:
-        ${ "" }
+        % if knows_respondent_work and other_parties[0].work_hours != "":
+        ${ other_parties[0].work_hours }
         % else:
         ${ "do not know" }
         % endif
@@ -4737,6 +4783,14 @@ review:
       % else:
       ${ "do not know" }
       % endif
+  - Edit: other_parties[0].work_hours
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s work hours: **
+      % if knows_respondent_work and other_parties[0].work_hours != "":
+      ${ other_parties[0].work_hours }
+      % else:
+      ${ "do not know" }
+      % endif
 
   - Edit: has_other_ops
     button: |
@@ -5477,6 +5531,25 @@ review:
       % else:
       I don't know. I will decide later.
       % endif
+  - Edit: other_parties[0].gender
+    button: |
+      **What is ${other_parties[0].name.full(middle="full")}'s gender?**
+      % if other_parties[0].gender == 'other':
+      ${ respondent_gender_other }
+      % else:
+      ${ other_parties[0].gender }
+      % endif
+  - Edit: other_parties[0].race
+    button: |
+      **What is ${other_parties[0].name.full(middle="full")}'s race?**
+      % if other_parties[0].race == 'other':
+      ${ respondent_race_other }
+      % else:
+      ${ other_parties[0].race }
+      % endif
+
+
+
 
 
   - Edit: case_number
