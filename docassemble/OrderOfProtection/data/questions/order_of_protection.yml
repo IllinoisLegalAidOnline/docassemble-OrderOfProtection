@@ -2969,6 +2969,7 @@ objects:
   - op_schools: ALDocument.using(title="Confidential School or Daycare", filename="confidential_schools.pdf", has_addendum=False)
   - additional_incidents: ALDocument.using(title="Additional Incidents of Abuse", filename="additional_incidents.pdf", has_addendum=False)
   - additional_cases: ALDocument.using(title="Additional Case Information", filename="additional_cases.pdf", has_addendum=False)
+  - emergency_op: ALDocument.using(title="Emergency Order of Protection (draft)", filename="emergency_op.pdf", has_addendum=False)
   - op_summons: ALDocument.using(title="Summons", filename="summons.pdf", has_addendum=False)
   - affidavit_pt_supervisor: ALDocument.using(title="Affidavit of Parenting Time Supervisor", filename="affidavit_pt_supervisor.pdf", has_addendum=False)
   - efiling_exemption: ALDocument.using(title="E-filing exemption (optional)", filename="e-filing_exemption.pdf", has_addendum=False)
@@ -2976,9 +2977,10 @@ objects:
 code: |
   op_instructions.enabled = True
   op_petition.enabled = True
-  op_single_pdf_bundle.enabled = True
+  op_petition_single_pdf_bundle.enabled = True
   additional_cases.enabled = False
   additional_incidents.enabled = False
+  emergency_op.enabled = False
   op_summons.enabled = True
   op_schools.enabled = False
   affidavit_pt_supervisor.enabled = False
@@ -3006,6 +3008,9 @@ code: |
       if pt_supervisor_type == "person":
         affidavit_pt_supervisor.enabled = True
 
+  if eop:
+    emergency_op.enabled = True
+
 
 
 # old
@@ -3019,9 +3024,9 @@ code: |
 
 ---
 objects:
-  - op_single_pdf_bundle: ALDocumentBundle.using(elements=[op_petition, additional_cases, additional_incidents], filename="petition.pdf", title="Petition")
-  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_single_pdf_bundle, op_schools, op_summons, affidavit_pt_supervisor, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
-  - al_court_bundle: ALDocumentBundle.using(elements=[op_single_pdf_bundle, op_schools, op_summons, efiling_exemption], filename="order_of_protection.pdf", title="Order of protection")
+  - op_petition_single_pdf_bundle: ALDocumentBundle.using(elements=[op_petition, additional_cases, additional_incidents], filename="petition.pdf", title="Petition")
+  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_single_pdf_bundle, op_schools, emergency_op, op_summons, affidavit_pt_supervisor, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
+  - al_court_bundle: ALDocumentBundle.using(elements=[op_single_pdf_bundle, op_schools, emergency_op, op_summons, efiling_exemption], filename="order_of_protection.pdf", title="Order of protection")
 ---
 
 ---
@@ -3593,9 +3598,6 @@ attachment:
     - "preparer_phone": ${ phone_number_formatted(users[0].phone_number) }
     - "preparer_email": ${ users[0].email if users[0].email_notice else ""}
 
-
-
-
 ---
 attachment:
   variable name: op_schools[i]
@@ -3858,8 +3860,426 @@ attachment:
     - "protective_order_type_op": ${ True }
     - "court_date_on_attached": ${ True }
 
+---
+attachment:
+  variable name: emergency_op[i]
+  name: emergency_op
+  filename: emergency_op
+  skip undefined: True
+  editable: False
+  pdf template file: emergency_op.pdf
+  fields:
+    - "county": ${ trial_court.address.county.upper() }
+    - "civil_proceeding": True
+    - "petitioner__1": ${ users[0].name.full(middle="full") }
+    - "petitioner__2": ${ users[0].name.full(middle="full") }
+    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "case_number__1": ${ case_number }
+    - "case_number__2": ${ case_number }
+    - "case_number__3": ${ case_number }
+    - "case_number__4": ${ case_number }
+    - "case_number__5": ${ case_number }
+    - "case_number__6": ${ case_number }
+    - "case_number__7": ${ case_number }
+    - "case_number__8": ${ case_number }
+    - "case_number__9": ${ case_number }
+    - "case_number__10": ${ case_number }
+    - "case_number__11": ${ case_number }
+    - "case_number__12": ${ case_number }
+    - "protect_petitioner": ${ protect_petitioner }
+    - "protect_shared_kids": ${ protect_shared_kids }
+    - "shared_kids_list": ${ comma_and_list([person.name.full(middle="full") for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
+    - "protect_petitioner_kids": ${ protect_petitioner_kids }
+    - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
+    - "protect_dependent_adult": ${ protect_dependent_adult }
+    - "protect_high_risk_adult": ${ protect_high_risk_adult }
+    - "protect_other_hh_members": ${ protect_other_hh_members }
+    - "other_hh_members_list": ${ other_hh_members.full_names() if protect_other_hh_members else '' }
+    - "dependent_adult": ${ dependent_adult.name.full(middle="full") if protect_dependent_adult else '' }
+    - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") if protect_high_risk_adult else '' }
 
 
+    
+      # page 2
+    - "show_address": ${ not hide_address }
+    - "hide_address": ${ hide_address }
+    - "notice_address_one_line": ${ users[0].address.on_one_line(bare=True) }
+    - "petitioner_notice_email": ${ users[0].email if users[0].email_notice else ""}
+    - "respondent_gender": ${ "" }
+    - "respondent_race": ${ "" }
+    - "respondent_dob": |
+        % if knows_respondent_dob == 'exact' and other_parties[0].birthdate != "":
+        ${ other_parties[0].birthdate }
+        % elif knows_respondent_dob == 'some':
+        ${ other_parties[0].birthdate_info }
+        % else:
+        ${ "do not know" }
+        % endif
+    - "respondent_home_address": |
+        % if other_parties[0].address.address != "":
+        ${ other_parties[0].address.on_one_line(bare=True) }
+        % else:
+        ${ "do not know" }
+        % endif
+    - "respondent_employer": |
+        % if knows_respondent_work:
+        ${ other_parties[0].employer }
+        % else:
+        ${ "do not know" }
+        % endif
+    - "respondent_work_hours": |
+        % if knows_respondent_work:
+        ${ "" }
+        % else:
+        ${ "do not know" }
+        % endif
+    - "respondent_work_address": |
+        % if knows_respondent_work:
+        ${ other_parties[0].work_address.on_one_line(bare=True) }
+        % else:
+        ${ "do not know" }
+        % endif
+
+
+    - "no_abuse": ${ any((no_harassment, no_physical, no_stalking, no_willful, no_intimidation, no_exploitation, no_neglect, no_interference)) }
+    - "no_harassment": ${ no_harassment }
+    - "no_physical": ${ no_physical }
+    - "no_stalking": ${ no_stalking }
+    - "no_willful": ${ no_willful }
+    - "no_intimidation": ${ no_intimidation }
+    - "no_exploitation": ${ no_exploitation }
+    - "no_neglect": ${ no_neglect }
+    - "no_interference": ${ no_interference}
+
+    - "possession_residence": ${ not (residence_remedies == 'none') }
+    - "exclusive_possession": ${ residence_remedies == 'exclusive possession' }
+    - "exclusive_home_address_checkbox": |
+        % if (not hide_address) and (residence_remedies == 'exclusive possession'):
+        ${ True }
+        % else:
+        ${ False }
+        % endif
+    - "exclusive_home_address_one_line": |
+        % if (not hide_address) and (residence_remedies == 'exclusive possession'):
+        ${ users[0].address.on_one_line(bare=True) }
+        % else:
+        ${ "" }
+        % endif
+    - "exclusive_address_hidden": |
+        % if hide_address and (residence_remedies == 'exclusive possession'):
+        ${ True }
+        % else:
+        ${ False }
+        % endif
+    - "respondent_no_right_to_stay": ${ exclusive_possession_reason == "respondent_no_right_to_stay" }
+    - "both_parties_right_to_stay": ${ exclusive_possession_reason == "both_parties_right_to_stay" }
+      
+      # page 3
+    - "stay_away_checkbox": ${ any((no_communication, stay_away)) }
+    - "no_communication": ${ no_communication }
+    - "stay_away_feet_cb": ${ "" }
+    - "stay_away_feet": ${ "" }
+      
+    - "stay_away_locations": ${ any((stay_away_jobs, stay_away_schools, stay_away_other))}
+    - "stay_away_jobs": ${ stay_away_jobs }
+    - "stay_away_job_1": |
+        % if hide_work_address and stay_away_jobs:
+        ${ "Wherever protected party may be employed" }
+        % elif stay_away_jobs:
+        ${ jobs[0].employer + ", " + jobs[0].on_one_line(bare=True) }
+        % else:
+        ${ "" }
+        % endif
+    - "stay_away_job_2": |
+        % if hide_work_address and stay_away_jobs:
+        ${ "" }
+        % elif stay_away_jobs_2:
+        ${ jobs[1].employer + ", " + jobs[1].on_one_line(bare=True) }
+        % else:
+        ${ "" }
+        % endif
+    - "stay_away_schools": ${ stay_away_schools }
+    - "stay_away_school_1": |
+        % if schools[0].hide:
+        ${ "Confidential" }
+        % else:
+        ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
+        % endif
+    - "stay_away_school_2": |
+        % if schools[1].hide:
+        ${ "Confidential" }
+        % else:
+        ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
+        % endif
+    - "confidential_schools__1": ${ True if (schools[0].hide or schools[1].hide) else False }
+    
+    - "stay_away_other": ${ stay_away_other }
+    - "stay_away_other_1": |
+        % if hide_other_address_1 and stay_away_other:
+        ${ other_locations_hidden_description_1 }
+        % elif stay_away_other:
+        ${ other_locations[0].name + ", " + other_locations[0].on_one_line(bare=True) }
+        % else:
+        ${ "" }
+        % endif
+    - "stay_away_other_2": |
+        % if hide_other_address_2 and stay_away_other:
+        ${ other_locations_hidden_description_2 }
+        % elif stay_away_other_2:
+        ${ other_locations[1].name + ", " + other_locations[1].on_one_line(bare=True) }
+        % else:
+        ${ "" }
+        % endif
+
+    - "respondent_one_time_entry": ${ True if respondent_one_time_entry == True else '' }
+    - "respondent_one_time_entry_police": ${ True if property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+
+    - "same_school_restrictions": ${ True if (same_school and same_school_restrictions != "none") else ""} 
+    - "same_school_name": ${ same_school_name if (same_school and same_school_restrictions != "none") else ""}
+
+
+    - "same_school_not_attend": ${ True if (same_school and same_school_restrictions == "not attend") else ""}
+    - "same_school_change_placement": ${ True if (same_school and same_school_restrictions == "change program") else ""}
+    - "same_school_avoid_parts": ${ True if (same_school and same_school_restrictions == "not present in parts") else ""}
+    - "same_school_parts": ${ parts_of_school if (same_school and same_school_restrictions == "not present in parts") else ""}
+    - "respondent_parent_help": ${respondent_parent_help}
+    - "respondent_parent_name": ${ respondent_parent_name if respondent_parent_help else "" }
+    - "respondent_parent_order": ${ respondent_parent_order if respondent_parent_help else "" }
+
+      # page 4
+
+    - "care_and_possession_of_children": ${ minor_kids_with_respondent } 
+    - "minor_kids_with_respondent": ${ minor_kids_with_respondent }
+    - "shared_kids_1_name": ${ shared_kids[0].name.full(middle="full") }
+    - "shared_kids_1_age": ${ shared_kids[0].age_in_years() }
+    - "shared_kids_1_state": ${ shared_kids[0].address.state }
+    - "shared_kids_1_include_yes": ${ shared_kids[0].protect }
+    - "shared_kids_1_include_no": ${ shared_kids[0].protect is False }
+    - "shared_kids_2_name": ${ shared_kids[1].name.full(middle="full") }
+    - "shared_kids_2_age": ${ shared_kids[1].age_in_years() }
+    - "shared_kids_2_state": ${ shared_kids[1].address.state }
+    - "shared_kids_2_include_yes": ${ shared_kids[1].protect}
+    - "shared_kids_2_include_no": ${ shared_kids[1].protect is False }
+    - "shared_kids_3_name": ${ shared_kids[2].name.full(middle="full") }
+    - "shared_kids_3_age": ${ shared_kids[2].age_in_years() }
+    - "shared_kids_3_state": ${ shared_kids[2].address.state }
+    - "shared_kids_3_include_yes": ${ shared_kids[2].protect }
+    - "shared_kids_3_include_no": ${ shared_kids[2].protect is False }
+    - "shared_kids_4_name": ${ shared_kids[3].name.full(middle="full") }
+    - "shared_kids_4_age": ${ shared_kids[3].age_in_years() }
+    - "shared_kids_4_state": ${ shared_kids[3].address.state }
+    - "shared_kids_4_include_yes": ${ shared_kids[3].protect }
+    - "shared_kids_4_include_no": ${ shared_kids[3].protect is False }
+    - "parentage_cb": ${ minor_kids_with_respondent }
+    - "parentage_not_established": ${ True if (parentage == "parentage_not_established" and minor_kids_with_respondent) else '' }
+    - "parentage_established": ${ True if ((parentage == "parentage_established_by_marriage" or parentage == "parentage_established_other") and minor_kids_with_respondent) else '' }
+    - "parentage_established_marriage": ${ True if (parentage == "parentage_established_by_marriage" and minor_kids_with_respondent) else '' }
+    - "parentage_established_other": ${ True if (parentage == "parentage_established_other" and (parentage_birth_certificate == True or parentage_vap == True or parentage_order == True) and minor_kids_with_respondent) else '' }
+    - "parentage_other_text": ${ other_parentage_method if (minor_kids_with_respondent and parentage == "parentage_established_other") else '' }
+    - "caretaker_cb": ${ minor_kids_with_respondent }
+    - "caretaker_petitioner": ${ True if (primary_caretaker == "petitioner" and minor_kids_with_respondent) else '' }
+
+    - "caretaker_respondent": ${ True if (primary_caretaker == "respondent" and minor_kids_with_respondent) else '' }
+    - "caretaker_other": ${ True if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
+    - "other_caretaker_name": ${ other_caretaker.name.full(middle="full") if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
+    - "other_caretaker_address": ${ other_caretaker.address.on_one_line(bare=True) if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
+    - "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or keep_schools_confidential else '' }
+    - "physical_care_of_children": ${ True if physical_care_of_children and minor_kids_with_respondent else '' }
+    
+    - "return_children_possession": ${ True if (return_children_to == "petitioner" or return_children_to == "other") and minor_kids_with_respondent else '' }
+    - "return_children_petitioner_cb": ${ "" }
+    - "return_children_other_cb": ${ "" }    
+    - "return_children_other_person": ${ return_children_other_person.name.full(middle="full") if return_children_to == "other" and minor_kids_with_respondent else '' }
+    - "return_children_location_cb": ${ "" }
+    - "return_children_location": ${ "" }
+    - "return_children_on": ${ "" }
+    - "return_children_by": ${ "" }
+    - "return_children_date": ${ "" }
+    - "return_children_time": ${ "" }
+    - "return_children_present": ${ "" }
+    
+    - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
+    - "no_removal_schools_list": ${ "" }
+    - "schools_get_order": ${ "" }
+    
+      # page 5
+    - "get_order_school_1": |
+        % if schools[0].hide:
+        ${ "Confidential" }
+        % else:
+        ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
+        % endif
+    - "get_order_school_2": |
+        % if schools[1].hide:
+        ${ "Confidential" }
+        % else:
+        ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
+        % endif
+    - "confidential_schools__2": ${ True if keep_schools_confidential and minor_kids_with_respondent else '' }
+    - "parenting_time_cb": ${ True if parenting_time and minor_kids_with_respondent else '' }
+    - "parenting_time_grant": ${ True if parenting_time == "grant" and minor_kids_with_respondent else '' }
+    - "parenting_time_reserve": ${ True if parenting_time == "reserve" and minor_kids_with_respondent else '' }
+    - "parenting_time_deny": ${ True if parenting_time == "deny" and minor_kids_with_respondent else '' }
+    - "parenting_time_restrict": ${ True if parenting_time == "restrict" and minor_kids_with_respondent else '' }
+    - "no_pt_no_abuse": ${ True if (parenting_time == "restrict" or parenting_time == "deny") and restrict_or_deny_pt_reasons["no_pt_no_abuse"] and minor_kids_with_respondent else '' }
+    - "no_pt_no_harass": ${ True if (parenting_time == "restrict" or parenting_time == "deny") and restrict_or_deny_pt_reasons["no_pt_no_harass"] and minor_kids_with_respondent else '' }
+    - "no_pt_no_hide": ${ True if (parenting_time == "restrict" or parenting_time == "deny") and restrict_or_deny_pt_reasons["no_pt_no_hide"] and minor_kids_with_respondent else '' }
+    - "no_pt_no_best_interest": ${ True if (parenting_time == "restrict" or parenting_time == "deny") and restrict_or_deny_pt_reasons["no_pt_no_best_interest"] and minor_kids_with_respondent else '' }
+    - "pt_format": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and minor_kids_with_respondent else '' }
+    - "pt_attach": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "attach" and minor_kids_with_respondent else ''  }
+    - "pt_interview": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekdays": ${ True if pt_weekdays and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekday_list": ${ comma_and_list(dow_abb[int(y)] for y in pt_weekday_days.true_values()) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent == True else '' }
+    - "pt_weekday_start": ${ format_time(pt_weekday_start) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekday_end": ${ format_time(pt_weekday_end) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_every": ${ True if pt_weekend_cadence == "every" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_every_other": ${ True if pt_weekend_cadence == "other" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sat": ${ True if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sat_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sat_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sun": ${ True if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat": ${ True if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_sun": ${ True if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sun": ${ True if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_start_date_cb": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_start_date": ${ pt_start_date if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_holidays": ${ pt_holidays if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_holiday_list": ${ pt_holiday_list if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+    - "pt_holiday_start": ${ format_time(pt_holiday_start) if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+    - "pt_holiday_end": ${ format_time(pt_holiday_end) if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+    - "pt_transportation_cb": ${ True if pt_transportation != "later" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_transportation_person_name": |
+        % if pt_transportation == "petitioner" and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ "Petitioner" }
+        % elif pt_transportation == "respondent" and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ "Respondent" }
+        % elif pt_transportation == "other" and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_transportation_person.name.full(middle="full") }
+        % else:
+        ${ "" }
+        % endif
+    - "pt_pickup_location_cb": ${ True if pt_separate_pickup_location == True and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_pickup_location": |
+        % if pt_pickup_location.name == "" and pt_separate_pickup_location == True and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_pickup_location.on_one_line(bare=True) }
+        % elif pt_separate_pickup_location == True and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_pickup_location.name + ", " + pt_pickup_location.on_one_line(bare=True) }
+        % else:
+        ${ "" }
+        % endif          
+    - "pt_return_location_cb": ${ True if pt_separate_return_location == True and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_return_location": |
+        % if pt_return_location.name == "" and pt_separate_return_location == True and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_return_location.on_one_line(bare=True) }
+        % elif pt_separate_return_location == True and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_return_location.name + ", " + pt_return_location.on_one_line(bare=True) }
+        % else:
+        ${ "" }
+        % endif          
+    - "pt_location_cb": ${ True if pt_location_identified == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+
+      # page 6
+    - "pt_location": |
+        % if pt_location.name == "" and pt_location_identified == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_location.on_one_line(bare=True) }
+        % elif pt_location_identified == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant"):
+        ${ pt_location.name + ", " + pt_location.on_one_line(bare=True) }
+        % else:
+        ${ "" }
+        % endif          
+    - "pt_supervised": ${ True if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_supervisor_name": ${ pt_supervisor.name.full(middle="full") if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_supervised_center_cb": ${ True if pt_supervised == True and pt_supervisor_type == "agency" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_visitation_center_name": ${ "" }    
+    - "pt_immediate_return_cb": ${ True if pt_immediate_return == True and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+
+    - "no_conceal_children_cb": ${ True if no_conceal_children and minor_kids_with_respondent else '' }
+
+    - "order_to_appear_cb": ${ True if return_children_to == "court" and minor_kids_with_respondent else '' }
+    - "appear_with_children_cb": ${ "" }
+    - "appear_alone_cb": ${ "" }
+    - "appear_with_children_prevent": ${ True if appear_with_children_prevent and return_children_to == "court" and minor_kids_with_respondent else '' }
+    - "appear_with_children_return": ${ True if appear_with_children_return and return_children_to == "court" and minor_kids_with_respondent else '' }
+    - "appear_with_children_exam": ${ True if appear_with_children_exam and return_children_to == "court" and minor_kids_with_respondent else '' }
+
+    - "return_property_cb": ${ True if award_personal_property else "" }
+    - "award_petitioner_property_cb": ${ True if award_personal_property else "" }
+    - "petitioner_property_awarded_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property]) if award_personal_property else "" }
+    - "respondent_ordered_return_property_cb": ${ True if award_personal_property == True and return_property == True else "" }
+    - "return_all_property_cb": ${ "" }
+    - "return_some_property_cb": ${ "" }
+    - "petitioner_property_ordered_return_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property if item.respo_has == True]) if (award_personal_property == True and return_property == True) else "" }
+    - "return_property_person": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    
+    - "return_property_reason_petitioner_owns": ${ True if (return_property_reason == "petitioner_owns" and award_personal_property == True and return_property == True) else "" }
+    - "return_property_reason_both_own": ${ True if (return_property_reason == "both_own" and award_personal_property == True and return_property == True) else "" }
+
+    - "return_property_reason_divorce": ${ True if (return_property_reason == "divorce" and award_personal_property == True and return_property == True) else "" }
+    - "divorce_filed_yes__1": ${ True if (divorce_filed == True and award_personal_property == True and return_property == True and return_property_reason == "divorce") else "" }
+    - "return_respo_property": ${ True if return_respo_property else '' }
+    - "return_respo_clothes": ${ True if (return_respo_property == True and respo_property['clothes'] == True) else '' }
+    - "return_respo_medicine": ${ True if (return_respo_property == True and respo_property['medicine'] == True) else '' }
+    - "return_respo_property_other": ${ True if (return_respo_property == True and respo_property['other'] == True) else '' }
+    - "return_respo_property_list": ${ respo_property_other if (return_respo_property == True and respo_property['other'] == True) else '' }
+    
+     # page 7
+    - "property_transfer_location_cb": ${ True if property_transfer_location_cb == True else '' }
+    - "property_transfer_location": ${ property_transfer_location.on_one_line(bare=True) if property_transfer_location_cb == True else '' }
+    - "property_transfer_present_cb": ${ True if property_transfer_present_cb == True else '' }
+    - "property_transfer_present_police_cb": ${ True if property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
+    - "property_transfer_present_police_name": ${ property_transfer_police if property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
+    - "property_transfer_present_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
+    - "property_transfer_time": ${ format_time(property_transfer_time) if property_transfer_know_date == True else ''  }
+    - "request_police_at_transfer_petitioner": ${ "" }    
+    - "request_police_at_transfer_respondent": ${ "" }    
+    
+    - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == True else "" }
+    - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
+    - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
+    - "restrict_property_reason_petitioner_owns": ${ True if (restrict_property_reason == "petitioner_owns" and restrict_other_property == True ) else "" }
+    - "restrict_property_reason_both_own": ${ True if (restrict_property_reason == "both_own" and restrict_other_property == True ) else "" }
+    - "restrict_divorce_filed_yes__2": ${ True if (restrict_divorce_filed == True and restrict_other_property == True and restrict_property_reason == "divorce") else "" }
+    - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == True else '' }
+    - "possession_of_animals": ${ True if possession_of_animals else "" }
+    - "animals_list": ${ comma_and_list([item.name.text + " (a " + item.description + ")" for item in pets]) if possession_of_animals else "" }
+    - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
+    - "firearms_cb": ${ True if firearms_turnover else '' }
+
+     # page 8
+
+    - "childrens_records_cb": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and ( no_records_no_contact or no_records_hide_address or no_records_no_removal ) else "" }
+    - "no_records_no_contact": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_contact else "" }
+    - "no_records_hide_address": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_hide_address else "" }
+    - "no_records_no_removal": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_removal else "" }
+
+    - "misc_remedies_cb__1": ${ True if misc_remedies_text != '' else '' }
+    - "misc_remedies_cb__2": ${ True if misc_remedies_text != '' else '' }
+    - "misc_remedies_text": ${ misc_remedies_text }
+    - "separate_phone_service_cb": ${ True if separate_phone_service else '' }
+    - "phone_provider": ${ phone_provider if separate_phone_service else '' }
+    - "phone_account_holder": |
+        % if phone_account_holder == 'respondent' and separate_phone_service == True:
+        ${other_parties[0].name.full(middle="full")}
+        % elif phone_account_holder == 'other' and separate_phone_service == True:
+        ${ other_phone_account_holder.name.full(middle="full") }
+        % endif
+    - "billing_phone_number": ${ phone_number_formatted(billing_phone_number) if separate_phone_service else '' }
+    - "cell_number_1": ${ phone_number_formatted(cell_numbers[0].name.text) if separate_phone_service else '' }
+    - "cell_number_2": ${ phone_number_formatted(cell_numbers[1].name.text) if separate_phone_service else '' }
+    - "cell_number_3": ${ phone_number_formatted(cell_numbers[2].name.text) if separate_phone_service else '' }
+    - "cell_number_4": ${ phone_number_formatted(cell_numbers[3].name.text) if separate_phone_service else '' }
 
 
 
