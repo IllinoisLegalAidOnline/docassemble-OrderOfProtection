@@ -34,6 +34,7 @@ objects:
   - other_locations: ALAddressList.using(there_are_any=True)
   - other_caretaker: ALIndividual
   - return_children_other_person: ALIndividual
+  - return_children_location: ALAddress
   - pt_supervisor: ALIndividual
   - pt_location: ALAddress
   - pt_pickup_location: ALAddress
@@ -81,6 +82,8 @@ mandatory: True
 code: |
   nav.set_section('section_intro')
   sees_nav_bar
+  #testing new questions
+  #end testing new questions
   instructions
   whats_next
   accept_terms
@@ -171,6 +174,10 @@ code: |
       return_children_to
       if return_children_to == "court":
         appear_with_children_prevent
+      else:
+        if knows_return_children_details:
+          return_children_location.address
+          on_or_by
     if parenting_time != "reserve":
       if parenting_time == "restrict" or parenting_time == "deny":
         restrict_or_deny_pt_reasons
@@ -1727,6 +1734,18 @@ fields:
   - no label: current_possession_of_children
     datatype: yesnoradio
 ---
+id: know children return details
+question: |
+  Do you know where and when you want ${other_parties[0].name.full(middle="full")} to return the children to
+  % if return_children_to == "petitioner":
+   you?
+  % else:
+   ${ return_children_other_person.name.full(middle="full") }?
+  % endif
+fields:
+  - no label: knows_return_children_details
+    datatype: yesnoradio
+---
 id: children returned to whom
 question: |
   Who should ${other_parties[0].name.full(middle="full")} return the children to?
@@ -1762,6 +1781,51 @@ fields:
     show if:
       variable: return_children_to
       is: "other"
+---
+id: children return location
+question: |
+  Where should ${other_parties[0].name.full(middle="full")} return the children to?
+fields:
+  - Street address: return_children_location.address
+    address autocomplete: True
+  - Address line 2: return_children_location.unit
+    required: False
+  - City: return_children_location.city
+  - State: return_children_location.state
+    code: |
+      states_list()
+  - ZIP code: return_children_location.zip
+    required: False
+---
+id: children return details
+question: |
+  Details about return of children
+subquestion: |
+  Enter additional information about when you want ${other_parties[0].name.full(middle="full")} to return the children to
+  % if return_children_to == "petitioner":
+   you.
+  % else:
+   ${ return_children_other_person.name.full(middle="full") }.
+  % endif
+fields:
+  - ${other_parties[0].name.full(middle="full")} should return the children to ${return_children_location.on_one_line(bare=True)}: on_or_by
+    datatype: radio
+    choices:
+      - On (exact date and time): on
+      - By (any time before): by
+  - Date: return_children_date
+    datatype: date
+    min: ${ today().format("yyyy-MM-dd") }
+  - Time: return_children_time
+    datatype: time
+  - Should someone else be present?: return_children_present
+    datatype: yesnoradio
+  - Name of person or law enforcement agency: return_children_present_name
+    maxlength: 60
+    show if:
+      variable: return_children_present
+      is: True
+
 ---
 id: reason respondent should bring childrent to court
 question: |
@@ -2939,13 +3003,14 @@ fields:
   - Gender: other_parties[0].race
     datatype: radio
     choices:
-      - White: White
-      - Black: Black
       - Asian: Asian
-      - American Indian: American Indian
-      - Alaskan Native: Alaskan Native
-      - Multiracial: Multiracial
-      - Hispanic: Hispanic
+      - Black: Black
+      - Hispanic or Latino: Hispanic or Latino
+      - Middle Eastern/North African: Middle Eastern/North African 
+      - Native American: Native American
+      - Native Hawaiian or Pacific Islander: Native Hawaiian or Pacific Islander
+      - 2 or more races: Multiracial
+      - White: White
       - Other: other
       - Unknown: unknown
   - ${other_parties[0].name.full(middle="full")}'s race: respondent_race_other
@@ -4023,8 +4088,9 @@ attachment:
       # page 3
     - "stay_away_checkbox": ${ any((no_communication, stay_away)) }
     - "no_communication": ${ no_communication }
-    - "stay_away_feet_cb": ${ "" }
-    - "stay_away_feet": ${ "" }
+    - "stay_away": ${ stay_away }
+    - "stay_away_feet_cb": ${ stay_away_distance if (stay_away and stay_away_distance != None) else "" }
+    - "stay_away_feet": ${ stay_away_distance if stay_away else "" }
       
     - "stay_away_locations": ${ any((stay_away_jobs, stay_away_schools, stay_away_other))}
     - "stay_away_jobs": ${ stay_away_jobs }
@@ -4138,17 +4204,31 @@ attachment:
     - "return_children_petitioner_cb": ${ "" }
     - "return_children_other_cb": ${ "" }    
     - "return_children_other_person": ${ return_children_other_person.name.full(middle="full") if return_children_to == "other" and minor_kids_with_respondent else '' }
-    - "return_children_location_cb": ${ "" }
-    - "return_children_location": ${ "" }
-    - "return_children_on": ${ "" }
-    - "return_children_by": ${ "" }
-    - "return_children_date": ${ "" }
-    - "return_children_time": ${ "" }
-    - "return_children_present": ${ "" }
+    - "return_children_location_cb": ${ True if knows_return_children_details and minor_kids_with_respondent else "" }
+    - "return_children_location": ${ return_children_location.on_one_line(bare=True) if knows_return_children_details and minor_kids_with_respondent else "" }
+    - "return_children_on": ${ True if on_or_by == "on" and knows_return_children_details and minor_kids_with_respondent else "" }
+    - "return_children_by": ${ True if on_or_by == "by" and knows_return_children_details and minor_kids_with_respondent else "" }
+    - "return_children_date": ${ return_children_date if knows_return_children_details and minor_kids_with_respondent else "" }
+    - "return_children_time": ${ return_children_time if knows_return_children_details and minor_kids_with_respondent else "" }
+    - "return_children_present_name": ${ return_children_present_name if knows_return_children_details and return_children_present and minor_kids_with_respondent else "" }
     
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
-    - "no_removal_schools_list": ${ "" }
-    - "schools_get_order": ${ "" }
+    - "no_removal_schools_list": |
+        % if stay_away_schools and schools[0].hide:
+        ${ "School 1: Confidential" }
+        % else:
+        ${ schools[0].name }
+        % endif
+        % if stay_away_schools and schools[0].hide and stay_away_schools_2 and schools[1].hide:
+        ${ ", " }
+        % endif
+        % if stay_away_schools_2 and schools[1].hide:
+        ${ "School 2: Confidential" }
+        % else:
+        ${ ", " + schools[1].name }
+        % endif
+    
+    - "schools_get_order": ${ stay_away_schools }
     
       # page 5
     - "get_order_school_1": |
@@ -4953,9 +5033,32 @@ review:
       % endif
   - Edit: return_children_to
     button: |
-      **Other parentage method:**
+      **Other person children should be returned to:**
       ${ return_children_other_person.name.full(middle="full") }
     show if: return_children_to == "other"
+  - Edit: knows_return_children_details
+    button: |
+      **Do you know where and when you want ${other_parties[0].name.full(middle="full")} to return the children?**
+      ${ word(yesno(knows_return_children_details)) }
+  - Edit: return_children_location.address
+    button: |
+      **Where should ${other_parties[0].name.full(middle="full")} return the children to?**
+      ${ return_children_location.on_one_line(bare=True) }
+    show if: knows_return_children_details == True
+  - Edit: on_or_by
+    button: |
+      **Return children details:**
+      Children should be returned ${ on_or_by } ${ return_children_date } at ${ return_children_time }. 
+    show if: knows_return_children_details == True
+  - Edit: return_children_present
+    button: |
+      **Who else should be present when children are returned?**
+      % if return_children_present:
+      ${ return_children_present_name }
+      % else:
+      No one else
+      % endif
+    show if: knows_return_children_details == True    
   - Edit: appear_with_children_prevent
     button: |
       **${other_parties[0].name.full(middle="full")} should be ordered to bring the children to court:**
