@@ -83,6 +83,7 @@ code: |
   nav.set_section('section_intro')
   sees_nav_bar
   #testing new questions
+  #property_transfer_person
   #end testing new questions
   instructions
   whats_next
@@ -193,6 +194,8 @@ code: |
         if pt_supervised:
           if pt_supervisor_type == "person":
             pt_supervisor.name.first
+          else:
+            pt_visitation_center_name
         if pt_location_identified:
           pt_location.address
         pt_transportation
@@ -203,6 +206,7 @@ code: |
         pt_immediate_return
 
   nav.set_section('section_property')
+  appear_alone_for_exam
   if award_personal_property:
     petitioner_personal_property.gather()
     if return_property:
@@ -1840,6 +1844,14 @@ fields:
   - To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}: appear_with_children_exam
     datatype: yesnowide
 ---
+id: respondent should be ordered to appear for exam
+question: |
+  Should ${other_parties[0].name.full(middle="full")} be ordered to go to court for an interview or examination?
+fields:
+  - no label: appear_alone_for_exam
+    datatype: yesnoradio    
+    
+---
 id: childrens records
 question: |
   Do you want the court to prevent ${other_parties[0].name.full(middle="full")} from accessing your children's records?
@@ -2047,6 +2059,14 @@ subquestion: |
 fields:
   - code: |
       pt_supervisor.name_fields()
+---
+id: pt agency name
+question:  |
+  What is the name of the official supervised visitation center?
+subquestion: |
+  If you do not know this, leave it blank.
+fields:
+  - Agency name: pt_visitation_center_name
 ---
 id: parenting time location identified
 question: |
@@ -2376,6 +2396,15 @@ fields:
   - Law enforcement agency: property_transfer_police
     help: |
       Example: Chicago Police Department
+    show if:
+      variable: property_transfer_person
+      is: "police"
+  - Who will request that law enforcement is at the transfer?: request_police_person
+    datatype: radio
+    choices:
+      - Me: petitioner
+      - ${other_parties[0].name.full(middle="full")}: respondent
+      - I don't know. I'll figure this out later.: idk
     show if:
       variable: property_transfer_person
       is: "police"
@@ -3354,7 +3383,7 @@ attachment:
         % else:
         ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
-    - "confidential_schools__1": ${ True if (schools[0].hide or schools[1].hide) else False }
+    - "confidential_schools__1": ${ True if (schools[0].hide or schools[1].hide) and stay_away_schools else False }
     
     - "stay_away_other": ${ stay_away_other }
     - "stay_away_other_1": |
@@ -4123,7 +4152,7 @@ attachment:
         % else:
         ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
-    - "confidential_schools__1": ${ True if (schools[0].hide or schools[1].hide) else False }
+    - "confidential_schools__1": ${ True if (schools[0].hide or schools[1].hide) and stay_away_schools else False }
     
     - "stay_away_other": ${ stay_away_other }
     - "stay_away_other_1": |
@@ -4326,14 +4355,14 @@ attachment:
     - "pt_supervised": ${ True if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_supervisor_name": ${ pt_supervisor.name.full(middle="full") if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_supervised_center_cb": ${ True if pt_supervised == True and pt_supervisor_type == "agency" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
-    - "pt_visitation_center_name": ${ "" }    
+    - "pt_visitation_center_name": ${ pt_visitation_center_name  if pt_supervised == True and pt_supervisor_type == "agency" and (parenting_time == "restrict" or parenting_time == "grant") and pt_visitation_center_name != "" else "" }    
     - "pt_immediate_return_cb": ${ True if pt_immediate_return == True and (parenting_time == "restrict" or parenting_time == "grant") else "" }
 
     - "no_conceal_children_cb": ${ True if no_conceal_children and minor_kids_with_respondent else '' }
 
     - "order_to_appear_cb": ${ True if return_children_to == "court" and minor_kids_with_respondent else '' }
-    - "appear_with_children_cb": ${ "" }
-    - "appear_alone_cb": ${ "" }
+    - "appear_with_children_cb": ${ True if return_children_to == "court" and minor_kids_with_respondent else '' }
+    - "appear_alone_cb": ${ True if appear_alone_for_exam == True and return_children_to != "court" else '' }
     - "appear_with_children_prevent": ${ True if appear_with_children_prevent and return_children_to == "court" and minor_kids_with_respondent else '' }
     - "appear_with_children_return": ${ True if appear_with_children_return and return_children_to == "court" and minor_kids_with_respondent else '' }
     - "appear_with_children_exam": ${ True if appear_with_children_exam and return_children_to == "court" and minor_kids_with_respondent else '' }
@@ -4342,16 +4371,20 @@ attachment:
     - "award_petitioner_property_cb": ${ True if award_personal_property else "" }
     - "petitioner_property_awarded_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property]) if award_personal_property else "" }
     - "respondent_ordered_return_property_cb": ${ True if award_personal_property == True and return_property == True else "" }
-    - "return_all_property_cb": ${ "" }
-    - "return_some_property_cb": ${ "" }
+    - "return_all_property_cb": ${ True if all(petitioner_personal_property.respo_has) and award_personal_property == True and return_property == True else "" }
+    - "return_some_property_cb": ${ True if all(petitioner_personal_property.respo_has) == False and award_personal_property == True and return_property == True else "" }
     - "petitioner_property_ordered_return_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property if item.respo_has == True]) if (award_personal_property == True and return_property == True) else "" }
-    - "return_property_person": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "return_property_person": |
+        % if return_property_person == "petitioner":
+        Petitioner
+        % elif property_transfer_person == 'other' and property_transfer_present_cb == True:
+        ${ other_transfer_property_person.name.full(middle="full") }
+        % endif
     
     - "return_property_reason_petitioner_owns": ${ True if (return_property_reason == "petitioner_owns" and award_personal_property == True and return_property == True) else "" }
     - "return_property_reason_both_own": ${ True if (return_property_reason == "both_own" and award_personal_property == True and return_property == True) else "" }
 
-    - "return_property_reason_divorce": ${ True if (return_property_reason == "divorce" and award_personal_property == True and return_property == True) else "" }
-    - "divorce_filed_yes__1": ${ True if (divorce_filed == True and award_personal_property == True and return_property == True and return_property_reason == "divorce") else "" }
+    - "return_property_reason_divorce": ${ True if (return_property_reason == "divorce" and award_personal_property == True and return_property == True and divorce_filed == True) else "" }
     - "return_respo_property": ${ True if return_respo_property else '' }
     - "return_respo_clothes": ${ True if (return_respo_property == True and respo_property['clothes'] == True) else '' }
     - "return_respo_medicine": ${ True if (return_respo_property == True and respo_property['medicine'] == True) else '' }
@@ -4368,15 +4401,15 @@ attachment:
     - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
     - "property_transfer_time": ${ format_time(property_transfer_time) if property_transfer_know_date == True else ''  }
-    - "request_police_at_transfer_petitioner": ${ "" }    
-    - "request_police_at_transfer_respondent": ${ "" }    
+    - "request_police_at_transfer_petitioner": ${ True if request_police_person == "petitioner" and property_transfer_person == 'police' and property_transfer_present_cb == True else "" }    
+    - "request_police_at_transfer_respondent": ${ True if request_police_person == "respondent" and property_transfer_person == 'police' and property_transfer_present_cb == True else "" }    
     
     - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == True else "" }
     - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
     - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
     - "restrict_property_reason_petitioner_owns": ${ True if (restrict_property_reason == "petitioner_owns" and restrict_other_property == True ) else "" }
     - "restrict_property_reason_both_own": ${ True if (restrict_property_reason == "both_own" and restrict_other_property == True ) else "" }
-    - "restrict_divorce_filed_yes__2": ${ True if (restrict_divorce_filed == True and restrict_other_property == True and restrict_property_reason == "divorce") else "" }
+    - "restrict_divorce_filed_yes": ${ True if (restrict_divorce_filed == True and restrict_other_property == True and restrict_property_reason == "divorce") else "" }
     - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == True else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }
     - "animals_list": ${ comma_and_list([item.name.text + " (a " + item.description + ")" for item in pets]) if possession_of_animals else "" }
@@ -4393,7 +4426,8 @@ attachment:
     - "misc_remedies_cb__1": ${ True if misc_remedies_text != '' else '' }
     - "misc_remedies_cb__2": ${ True if misc_remedies_text != '' else '' }
     - "misc_remedies_text": ${ misc_remedies_text }
-    - "separate_phone_service_cb": ${ True if separate_phone_service else '' }
+    - "separate_phone_service_cb__1": ${ True if separate_phone_service else '' }
+    - "separate_phone_service_cb__2": ${ True if separate_phone_service else '' }
     - "phone_provider": ${ phone_provider if separate_phone_service else '' }
     - "phone_account_holder": |
         % if phone_account_holder == 'respondent' and separate_phone_service == True:
@@ -5213,6 +5247,15 @@ review:
       **Adult who will supervise parenting time:**
       ${ pt_supervisor.name.full(middle="full") }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervised == True and pt_supervisor_type == "person"
+  - Edit: pt_visitation_center_name
+    button: |
+      **Official supervised visitation center:**
+      % if pt_visitation_center_name != "":
+      ${ pt_visitation_center_name }
+      % else:
+      None entered
+      % endif
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervised == True and pt_supervisor_type == "agency"
   - Edit: pt_location_identified
     button: |
       **Do you know where you want ${other_parties[0].name.full(middle="full")}'s parenting time to happen?**
@@ -5275,6 +5318,11 @@ review:
       ${ word(yesno(pt_immediate_return)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant")
 
+  - Edit: appear_alone_for_exam
+    button: |
+      **Should ${other_parties[0].name.full(middle="full")} be ordered to go to court for an interview or examination?**
+      ${ word(yesno(appear_alone_for_exam)) }
+      
   - Edit: award_personal_property
     button: |
       **Is there personal property you want the court to give to you?**
@@ -5370,6 +5418,17 @@ review:
       ${ other_transfer_property_person.name.full(middle="full") }
       % endif
     show if: property_transfer_present_cb == True
+  - Edit: request_police_person
+    button: |
+      **Who will request that law enforcement is at the property transfer?**
+      % if request_police_person == 'petitioner':
+      Me
+      % elif request_police_person == 'respondent':
+      ${ other_transfer_property_person.name.full(middle="full") }
+      % else:
+      I don't know.
+      % endif
+    show if: property_transfer_present_cb == True and property_transfer_person == 'police'
   - Edit: property_transfer_location_cb
     button: |
       **Do you know where you want the personal property transfer to happen?**
