@@ -266,9 +266,12 @@ code: |
     other_cases.gather()  
   if knows_respondent_dob == "exact":  
     if other_parties[0].age_in_years() < 18:
-      respondent_parent_help
       if respondent_parent_help:
         respondent_parent_name
+  else:
+    if respondent_parent_help:
+      respondent_parent_name
+  
   if service_address_choice == "other":
     service_address.address
   if has_second_service_address:  
@@ -612,10 +615,21 @@ choices:
   - Yes: True
   - No: False
 ---
-depends on: minor_kids_with_respondent
-code: |
-  if minor_kids_with_respondent == False:
-    protect_shared_kids = False
+# code block not setting protect_shared_kids - maybe revisit
+#mandatory: True
+#reconsider: True
+##depends on: minor_kids_with_respondent
+#code: |
+#  if minor_kids_with_respondent == False:
+#    protect_shared_kids = False
+#  else:
+#    protect_shared_kids
+#    
+#  if shared_kids.protect.any_true():
+#    protect_shared_kids = True
+#  else:
+#    protect_shared_kids = False
+    
 ---
 # code to build protected shared kids list put into attachment blocks
 #reconsider: True
@@ -649,9 +663,10 @@ fields:
     default: True
   - Minor children I have with ${other_parties[0].name.full(middle="full")}: protect_shared_kids
     datatype: yesnowide
-    show if:
-      code: |
-        minor_kids_with_respondent == True
+    # removing this show if to accommodate adding minor children thru review, maybe revisit
+    #show if:
+    #  code: |
+    #    minor_kids_with_respondent == True
   - My minor children I **did not** have with ${other_parties[0].name.full(middle="full")}: protect_petitioner_kids
     datatype: yesnowide
   - A dependent adult: protect_dependent_adult
@@ -1533,6 +1548,8 @@ fields:
 id: minor respondent parents help
 question: |
   Do you want ${other_parties[0].name.full(middle="full")}'s parent or guardian help them follow the Order of Protection?
+subquestion: |
+  You can ask for this if you know or think ${other_parties[0].name.full(middle="full")} is under age 18.
 fields:
   - no label: respondent_parent_help
     datatype: yesnoradio
@@ -1715,14 +1732,26 @@ id: confidential schools
 question: |
   Do you want the court to keep the school or daycare information confidential?
 subquestion: |
+  % if len(schools.elements) == 2: 
+
   % if schools[0].hide and schools[1].hide:
   You are listing ${schools[0].name} and ${ schools[1].name } as confidential. 
-  % elif schools[0].hide:
+  % elif schools[0].hide and schools[1].hide == False:
   You are listing ${schools[0].name} as confidential.
-  % elif schools[1].hide:
-  You are listing ${ schools[1].name } as confidential.
+  % elif schools[0].hide == False and schools[1].hide == False:
+  You have not listed any school locations as confidential.
+  % endif
+  
+  % elif len(schools.elements) == 1: 
+  
+  % if schools[0].hide:
+  You are listing ${schools[0].name} as confidential.
   % else:
-  You are not listed any school locations as confidential.
+  You have not listed any school locations as confidential.
+  % endif
+  
+  % else:
+  You have not listed any school locations as confidential.
   % endif
 
   If you want to change confidential schools, edit information about schools in [**Protections**](${ url_action('section_protections') }) section.
@@ -3023,6 +3052,8 @@ fields:
 id: respondent gender
 question: |
   What is ${other_parties[0].name.full(middle="full")}'s gender?
+subquestion: |
+  This information is used to help enforce the Order of Protection.
 fields:
   - Gender: other_parties[0].gender
     datatype: radio
@@ -3039,16 +3070,21 @@ fields:
 id: respondent race
 question: |
   What is ${other_parties[0].name.full(middle="full")}'s race?
+subquestion: |
+  This information is used to help enforce the Order of Protection.
 fields:
   - Gender: other_parties[0].race
     datatype: radio
     choices:
       - Asian: Asian
       - Black: Black
-      - Hispanic or Latino: Hispanic or Latino
-      - Middle Eastern/North African: Middle Eastern/North African 
+      - Hispanic: Hispanic
+      - Latino: Latino
+      - Middle Eastern: Middle Eastern 
       - Native American: Native American
-      - Native Hawaiian or Pacific Islander: Native Hawaiian or Pacific Islander
+      - Native Hawaiian: Native Hawaiian
+      - North African: North African
+      - Pacific Islander: Pacific Islander
       - 2 or more races: Multiracial
       - White: White
       - Other: other
@@ -3058,8 +3094,6 @@ fields:
     show if:
       variable: other_parties[0].race
       is: 'other'
-
-
 
 ---
 id: case number
@@ -3155,9 +3189,10 @@ code: |
           op_schools.enabled = True
 
   if minor_kids_with_respondent:
-    if pt_supervised:
-      if pt_supervisor_type == "person":
-        affidavit_pt_supervisor.enabled = True
+    if parenting_time == "restrict" or parenting_time == "allow":
+      if pt_supervised:
+        if pt_supervisor_type == "person":
+          affidavit_pt_supervisor.enabled = True
 
   if eop:
     emergency_op.enabled = True
@@ -4249,15 +4284,15 @@ attachment:
     - "physical_care_of_children": ${ True if physical_care_of_children and minor_kids_with_respondent else '' }
     
     - "return_children_possession": ${ True if (return_children_to == "petitioner" or return_children_to == "other") and minor_kids_with_respondent else '' }
-    - "return_children_petitioner_cb": ${ "" }
-    - "return_children_other_cb": ${ "" }    
+    - "return_children_petitioner_cb": ${ True if return_children_to == "petitioner" and minor_kids_with_respondent else '' }
+    - "return_children_other_cb": ${ True if return_children_to == "other" and minor_kids_with_respondent else '' }    
     - "return_children_other_person": ${ return_children_other_person.name.full(middle="full") if return_children_to == "other" and minor_kids_with_respondent else '' }
     - "return_children_location_cb": ${ True if knows_return_children_details and minor_kids_with_respondent else "" }
     - "return_children_location": ${ return_children_location.on_one_line(bare=True) if knows_return_children_details and minor_kids_with_respondent else "" }
     - "return_children_on": ${ True if on_or_by == "on" and knows_return_children_details and minor_kids_with_respondent else "" }
     - "return_children_by": ${ True if on_or_by == "by" and knows_return_children_details and minor_kids_with_respondent else "" }
     - "return_children_date": ${ return_children_date if knows_return_children_details and minor_kids_with_respondent else "" }
-    - "return_children_time": ${ return_children_time if knows_return_children_details and minor_kids_with_respondent else "" }
+    - "return_children_time": ${ format_time(return_children_time) if knows_return_children_details and minor_kids_with_respondent else "" }
     - "return_children_present_name": ${ return_children_present_name if knows_return_children_details and return_children_present and minor_kids_with_respondent else "" }
     
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
@@ -4390,9 +4425,9 @@ attachment:
     - "award_petitioner_property_cb": ${ True if award_personal_property else "" }
     - "petitioner_property_awarded_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property]) if award_personal_property else "" }
     - "respondent_ordered_return_property_cb": ${ True if award_personal_property == True and return_property == True else "" }
-    - "return_all_property_cb": ${ True if all(petitioner_personal_property.respo_has) and award_personal_property == True and return_property == True else "" }
-    - "return_some_property_cb": ${ True if all(petitioner_personal_property.respo_has) == False and award_personal_property == True and return_property == True else "" }
-    - "petitioner_property_ordered_return_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property if item.respo_has == True]) if (award_personal_property == True and return_property == True) else "" }
+    - "return_all_property_cb": ${ True if [item.name.text for item in petitioner_personal_property] == [item.name.text for item in petitioner_personal_property if item.respo_has == True] and award_personal_property == True and return_property == True else "" }
+    - "return_some_property_cb": ${ True if [item.name.text for item in petitioner_personal_property] != [item.name.text for item in petitioner_personal_property if item.respo_has == True] and award_personal_property == True and return_property == True else "" }
+    - "petitioner_property_ordered_return_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property if item.respo_has == True]) if ([item.name.text for item in petitioner_personal_property] != [item.name.text for item in petitioner_personal_property if item.respo_has == True] and award_personal_property == True and return_property == True) else "" }
     - "return_property_person": |
         % if award_personal_property == True and return_property == True: 
         % if return_property_person == "petitioner":
@@ -4590,22 +4625,22 @@ review:
     button: |
       **People to protect with this Order of Protection:**
       
-      % if protect_petitioner == True:
+      % if protect_petitioner:
       * You
       % endif
-      % if protect_shared_kids == True:
+      % if protect_shared_kids:
       * Minor children you have with ${other_parties[0].name.full(middle="full")}
       % endif
-      % if protect_petitioner_kids == True:
+      % if protect_petitioner_kids:
       * Minor children you **did not** have with ${other_parties[0].name.full(middle="full")}
       % endif
-      % if protect_dependent_adult == True:
+      % if protect_dependent_adult:
       * A dependent adult
       % endif
-      % if protect_high_risk_adult == True:
+      % if protect_high_risk_adult:
       * A high risk adult with disabilities
       % endif      
-      % if protect_other_hh_members == True:
+      % if protect_other_hh_members:
       * Other household members
       % endif
     
@@ -5112,7 +5147,7 @@ review:
   - Edit: on_or_by
     button: |
       **Return children details:**
-      Children should be returned ${ on_or_by } ${ return_children_date } at ${ return_children_time }. 
+      Children should be returned ${ on_or_by } ${ return_children_date } at ${ format_time(return_children_time) }. 
     show if: knows_return_children_details == True
   - Edit: return_children_present
     button: |
