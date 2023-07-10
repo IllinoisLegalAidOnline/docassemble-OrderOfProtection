@@ -185,6 +185,7 @@ code: |
       if parenting_time == "restrict" or parenting_time == "grant":
         if pt_format == "interview":
           if pt_weekdays:
+            dow_abb #this line can possibly be removed now that code block set to mandatory
             pt_weekday_days
           if pt_weekends:
             pt_weekend_days
@@ -298,9 +299,10 @@ terms:
   - "advance written notice": |
       **Advance written notice** means they received a copy of the Petition for Order of Protection and Summons before the court hearing. These include the date and time of the court hearing.
 ---
-#code: |
-#  del pt_weekday_days
-#  clean_up = True
+mandatory: True
+code: |
+  dow_full = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  dow_abb = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 ---
 id: welcome
 question: |
@@ -1980,20 +1982,15 @@ fields:
     datatype: checkboxes
     none of the above: False
     choices:
-      - Monday: 1
-      - Tuesday: 2
-      - Wednesday: 3
-      - Thursday: 4
-      - Friday: 5
+      - Monday: "1"
+      - Tuesday: "2"
+      - Wednesday: "3"
+      - Thursday: "4"
+      - Friday: "5"
   - Start time: pt_weekday_start
     datatype: time
   - End time: pt_weekday_end
     datatype: time
----
-mandatory: True
-code: |
-  dow_full = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  dow_abb = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 ---
 id: parenting time weekends
 question: |
