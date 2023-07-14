@@ -3195,6 +3195,7 @@ objects:
   - affidavit_pt_supervisor: ALDocument.using(title="Affidavit of Parenting Time Supervisor", filename="affidavit_pt_supervisor.pdf", has_addendum=False)
   - efiling_exemption: ALDocument.using(title="E-filing exemption (optional)", filename="e-filing_exemption.pdf", has_addendum=False)
   - cook_dv_cover_sheet: ALDocument.using(title="Domestic Violence Cover Sheet (Cook County)", filename="cook_dv_cover_sheet.pdf", has_addendum=False)
+  - cook_sheriff_info_sheet: ALDocument.using(title="Confidential Sheriff Information Sheet (Cook County)", filename="cook_sheriff_info_sheet.pdf", has_addendum=False)
 
 ---
 code: |
@@ -3210,6 +3211,7 @@ code: |
   affidavit_pt_supervisor.enabled = False
   efiling_exemption.enabled = True
   cook_dv_cover_sheet.enabled = False
+  cook_sheriff_info_sheet.enabled = False
   
   if incidents.number() > 4:
     additional_incidents.enabled = True
@@ -3241,6 +3243,7 @@ code: |
 
   if trial_court_index == -1:
     cook_dv_cover_sheet.enabled = True
+    cook_sheriff_info_sheet.enabled = True
 
 
 
@@ -3256,8 +3259,8 @@ code: |
 ---
 objects:
   - op_petition_single_pdf_bundle: ALDocumentBundle.using(elements=[op_petition, additional_cases, additional_incidents], filename="petition.pdf", title="Petition for Order of Protection")
-  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_petition_single_pdf_bundle, op_schools, emergency_op, plenary_op, op_summons, affidavit_pt_supervisor, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
-  - al_court_bundle: ALDocumentBundle.using(elements=[op_petition_single_pdf_bundle, op_schools, emergency_op, plenary_op, op_summons, efiling_exemption], filename="order_of_protection.pdf", title="Order of protection")
+  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, cook_dv_cover_sheet, op_petition_single_pdf_bundle, op_schools, emergency_op, plenary_op, op_summons, cook_sheriff_info_sheet, affidavit_pt_supervisor, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
+  - al_court_bundle: ALDocumentBundle.using(elements=[cook_dv_cover_sheet, op_petition_single_pdf_bundle, op_schools, emergency_op, plenary_op, op_summons, cook_sheriff_info_sheet, efiling_exemption], filename="order_of_protection.pdf", title="Order of protection")
 
 ---
 attachment:
@@ -5141,6 +5144,93 @@ attachment:
     - "preparer_zip": ${ users[0].address.zip }
     - "preparer_phone": ${ phone_number_formatted(users[0].phone_number) }
     - "preparer_email": ${ users[0].email if users[0].email_notice else ""}
+
+---
+attachment:
+  variable name: cook_sheriff_info_sheet[i]
+  name: cook_sheriff_info_sheet
+  filename: cook_sheriff_info_sheet
+  skip undefined: True
+  editable: False
+  pdf template file: cook_sheriff_info_sheet.pdf
+  fields:
+    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "case_number__1": ${ case_number }
+    - "respondent_gender": ${ respondent_gender_other if other_parties[0].gender == 'other' else other_parties[0].gender }
+    - "respondent_race": ${ respondent_race_other if other_parties[0].race == 'other' else other_parties[0].race }
+    - "respondent_dob": |
+        % if knows_respondent_dob == 'exact' and other_parties[0].birthdate != "":
+        ${ other_parties[0].birthdate }
+        % elif knows_respondent_dob == 'some':
+        ${ other_parties[0].birthdate_info }
+        % else:
+        ${ "do not know" }
+        % endif
+    - "respondent_firearms_on_person": ${ True if firearms_reasons['vehicle'] == True else ''  }
+    - "respondent_suicidal": ${ True if firearms_reasons['suicidal'] == True else ''  }    
+    - "respondent_employer": |
+        % if knows_respondent_work:
+        ${ other_parties[0].employer }
+        % else:
+        ${ "do not know" }
+        % endif
+    - "respondent_work_address": |
+        % if knows_respondent_work:
+        ${ other_parties[0].work_address.line_one(bare=True) }
+        % else:
+        ${ "do not know" }
+        % endif
+    - "respondent_work_city": |
+        % if knows_respondent_work:
+        ${ other_parties[0].work_address.city }
+        % else:
+        ${ "do not know" }
+        % endif
+
+    - "service_address_line_1": |
+        % if service_address_choice == "other":
+        ${ service_address.line_one(bare=True) }
+        % elif service_address_choice == "home":
+        ${ other_parties[0].address.line_one(bare=True) }        
+        % else:
+        ${ other_parties[0].work_address.line_one(bare=True) }        
+        % endif
+    - "service_city": |
+        % if service_address_choice == "other":
+        ${ service_address.city }
+        % elif service_address_choice == "home":
+        ${ other_parties[0].address.city }        
+        % else:
+        ${ other_parties[0].work_address.city }        
+        % endif
+    - "respondent_phone": ${ phone_number_formatted(other_parties[0].phone_number) }
+    - "service_alt_address_line_1": |
+        % if has_second_service_address == True:
+        % if second_service_address_choice == "other":
+        ${ second_service_address.line_one(bare=True) }
+        % elif second_service_address_choice == "home":
+        ${ other_parties[0].address.line_one(bare=True) }        
+        % else:
+        ${ other_parties[0].work_address.line_one(bare=True) }        
+        % endif
+        % endif
+    - "service_alt_city": |
+        % if has_second_service_address == True:
+        % if second_service_address_choice == "other":
+        ${ second_service_address.city }
+        % elif second_service_address_choice == "home":
+        ${ other_parties[0].address.city }        
+        % else:
+        ${ other_parties[0].work_address.city }        
+        % endif
+        % endif
+
+
+
+
+
+    - "preparer_name": ${ users[0].name.full(middle="full") }
+    - "preparer_phone": ${ phone_number_formatted(users[0].phone_number) }
 
 
 ---
