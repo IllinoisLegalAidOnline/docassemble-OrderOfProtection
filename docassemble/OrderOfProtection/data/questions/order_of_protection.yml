@@ -185,7 +185,7 @@ code: |
       if parenting_time == "restrict" or parenting_time == "grant":
         if pt_format == "interview":
           if pt_weekdays:
-            dow_abb #this line can possibly be removed now that code block set to mandatory
+            # dow_abb #testing removal of this after 1.6.64 update
             pt_weekday_days
           if pt_weekends:
             pt_weekend_days
@@ -291,6 +291,11 @@ code: |
     users[0].email
 
   case_number
+  
+  if trial_court_index == -1:
+    if previous_cook_case_type != "None":
+      previous_cook_case_date
+  
   nav.set_section('section_download')  
   #clean_up
   get_docs_screen
@@ -299,7 +304,7 @@ terms:
   - "advance written notice": |
       **Advance written notice** means they received a copy of the Petition for Order of Protection and Summons before the court hearing. These include the date and time of the court hearing.
 ---
-mandatory: True
+# removed mandatory: True after 1.4.64 update
 code: |
   dow_full = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   dow_abb = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -1265,7 +1270,7 @@ id: respondent home address question
 question: |
   Do you know ${other_parties[0].name.full(middle="full")}'s home address?
 fields:
-  - Know ${other_parties[0].name.full(middle="full")}'s home info?: knows_respondent_home
+  - no label: knows_respondent_home
     datatype: yesnoradio
 ---
 id: respondent address
@@ -2381,7 +2386,7 @@ id: know property transfer address
 question: |
   Do you know where you want the personal property transfer to happen?
 subquestion: |
-  You can enter the address on the next screen.
+  This is where you will get your property back from ${other_parties[0].name.full(middle="full")}. You can enter the address on the next screen.
 fields:
   - no label: property_transfer_location_cb
     datatype: yesnoradio
@@ -2406,6 +2411,9 @@ question: |
   Do you want anyone else present at the property transfer?
 subquestion: |
   It may be safer if a law enforcement officer or another person is present when the property is transferred.
+  % if respondent_one_time_entry:
+   They can also be present when ${other_parties[0].name.full(middle="full")} enters the home one time to get their things.
+  % endif
 fields:
   - no label: property_transfer_present_cb
     datatype: yesnoradio
@@ -2415,6 +2423,9 @@ question: |
   Who should be present at the property transfer?
 subquestion: |
   It may be safer if a law enforcement officer is present when the property is transferred.
+  % if respondent_one_time_entry:
+   They can also be present when ${other_parties[0].name.full(middle="full")} enters the home one time to get their things.
+  % endif
 fields:
   - no label: property_transfer_person
     datatype: radio
@@ -2857,9 +2868,9 @@ content: |
 ---
 id: phone number
 question: |
-  What is your phone number?
+  What phone number do you want to list on your court forms?
 subquestion: |
-  If you do not want to list your phone number on your forms, leave this blank.
+  **This phone number will appear on your court forms.** If you do not want to list a phone number on your forms, leave this blank.
 fields:
   - Phone: users[0].phone_number
     datatype: al_international_phone
@@ -3091,13 +3102,40 @@ fields:
     show if:
       variable: other_parties[0].race
       is: 'other'
+---
+id: any previous cook cases
+question: |
+  Have you filed any divorce or parentage cases in Cook County before?
+subquestion: |
+  This will help the court clerk assign your case to the correct location.
+fields:
+  - no label: previous_cook_case_type
+    datatype: radio
+    choices:
+      - There was an earlier divorce case with ${other_parties[0].name.full(middle="full")}.: divorce
+      - There was an earlier parentage case with ${other_parties[0].name.full(middle="full")} involving children we had together.: parentage
+      - No earlier divorce or parentage cases were filed in Cook County.: None
+---
+id: previous cook case details
+question: |
+  Tell us about the ${ previous_cook_case_type } case with ${other_parties[0].name.full(middle="full")} in Cook County
+subquestion: |
+  If there is more than 1, enter information about the most recent.
+fields:
+  - Date case was filed: previous_cook_case_date
+    datatype: date
+    min: ${ today().format("yyyy-MM-dd") }
+  - ${ previous_cook_case_type.capitalize() } case number: previous_cook_case_number
+    maxlength: 24
+  - Name of judge: previous_cook_case_judge
+    maxlength: 50
 
 ---
 id: case number
 question: |
   What is the case number?
 subquestion: |
-  This is optional 
+  If this is a new case, leave this blank. The clerk will give you a case number when you file.
 fields:
   - Case number: case_number
     required: False
@@ -3156,6 +3194,8 @@ objects:
   - op_summons: ALDocument.using(title="Summons", filename="summons.pdf", has_addendum=False)
   - affidavit_pt_supervisor: ALDocument.using(title="Affidavit of Parenting Time Supervisor", filename="affidavit_pt_supervisor.pdf", has_addendum=False)
   - efiling_exemption: ALDocument.using(title="E-filing exemption (optional)", filename="e-filing_exemption.pdf", has_addendum=False)
+  - cook_dv_cover_sheet: ALDocument.using(title="Domestic Violence Cover Sheet (Cook County)", filename="cook_dv_cover_sheet.pdf", has_addendum=False)
+
 ---
 code: |
   op_instructions.enabled = True
@@ -3169,6 +3209,7 @@ code: |
   op_schools.enabled = False
   affidavit_pt_supervisor.enabled = False
   efiling_exemption.enabled = True
+  cook_dv_cover_sheet.enabled = False
   
   if incidents.number() > 4:
     additional_incidents.enabled = True
@@ -3198,6 +3239,9 @@ code: |
   if pop:
     plenary_op.enabled = True
 
+  if trial_court_index == -1:
+    cook_dv_cover_sheet.enabled = True
+
 
 
 # old
@@ -3211,7 +3255,7 @@ code: |
 
 ---
 objects:
-  - op_petition_single_pdf_bundle: ALDocumentBundle.using(elements=[op_petition, additional_cases, additional_incidents], filename="petition.pdf", title="Petition")
+  - op_petition_single_pdf_bundle: ALDocumentBundle.using(elements=[op_petition, additional_cases, additional_incidents], filename="petition.pdf", title="Petition for Order of Protection")
   - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, op_petition_single_pdf_bundle, op_schools, emergency_op, plenary_op, op_summons, affidavit_pt_supervisor, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
   - al_court_bundle: ALDocumentBundle.using(elements=[op_petition_single_pdf_bundle, op_schools, emergency_op, plenary_op, op_summons, efiling_exemption], filename="order_of_protection.pdf", title="Order of protection")
 
@@ -5065,19 +5109,38 @@ attachment:
     - "cell_number_4": ${ phone_number_formatted(cell_numbers[3].name.text) if separate_phone_service else '' }
 ---
 
+---
+attachment:
+  variable name: cook_dv_cover_sheet[i]
+  name: cook_dv_cover_sheet
+  filename: cook_dv_cover_sheet
+  skip undefined: True
+  editable: False
+  pdf template file: cook_dv_cover_sheet.pdf
+  fields:
+    - "petitioner__1": ${ users[0].name.full(middle="full") }
+    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "case_number__1": ${ case_number }
+    - "civil_proceeding": ${ True }
 
+    - "involves_minors_yes": ${ True if minor_kids_with_respondent else '' }
+    - "involves_minors_no": ${ True if not minor_kids_with_respondent else '' }
+    - "previous_divorce_yes": ${ True if previous_cook_case_type == "divorce" else '' }
+    - "previous_divorce_no": ${ True if not previous_cook_case_type == "divorce" else '' }
+    - "previous_parentage_yes": ${ True if previous_cook_case_type == "parentage" else '' }
+    - "previous_parentage_no": ${ True if not previous_cook_case_type == "parentage" else '' }
+    - "previous_cook_case_date": ${ previous_cook_case_date if previous_cook_case_type == "divorce" or previous_cook_case_type == "parentage" else '' }
+    - "previous_cook_case_number": ${ previous_cook_case_number if previous_cook_case_type == "divorce" or previous_cook_case_type == "parentage" else '' }
+    - "previous_cook_case_judge": ${ previous_cook_case_judge if previous_cook_case_type == "divorce" or previous_cook_case_type == "parentage" else '' }
 
-
-
-
-
-
-
-
-
-
-
-
+    - "pro_se_cb": ${ True }
+    - "petitioner__2": ${ users[0].name.full(middle="full") }
+    - "preparer_address_line_1": ${ users[0].address.line_one(bare=True) }
+    - "preparer_city": ${ users[0].address.city }
+    - "preparer_state": ${ users[0].address.state }
+    - "preparer_zip": ${ users[0].address.zip }
+    - "preparer_phone": ${ phone_number_formatted(users[0].phone_number) }
+    - "preparer_email": ${ users[0].email if users[0].email_notice else ""}
 
 
 ---
