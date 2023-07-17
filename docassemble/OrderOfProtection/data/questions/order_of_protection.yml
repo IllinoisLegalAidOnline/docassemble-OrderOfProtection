@@ -256,6 +256,11 @@ code: |
   knows_respondent_dob
   other_parties[0].gender
   other_parties[0].race
+  if trial_court_index == -1:
+    other_parties[0].height_feet
+    other_parties[0].tattoos
+    caution_reasons
+
   if knows_respondent_home:
     other_parties[0].address.address
   other_parties[0].phone_number
@@ -293,7 +298,7 @@ code: |
   case_number
   
   if trial_court_index == -1:
-    if previous_cook_case_type != "None":
+    if previous_cook_case_type != "none":
       previous_cook_case_date
   
   nav.set_section('section_download')  
@@ -3103,18 +3108,132 @@ fields:
       variable: other_parties[0].race
       is: 'other'
 ---
+id: respondent physical characteristics Cook
+question: |
+  Tell us more about ${other_parties[0].name.full(middle="full")}
+subquestion: |
+  This information is used to help enforce the Order of Protection.
+  
+  Enter what information you know.
+fields:
+  - Height (feet): other_parties[0].height_feet
+    datatype: integer
+    required: False
+    min: 2
+    max: 8
+    help: |
+      Example: 5
+  - Height (inches): other_parties[0].height_inches
+    datatype: integer
+    required: False
+    min: 0
+    max: 11
+    help: |
+      Example: 8
+  - Weight (pounds): other_parties[0].weight
+    datatype: integer
+    required: False
+    min: 0
+    help: |
+      Example: 170
+  - Skin color: other_parties[0].skin
+    required: False
+    datatype: radio
+    choices: 
+      - Very light: Very light
+      - Light: Light
+      - Light brown: Light brown
+      - Olive: Olive
+      - Brown: Brown
+      - Dark brown: Dark brown
+      - Other: other
+  - ${other_parties[0].name.full(middle="full")}'s skin color: respondent_skin_other
+    maxlength: 30
+    show if:
+      variable: other_parties[0].skin
+      is: 'other'
+  - Hair color: other_parties[0].hair
+    maxlength: 30
+    required: False
+    help: |
+      Examples: brown, black, blond, gray, bald or shaved
+  - Eye color: other_parties[0].eyes
+    maxlength: 30
+    required: False
+    help: |
+      Examples: brown, blue, hazel, green
+  - Does ${other_parties[0].name.full(middle="full")} wear glasses?: other_parties[0].glasses
+    datatype: radio
+    choices: 
+      - Yes: Yes
+      - Sometimes: Sometimes
+      - No: No
+---
+id: respondent more identifying info Cook
+question: |
+  Anything else about ${other_parties[0].name.full(middle="full")}?
+subquestion: |
+  This information is used to help enforce the Order of Protection.
+  
+  If you do not know, leave blank.
+fields:
+  - Any other things about their appearance?: other_parties[0].tattoos
+    maxlength: 70
+    required: False
+    help: |
+      Examples: tattoos, scars, birthmarks, mustache, beard
+  - Other names used by ${other_parties[0].name.full(middle="full")}:: alias_names
+    maxlength: 70
+    required: False
+    help: |
+      This could be a name from an earlier marriage or a nickname. If there is more than one, separate by commas.
+  - Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?: respondent_on_probation
+    datatype: yesnoradio
+  - Probation in which county?: respondent_probation_county
+    required: False
+    maxlength: 20
+    show if: 
+      variable: respondent_on_probation
+      is: True
+---
+id: respondent caution
+question: |
+  Are there reasons the sheriff should use caution when approaching ${other_parties[0].name.full(middle="full")}?
+subquestion: |
+  Check all that apply.
+fields:
+  - ${other_parties[0].name.full(middle="full")} as a history of mental illness.: caution_reasons
+    datatype: checkboxes
+    none of the above: False
+    required: False
+    choices:
+      - Has a history of mental illness.: illness
+      - Is likely to be under the influence of alcohol.: alcohol
+      - Is likely to be under the influence of drugs.: drugs
+      - Is likely to carry a weapon.: armed
+      - Has weapons in the home.: home
+  - Type and location of weapons: weapons_description
+    required: False
+    maxlength: 40
+    js show if: |
+      val("caution_reasons['armed']") == true || val("caution_reasons['home']") == true
+
+
+
+---
 id: any previous cook cases
 question: |
   Have you filed any divorce or parentage cases in Cook County before?
 subquestion: |
-  This will help the court clerk assign your case to the correct location.
+  This will help the court clerk assign your case to the correct location. If there is more than 1, enter information about the most recent.
+
 fields:
   - no label: previous_cook_case_type
     datatype: radio
     choices:
       - There was an earlier divorce case with ${other_parties[0].name.full(middle="full")}.: divorce
       - There was an earlier parentage case with ${other_parties[0].name.full(middle="full")} involving children we had together.: parentage
-      - No earlier divorce or parentage cases were filed in Cook County.: None
+      - No earlier divorce or parentage cases were filed in Cook County.: none
 ---
 id: previous cook case details
 question: |
@@ -3124,7 +3243,7 @@ subquestion: |
 fields:
   - Date case was filed: previous_cook_case_date
     datatype: date
-    min: ${ today().format("yyyy-MM-dd") }
+    max: ${ today().format("yyyy-MM-dd") }
   - ${ previous_cook_case_type.capitalize() } case number: previous_cook_case_number
     maxlength: 24
   - Name of judge: previous_cook_case_judge
@@ -5129,9 +5248,9 @@ attachment:
     - "involves_minors_yes": ${ True if minor_kids_with_respondent else '' }
     - "involves_minors_no": ${ True if not minor_kids_with_respondent else '' }
     - "previous_divorce_yes": ${ True if previous_cook_case_type == "divorce" else '' }
-    - "previous_divorce_no": ${ True if not previous_cook_case_type == "divorce" else '' }
+    - "previous_divorce_no": ${ True if not previous_cook_case_type == "divorce" or previous_cook_case_type == "none" else '' }
     - "previous_parentage_yes": ${ True if previous_cook_case_type == "parentage" else '' }
-    - "previous_parentage_no": ${ True if not previous_cook_case_type == "parentage" else '' }
+    - "previous_parentage_no": ${ True if not previous_cook_case_type == "parentage" or previous_cook_case_type == "none" else '' }
     - "previous_cook_case_date": ${ previous_cook_case_date if previous_cook_case_type == "divorce" or previous_cook_case_type == "parentage" else '' }
     - "previous_cook_case_number": ${ previous_cook_case_number if previous_cook_case_type == "divorce" or previous_cook_case_type == "parentage" else '' }
     - "previous_cook_case_judge": ${ previous_cook_case_judge if previous_cook_case_type == "divorce" or previous_cook_case_type == "parentage" else '' }
@@ -5139,9 +5258,9 @@ attachment:
     - "pro_se_cb": ${ True }
     - "petitioner__2": ${ users[0].name.full(middle="full") }
     - "preparer_address_line_1": ${ users[0].address.line_one(bare=True) }
-    - "preparer_city": ${ users[0].address.city }
-    - "preparer_state": ${ users[0].address.state }
-    - "preparer_zip": ${ users[0].address.zip }
+    - "petitioner_city": ${ users[0].address.city }
+    - "petitioner_state": ${ users[0].address.state }
+    - "petitioner_zip": ${ users[0].address.zip }
     - "preparer_phone": ${ phone_number_formatted(users[0].phone_number) }
     - "preparer_email": ${ users[0].email if users[0].email_notice else ""}
 
@@ -5156,6 +5275,7 @@ attachment:
   fields:
     - "respondent": ${other_parties[0].name.full(middle="full")}
     - "case_number__1": ${ case_number }
+    - "alias_names": ${ alias_names}
     - "respondent_gender": ${ respondent_gender_other if other_parties[0].gender == 'other' else other_parties[0].gender }
     - "respondent_race": ${ respondent_race_other if other_parties[0].race == 'other' else other_parties[0].race }
     - "respondent_dob": |
@@ -5166,8 +5286,36 @@ attachment:
         % else:
         ${ "do not know" }
         % endif
+    - "respondent_age": |
+        % if knows_respondent_dob == 'exact' and other_parties[0].birthdate != "":
+        ${ other_parties[0].age_in_years() }
+        % endif
+    - "respondent_height": |
+        % if str(other_parties[0].height_feet) != "":
+        ${ other_parties[0].height_feet + "\' " }
+        % if str(other_parties[0].height_inches) != "":
+        ${ other_parties[0].height_inches + "\""}
+        % endif
+        % else:
+        ${""}
+        % endif
+    - "respondent_weight": ${ other_parties[0].weight + " lbs." if other_parties[0].weight.defined() else '' }
+    - "respondent_skin": |
+        % if other_parties[0].skin != "":
+        ${ respondent_skin_other if other_parties[0].skin == 'other' else other_parties[0].skin }
+        % endif
+    - "respondent_hair": ${ other_parties[0].hair if other_parties[0].hair != "" else '' }
+    - "respondent_eyes": ${ other_parties[0].eyes if other_parties[0].eyes != "" else '' }
+    - "respondent_glasses": ${other_parties[0].glasses if other_parties[0].glasses != "" else ''}
+    - "respondent_tattoos": ${ other_parties[0].tattoos if other_parties[0].tattoos != "" else '' }
+        
     - "respondent_firearms_on_person": ${ True if firearms_reasons['vehicle'] == True else ''  }
     - "respondent_suicidal": ${ True if firearms_reasons['suicidal'] == True else ''  }    
+    - "respondent_on_probation":  ${ True if respondent_on_probation == True else ''  } 
+    - "respondent_probation_county":  ${ respondent_probation_county if respondent_on_probation == True else ''  } 
+    
+    
+    
     - "respondent_employer": |
         % if knows_respondent_work:
         ${ other_parties[0].employer }
@@ -5235,7 +5383,7 @@ attachment:
 
 ---
 ############### Review pages
-id: review screen
+id: op review screen
 event: review_answers
 question: |
   Review screen
@@ -6504,9 +6652,100 @@ review:
       ${ other_parties[0].race }
       % endif
 
+  - Edit: other_parties[0].height_feet
+    button: |
+      **What is ${other_parties[0].name.full(middle="full")}'s height?**
+      % if other_parties[0].height_feet != "":
+      ${ other_parties[0].height_feet } feet
+      % else:
+      Height in feet not entered
+      % endif
+      % if other_parties[0].height_inches != "":
+      ${ other_parties[0].height_inches } inches
+      % else:
+      , height in inches not entered
+      % endif
+    show if: trial_court_index == -1
+  - Edit: other_parties[0].weight
+    button: |
+      **What is ${other_parties[0].name.full(middle="full")}'s weight?**
+      % if other_parties[0].weight != "":
+      ${ other_parties[0].weight } pounds
+      % else:
+      Not entered
+      % endif
+    show if: trial_court_index == -1
 
-
-
+  - Edit: other_parties[0].skin
+    button: |
+      **What is ${other_parties[0].name.full(middle="full")}'s skin color?**
+      % if other_parties[0].skin == 'other':
+      ${ respondent_skin_other }
+      % else:
+      ${ other_parties[0].skin }
+      % endif
+    show if: trial_court_index == -1
+  - Edit: other_parties[0].hair
+    button: |
+      **What is ${other_parties[0].name.full(middle="full")}'s hair color?**
+      ${ other_parties[0].hair }
+    show if: trial_court_index == -1
+  - Edit: other_parties[0].eyes
+    button: |
+      **What is ${other_parties[0].name.full(middle="full")}'s eye color?**
+      ${ other_parties[0].eyes }
+    show if: trial_court_index == -1
+  - Edit: other_parties[0].glasses
+    button: |
+      **Does ${other_parties[0].name.full(middle="full")} wear glasses?**
+      ${ other_parties[0].glasses }
+    show if: trial_court_index == -1
+  - Edit: other_parties[0].tattoos
+    button: |
+      **Other things about ${other_parties[0].name.full(middle="full")}'s appearance:**
+      ${ other_parties[0].tattoos }
+    show if: trial_court_index == -1
+  - Edit: alias_names
+    button: |
+      **Other names ${other_parties[0].name.full(middle="full")} has used:**
+      ${ alias_names }
+    show if: trial_court_index == -1
+  - Edit: respondent_on_probation
+    button: |
+      **Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?**
+      ${ word(yesno(respondent_on_probation)) }
+  - Edit: respondent_probation_county
+    button: |
+      **Probation county:**
+      ${ respondent_probation_county }
+    show if: respondent_on_probation
+    
+    
+  - Edit: previous_cook_case_type
+    button: |
+      **Previous Cook County case involving ${other_parties[0].name.full(middle="full")}:**
+      ${ previous_cook_case_type.capitalize() }
+    show if: trial_court_index == -1
+  - Edit: previous_cook_case_date
+    button: |
+      **Previous Cook County case info}:**
+      
+      % if previous_cook_case_date != "":
+      * Date filed: ${ previous_cook_case_date }
+      % else:
+      * Date filed: None entered
+      % endif
+      % if previous_cook_case_number != "":
+      * Case number: ${ previous_cook_case_number }
+      % else:
+      * Case number: None entered
+      % endif
+      % if previous_cook_case_judge != "":
+      * Judge: ${ previous_cook_case_judge }
+      % else:
+      * Judge: None entered
+      % endif
+    show if: trial_court_index == -1 and previous_cook_case_type != "none"
 
   - Edit: case_number
     button: |
