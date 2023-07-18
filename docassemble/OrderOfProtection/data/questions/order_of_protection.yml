@@ -3110,7 +3110,7 @@ fields:
 ---
 id: respondent physical characteristics Cook
 question: |
-  Tell us more about ${other_parties[0].name.full(middle="full")}
+  Tell us about ${other_parties[0].name.full(middle="full")}'s appearance
 subquestion: |
   This information is used to help enforce the Order of Protection.
   
@@ -3133,7 +3133,7 @@ fields:
   - Weight (pounds): other_parties[0].weight
     datatype: integer
     required: False
-    min: 0
+    min: 1
     help: |
       Example: 170
   - Skin color: other_parties[0].skin
@@ -3202,7 +3202,7 @@ question: |
 subquestion: |
   Check all that apply.
 fields:
-  - ${other_parties[0].name.full(middle="full")} as a history of mental illness.: caution_reasons
+  - ${other_parties[0].name.full(middle="full")}: caution_reasons
     datatype: checkboxes
     none of the above: False
     required: False
@@ -3313,8 +3313,8 @@ objects:
   - op_summons: ALDocument.using(title="Summons", filename="summons.pdf", has_addendum=False)
   - affidavit_pt_supervisor: ALDocument.using(title="Affidavit of Parenting Time Supervisor", filename="affidavit_pt_supervisor.pdf", has_addendum=False)
   - efiling_exemption: ALDocument.using(title="E-filing exemption (optional)", filename="e-filing_exemption.pdf", has_addendum=False)
-  - cook_dv_cover_sheet: ALDocument.using(title="Domestic Violence Cover Sheet (Cook County)", filename="cook_dv_cover_sheet.pdf", has_addendum=False)
-  - cook_sheriff_info_sheet: ALDocument.using(title="Confidential Sheriff Information Sheet (Cook County)", filename="cook_sheriff_info_sheet.pdf", has_addendum=False)
+  - cook_dv_cover_sheet: ALDocument.using(title="Domestic Violence Cover Sheet", filename="cook_dv_cover_sheet.pdf", has_addendum=False)
+  - cook_sheriff_info_sheet: ALDocument.using(title="Confidential Sheriff Information Sheet", filename="cook_sheriff_info_sheet.pdf", has_addendum=False)
 
 ---
 code: |
@@ -5291,15 +5291,15 @@ attachment:
         ${ other_parties[0].age_in_years() }
         % endif
     - "respondent_height": |
-        % if str(other_parties[0].height_feet) != "":
-        ${ other_parties[0].height_feet + "\' " }
-        % if str(other_parties[0].height_inches) != "":
-        ${ other_parties[0].height_inches + "\""}
+        % if other_parties[0].height_feet > 1:
+        ${ str(other_parties[0].height_feet) + "\'" }
+        % if other_parties[0].height_inches > 0:
+        ${ str(other_parties[0].height_inches) + "\""}
         % endif
         % else:
         ${""}
         % endif
-    - "respondent_weight": ${ other_parties[0].weight + " lbs." if other_parties[0].weight.defined() else '' }
+    - "respondent_weight": ${ str(other_parties[0].weight) + " lbs." if other_parties[0].weight > 0 else '' }
     - "respondent_skin": |
         % if other_parties[0].skin != "":
         ${ respondent_skin_other if other_parties[0].skin == 'other' else other_parties[0].skin }
@@ -5308,8 +5308,12 @@ attachment:
     - "respondent_eyes": ${ other_parties[0].eyes if other_parties[0].eyes != "" else '' }
     - "respondent_glasses": ${other_parties[0].glasses if other_parties[0].glasses != "" else ''}
     - "respondent_tattoos": ${ other_parties[0].tattoos if other_parties[0].tattoos != "" else '' }
-        
-    - "respondent_firearms_on_person": ${ True if firearms_reasons['vehicle'] == True else ''  }
+    - "respondent_history_illness": ${ True if caution_reasons['illness'] == True else "" }
+    - "respondent_alcohol": ${ True if caution_reasons['alcohol'] == True else "" }
+    - "respondent_drugs": ${ True if caution_reasons['drugs'] == True else "" }
+    - "respondent_firearms_on_person": ${ True if caution_reasons['armed'] == True else "" }
+    - "respondent_weapons_in_home": ${ True if caution_reasons['home'] == True else "" }
+    - "respondent_weapons_description": ${ weapons_description if caution_reasons['armed'] or caution_reasons['home'] == True else "" }        
     - "respondent_suicidal": ${ True if firearms_reasons['suicidal'] == True else ''  }    
     - "respondent_on_probation":  ${ True if respondent_on_probation == True else ''  } 
     - "respondent_probation_county":  ${ respondent_probation_county if respondent_on_probation == True else ''  } 
@@ -6655,21 +6659,19 @@ review:
   - Edit: other_parties[0].height_feet
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s height?**
-      % if other_parties[0].height_feet != "":
+      % if other_parties[0].height_feet > 1:
       ${ other_parties[0].height_feet } feet
+      % if other_parties[0].height_inches > 0:
+      ${ other_parties[0].height_inches } inches
+      % endif
       % else:
       Height in feet not entered
-      % endif
-      % if other_parties[0].height_inches != "":
-      ${ other_parties[0].height_inches } inches
-      % else:
-      , height in inches not entered
       % endif
     show if: trial_court_index == -1
   - Edit: other_parties[0].weight
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s weight?**
-      % if other_parties[0].weight != "":
+      % if other_parties[0].weight > 0:
       ${ other_parties[0].weight } pounds
       % else:
       Not entered
@@ -6689,12 +6691,12 @@ review:
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s hair color?**
       ${ other_parties[0].hair }
-    show if: trial_court_index == -1
+    show if: trial_court_index == -1 and other_parties[0].hair != ""
   - Edit: other_parties[0].eyes
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s eye color?**
       ${ other_parties[0].eyes }
-    show if: trial_court_index == -1
+    show if: trial_court_index == -1 and other_parties[0].eyes != ""
   - Edit: other_parties[0].glasses
     button: |
       **Does ${other_parties[0].name.full(middle="full")} wear glasses?**
