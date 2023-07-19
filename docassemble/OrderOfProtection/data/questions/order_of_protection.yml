@@ -263,6 +263,9 @@ code: |
 
   if knows_respondent_home:
     other_parties[0].address.address
+  else:
+    if knows_respondent_home_last:
+      other_parties[0].address.address
   other_parties[0].phone_number
   if knows_respondent_work:
     other_parties[0].work_address.address
@@ -277,13 +280,20 @@ code: |
   else:
     if respondent_parent_help:
       respondent_parent_name
-  
+
+  if trial_court_index == -1:
+    cook_vehicle_color
+
   if service_address_choice == "other":
     service_address.address
   if has_second_service_address:  
     if second_service_address_choice == "other":
       second_service_address.address
       other_parties[0].phone_number_alt
+
+  if trial_court_index == -1:
+    service_information
+  
   service_method
   if service_method == "sheriff" and service_state != "IL":
     service_county
@@ -1274,13 +1284,26 @@ fields:
 id: respondent home address question
 question: |
   Do you know ${other_parties[0].name.full(middle="full")}'s home address?
+subquestion: |
+  If you do not know the current address, you can enter their last known address, if known.
 fields:
   - no label: knows_respondent_home
     datatype: yesnoradio
 ---
+id: respondent last known address
+question: |
+  Do you know ${other_parties[0].name.full(middle="full")}'s last known address?
+fields:
+  - no label: knows_respondent_home_last
+    datatype: yesnoradio
+---
 id: respondent address
 question: |
-  What is ${other_parties[0].name.full(middle="full")}'s home address?
+  % if knows_respondent_home:
+  What is ${other_parties[0].name.full(middle="full")}'s current home address?
+  % else:
+  What is ${other_parties[0].name.full(middle="full")}'s last known address?
+  % endif
 fields:
   - Street address: other_parties[0].address.address
     address autocomplete: True
@@ -1306,10 +1329,19 @@ question: |
 subquestion: |
 fields:
   - Employer or company: other_parties[0].employer
+  - Occupation or type of work: respondent_work_type
+    required: false
+    help: |
+      Describe their position, job title, or role where they work. Examples: Manager, cook, cashier
+    maxlength: 30
+    show if: 
+      code: |
+        trial_court_index == -1
   - Work hours: other_parties[0].work_hours
     required: False
     help: |
       If you don't know the exact hours, you can say something like "weekdays" or "nights."
+    maxlength: 25
   - Street address: other_parties[0].work_address.address
     address autocomplete: True
   - Address line 2: other_parties[0].work_address.unit
@@ -2922,6 +2954,9 @@ code: |
   service_list = []
   if knows_respondent_home == True:
     service_list.append( { "home": other_parties[0].name.full(middle="full") + "'s home address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
+  else:
+    if knows_respondent_home_last == True:
+      service_list.append( { "home": other_parties[0].name.full(middle="full") + "'s last known address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
   if knows_respondent_work == True:
     service_list.append({ "work": other_parties[0].name.full(middle="full")+ "'s work address (" + other_parties[0].work_address.on_one_line(bare=True) + ")" })
   service_list.append({ "other": "An address I will enter" })
@@ -2961,6 +2996,9 @@ code: |
   alt_service_list = []
   if knows_respondent_home == True and service_address_choice != "home":
     alt_service_list.append( { "home": other_parties[0].name.full(middle="full") + "'s home address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
+  else:
+    if knows_respondent_home_last == True  and service_address_choice != "home":
+      alt_service_list.append( { "home": other_parties[0].name.full(middle="full") + "'s last known address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
   if knows_respondent_work == True and service_address_choice != "work":
     alt_service_list.append({ "work": other_parties[0].name.full(middle="full")+ "'s work address (" + other_parties[0].work_address.on_one_line(bare=True) + ")" })
   alt_service_list.append({ "other": "An address I will enter" })
@@ -3061,6 +3099,24 @@ fields:
       - Special process server: sps
       - Licensed private detective: detective
       - I don't know. I will decide and complete the Summons later.: idk
+---
+id: additional service information cook
+question: |
+  What other information will help the sheriff deliver court papers to ${other_parties[0].name.full(middle="full")}?
+subquestion: |
+  You can add things like:
+  
+  * Best days and times to serve court papers,
+  * Details about the places where ${other_parties[0].name.full(middle="full")} can be found, and
+  * Information about other people at those locations that can help find ${other_parties[0].name.full(middle="full")}.
+
+  This will not appear on the forms that will be filed with the court. It goes on the Confidential Protective Order Information Sheet for the Sheriff.
+fields:
+  - no label: service_information
+    input type: area
+    rows: 3
+    maxlength: 120
+    required: False
 ---
 id: respondent gender
 question: |
@@ -3217,8 +3273,44 @@ fields:
     maxlength: 40
     js show if: |
       val("caution_reasons['armed']") == true || val("caution_reasons['home']") == true
-
-
+---
+id: car information for cook
+question: |
+  Enter details about ${other_parties[0].name.full(middle="full")}'s car
+subquestion: |
+  This information is used to help enforce the Order of Protection.
+  
+  If you do not know, leave blank.
+fields:
+  - Car make: cook_vehicle_make
+    help: |
+      Examples: Chevrolet, Honda, and Ford
+    required: False
+    maxlength: 30
+  - Car model: cook_vehicle_model
+    help: |
+      Examples: Malibu, Civic, and Mustang
+    required: False
+    maxlength: 30
+  - Car year: cook_vehicle_year
+    datatype: integer
+    help: |
+      Example: 2017
+    min: 1900
+    max: int(today().year)
+    required: False
+  - Color: cook_vehicle_color
+    help: |
+      Examples: black, white, gray, blue
+    required: False
+    maxlength: 30
+  - Car license plate: cook_vehicle_plate
+    required: False
+    maxlength: 8
+  - License plate state: cook_vehicle_state
+    code: |
+      states_list()
+    required: False
 
 ---
 id: any previous cook cases
@@ -3451,7 +3543,11 @@ attachment:
         % endif
     - "respondent_home_address": |
         % if other_parties[0].address.address != "":
+        % if knows_respondent_home:
         ${ other_parties[0].address.on_one_line(bare=True) }
+        % else:
+        ${ "Last known: " + other_parties[0].address.on_one_line(bare=True) }
+        % endif
         % else:
         ${ "do not know" }
         % endif
@@ -4271,7 +4367,11 @@ attachment:
         % endif
     - "respondent_home_address": |
         % if other_parties[0].address.address != "":
+        % if knows_respondent_home:
         ${ other_parties[0].address.on_one_line(bare=True) }
+        % else:
+        ${ "Last known: " + other_parties[0].address.on_one_line(bare=True) }
+        % endif
         % else:
         ${ "do not know" }
         % endif
@@ -4728,7 +4828,11 @@ attachment:
         % endif
     - "respondent_home_address": |
         % if other_parties[0].address.address != "":
+        % if knows_respondent_home:
         ${ other_parties[0].address.on_one_line(bare=True) }
+        % else:
+        ${ "Last known: " + other_parties[0].address.on_one_line(bare=True) }
+        % endif
         % else:
         ${ "do not know" }
         % endif
@@ -5326,19 +5430,13 @@ attachment:
         % else:
         ${ "do not know" }
         % endif
-    - "respondent_work_address": |
-        % if knows_respondent_work:
-        ${ other_parties[0].work_address.line_one(bare=True) }
+    - "respondent_work_type": |
+        % if knows_respondent_work and respondent_work_type != "":
+        ${ respondent_work_type }
         % else:
-        ${ "do not know" }
+        ${ "" }
         % endif
-    - "respondent_work_city": |
-        % if knows_respondent_work:
-        ${ other_parties[0].work_address.city }
-        % else:
-        ${ "do not know" }
-        % endif
-
+        
     - "service_address_line_1": |
         % if service_address_choice == "other":
         ${ service_address.line_one(bare=True) }
@@ -5355,7 +5453,29 @@ attachment:
         % else:
         ${ other_parties[0].work_address.city }        
         % endif
-    - "respondent_phone": ${ phone_number_formatted(other_parties[0].phone_number) }
+        
+    - "last_known_address": |
+        % if knows_respondent_home_last and knows_respondent_home == False:
+        ${ other_parties[0].address.line_one(bare=True) }
+        % endif
+    - "last_known_city": |
+        % if knows_respondent_home_last and knows_respondent_home == False:
+        ${ other_parties[0].address.city }
+        % endif
+
+    - "respondent_work_address": |
+        % if knows_respondent_work:
+        ${ other_parties[0].work_address.line_one(bare=True) }
+        % else:
+        ${ "do not know" }
+        % endif
+    - "respondent_work_city": |
+        % if knows_respondent_work:
+        ${ other_parties[0].work_address.city }
+        % else:
+        ${ "do not know" }
+        % endif
+
     - "service_alt_address_line_1": |
         % if has_second_service_address == True:
         % if second_service_address_choice == "other":
@@ -5376,10 +5496,14 @@ attachment:
         ${ other_parties[0].work_address.city }        
         % endif
         % endif
-
-
-
-
+    - "respondent_phone": ${ phone_number_formatted(other_parties[0].phone_number) }
+    - "service_information": ${ service_information }
+    - "cook_vehicle_make": ${ cook_vehicle_make }
+    - "cook_vehicle_model": ${ cook_vehicle_model }
+    - "cook_vehicle_year": ${ cook_vehicle_year }
+    - "cook_vehicle_color": ${ cook_vehicle_color }
+    - "cook_vehicle_plate": ${ cook_vehicle_plate }
+    - "cook_vehicle_state": ${ state_name(cook_vehicle_state) }
 
     - "preparer_name": ${ users[0].name.full(middle="full") }
     - "preparer_phone": ${ phone_number_formatted(users[0].phone_number) }
@@ -5819,11 +5943,23 @@ review:
       % else:
       ${ "do not know" }
       % endif
+  - Edit: knows_respondent_home
+    button: |
+      **Do you know ${other_parties[0].name.full(middle="full")}'s current home address?**
+      ${ word(yesno(knows_respondent_home)) }
+  - Edit: knows_respondent_home_last
+    button: |
+      **Do you know ${other_parties[0].name.full(middle="full")}'s last known address?**
+      ${ word(yesno(knows_respondent_home_last)) }      
   - Edit: other_parties[0].address.address
     button: |
       **${other_parties[0].name.full(middle="full")}'s home address: **
       % if other_parties[0].address.address != "":
+      % if knows_respondent_home:
       ${ other_parties[0].address.on_one_line(bare=True) }
+      % else:
+      ${ "Last known: " + other_parties[0].address.on_one_line(bare=True) }
+      % endif
       % else:
       ${ "do not know" }
       % endif
@@ -5839,6 +5975,16 @@ review:
       % else:
       ${ "do not know" }
       % endif
+  - Edit: respondent_work_type
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s occupation or type of work: **
+      % if knows_respondent_work and respondent_work_type != "":
+      ${ respondent_work_type }
+      % else:
+      ${ "do not know" }
+      % endif
+    show if: trial_court_index == -1
+
   - Edit: other_parties[0].work_hours
     button: |
       **${other_parties[0].name.full(middle="full")}'s work hours: **
@@ -6540,14 +6686,14 @@ review:
       * ${other_parties[0].name.full(middle="full")} carries a firearm on their person or in a vehicle.
       % endif
       % if firearms_reasons['vehicle'] and firearms_turnover and respondent_car_make == "":
-      Car make: None entered.
+      Car make: None entered
       % else:
-      Car make: ${respondent_car_make }.
+      Car make: ${respondent_car_make }
       % endif
       % if firearms_reasons['vehicle'] and firearms_turnover and respondent_car_model == "":
       Car model: None entered.
       % else:
-      Car model: ${respondent_car_model }.
+      Car model: ${respondent_car_model }
       % endif
       
       
@@ -6716,12 +6862,85 @@ review:
     button: |
       **Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?**
       ${ word(yesno(respondent_on_probation)) }
+    show if: trial_court_index == -1
   - Edit: respondent_probation_county
     button: |
       **Probation county:**
       ${ respondent_probation_county }
-    show if: respondent_on_probation
-    
+    show if: respondent_on_probation and trial_court_index == -1
+  - Edit: caution_reasons
+    button : |
+      **Reasons sheriff should use caution when approaching ${other_parties[0].name.full(middle="full")}:**
+      
+      % if not any(caution_reasons):
+      * None entered
+      % else:
+      % if caution_reasons['illness']:
+      * They have a history of mental illness.
+      % endif
+      % if caution_reasons['alcohol']:
+      * They are likely to be under the influence of alcohol.
+      % endif
+      % if caution_reasons['drugs']:
+      * They are likely to be under the influence of drugs.
+      % endif
+      % if caution_reasons['armed']:
+      * They are likely to carry a weapon.
+      % endif
+      % if caution_reasons['home']:
+      * They have a weapon in the home.
+      % endif
+      % endif
+    show if: trial_court_index == -1
+  - Edit: weapons_description
+    button: |
+      **Type and location of weapons:**
+      ${ weapons_description }
+    show if: trial_court_index == -1 and (caution_reasons['armed'] or caution_reasons['home'])
+  - Edit: service_information
+    button: |
+      **Additional information to help sheriff serve court papers on ${other_parties[0].name.full(middle="full")}:**
+      ${ service_information }
+    show if: trial_court_index == -1
+
+  - Edit: cook_vehicle_color
+    button: |
+      **Details on ${other_parties[0].name.full(middle="full")}'s car:**
+
+      % if cook_vehicle_make == "":
+      * Car make: None entered
+      % else:
+      * Car make: ${ cook_vehicle_make }
+      % endif
+      % if cook_vehicle_model == "":
+      * Car model: None entered
+      % else:
+      * Car model: ${ cook_vehicle_model }
+      % endif
+      % if cook_vehicle_year > 0:
+      * Car year: None entered
+      % else:
+      * Car year: ${ cook_vehicle_year }
+      % endif
+      % if cook_vehicle_color == "":
+      * Color: None entered
+      % else:
+      * Color: ${ cook_vehicle_color }
+      % endif
+      % if cook_vehicle_plate == "":
+      * Car license plate: None entered
+      % else:
+      * Car license plate: ${ cook_vehicle_plate }
+      % endif
+      % if cook_vehicle_state == "":
+      * License plate state: None entered
+      % else:
+      * License plate state: ${ state_name(cook_vehicle_state) }
+      % endif
+    show if: trial_court_index == -1
+
+
+
     
   - Edit: previous_cook_case_type
     button: |
@@ -6730,7 +6949,7 @@ review:
     show if: trial_court_index == -1
   - Edit: previous_cook_case_date
     button: |
-      **Previous Cook County case info}:**
+      **Previous Cook County ${ previous_cook_case_type } case info:**
       
       % if previous_cook_case_date != "":
       * Date filed: ${ previous_cook_case_date }
