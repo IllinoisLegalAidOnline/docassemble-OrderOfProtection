@@ -386,7 +386,7 @@ subquestion: |
   * Current or ex-romantic partner,
   * Current or ex-spouse,
   * Person with whom you live or used to live,
-  * The other parent of your child,
+  * Parent of your child,
   * Relative by blood,
   * Related through a current or a prior marriage,
   * Relative of your child (includes relatives of your foster child, adopted child or prospective adopted child, or relatives of a child for whom you are the legally-appointed guardian or legally-appointed custodian), or
@@ -1158,7 +1158,7 @@ fields:
   - Stay away at all times: stay_away
     datatype: yesnowide
   - How far do you want ${other_parties[0].name.full(middle="full")} to stay away, in feet? (optional): stay_away_distance
-    datatype: number
+    datatype: integer
     required: False
     show if: 
       variable: stay_away
@@ -1199,7 +1199,7 @@ subquestion: |
   % if hide_address:
   **This address will appear on your court papers.** You may receive court notices and documents about your case at this address.
   % else:
-  **This address will appear on your court papers.** If you do not want this, click **< Back** to keep your address hidden.
+  **This address will appear on your court papers.** If you do not want this, click **Back** to keep your address hidden.
   % endif
 fields:
   - Street address: users[0].address.address
@@ -1283,7 +1283,7 @@ fields:
 ---
 id: respondent home address question
 question: |
-  Do you know ${other_parties[0].name.full(middle="full")}'s home address?
+  Do you know ${other_parties[0].name.full(middle="full")}'s current home address?
 subquestion: |
   If you do not know the current address, you can enter their last known address, if known.
 fields:
@@ -1381,7 +1381,7 @@ question: |
   Tell us about your other job
   % endif
 subquestion: |  
-  **This address will appear on your court papers.** If you do not want this, click **< Back** to keep your work address hidden.
+  **This address will appear on your court papers.** If you do not want this, click **Back** to keep your work address hidden.
 
 fields:
   - Employer or company: jobs[i].employer
@@ -2720,7 +2720,7 @@ fields:
   - I do not want to request any repayment: expenses_none
     datatype: yesnowide
     disable others: True
-  - Medical_expenses: expenses_medical
+  - Medical expenses: expenses_medical
     datatype: yesnowide
   - "Amount": expenses_medical_amount
     datatype: currency
@@ -3297,7 +3297,7 @@ fields:
     help: |
       Example: 2017
     min: 1900
-    max: int(today().year)
+    max: ${ today().year }
     required: False
   - Color: cook_vehicle_color
     help: |
@@ -5355,7 +5355,7 @@ attachment:
     - "previous_divorce_no": ${ True if not previous_cook_case_type == "divorce" or previous_cook_case_type == "none" else '' }
     - "previous_parentage_yes": ${ True if previous_cook_case_type == "parentage" else '' }
     - "previous_parentage_no": ${ True if not previous_cook_case_type == "parentage" or previous_cook_case_type == "none" else '' }
-    - "previous_cook_case_date": ${ previous_cook_case_date if previous_cook_case_type == "divorce" or previous_cook_case_type == "parentage" else '' }
+    - "previous_cook_case_date": ${ format_date(previous_cook_case_date, format='MMM d, yyyy') if previous_cook_case_type == "divorce" or previous_cook_case_type == "parentage" else '' }
     - "previous_cook_case_number": ${ previous_cook_case_number if previous_cook_case_type == "divorce" or previous_cook_case_type == "parentage" else '' }
     - "previous_cook_case_judge": ${ previous_cook_case_judge if previous_cook_case_type == "divorce" or previous_cook_case_type == "parentage" else '' }
 
