@@ -83,6 +83,7 @@ mandatory: True
 code: |
   nav.set_section('section_intro')
   sees_nav_bar
+  set_days_of_week
   #testing new questions
   #property_transfer_person
   #end testing new questions
@@ -322,10 +323,12 @@ terms:
   - "advance written notice": |
       **Advance written notice** means they received a copy of the Petition for Order of Protection and Summons before the court hearing. These include the date and time of the court hearing.
 ---
-# removed mandatory: True after 1.4.64 update
+# thought 1.4.64 Docassemble update made "mandatory: True" not required but oh well
+mandatory: True
 code: |
   dow_full = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   dow_abb = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  set_days_of_week = True
 ---
 id: welcome
 question: |
@@ -337,7 +340,7 @@ subquestion: |
 
   To learn more, read ILAO's article about [**Orders of Protection**](https://www.illinoislegalaid.org/node/29806).
   
-  ## Your safety is important
+  #### Your safety is important
   
   * If you are in immediate dange, call 911.
   * If you need to exit this program, click the red **Escape** button at the top of the screen.
@@ -351,15 +354,15 @@ subquestion: |
   To use this program you will need to know: 
 
   * An address where the court can contact you,
+  * Information about other people you want to protect including other court cases,
   * Details about the abuser,
-  * Other court cases involving people you want to protect,
   * Details about the abuse and when it happened, and
   * What property and places you want to protect.
 
   If you have children with the abuse, you also need to know:
   
   * School or daycare information, and
-  * How you want the court to restrict parenting time.
+  * How you want the court to restrict parenting time, if any.
 
   Set aside 15 to 30 minutes to finish this program. You can login and save your work to return to later. 
  
@@ -1300,6 +1303,12 @@ fields:
   - no label: knows_respondent_home
     datatype: yesnoradio
 ---
+# removed because alt service address logic coded around knows_respondent_home_last
+#depends on: knows_respondent_home
+#code: |
+#  if knows_respondent_home == True:
+#    knows_respondent_home_last = False
+---
 id: respondent last known address
 question: |
   Do you know ${other_parties[0].name.full(middle="full")}'s last known address?
@@ -1873,6 +1882,8 @@ fields:
 id: children return location
 question: |
   Where should ${other_parties[0].name.full(middle="full")} return the children to?
+subquestion: |
+  On the next screen you can enter more information about when the children should be returned and if anyone else should be present.
 fields:
   - Street address: return_children_location.address
     address autocomplete: True
@@ -2278,7 +2289,7 @@ fields:
 ---
 id: any personal property to petitioner
 question: |
-  Is there personal property you want the court to give to you?
+  Is there personal property you want to protect from ${other_parties[0].name.full(middle="full")}?
 subquestion: |
   The court can order that you will get control of personal property. This is called getting possession of the property.
   
@@ -2361,18 +2372,40 @@ fields:
     choices:
       - Me: petitioner
       - Another person: other
+  - First: other_return_property_person.name.first
+    show if:
+      variable: return_property_person
+      is: "other"
+  - Middle: other_return_property_person.name.middle
+    required: False
+    show if:
+      variable: return_property_person
+      is: "other"
+  - Last: other_return_property_person.name.last
+    show if:
+      variable: return_property_person
+      is: "other"
+  - Suffix: other_return_property_person.name.suffix
+    required: False
+    code: |
+      name_suffix()
+    show if:
+      variable: return_property_person
+      is: "other"
+      
 ---
-sets:
-  - other_return_property_person.name.first
-  - other_return_property_person.name.middle
-  - other_return_property_person.name.last
-  - other_return_property_person.name.suffix
-id: other return property person name
-question: |
-  Who is the person ${other_parties[0].name.full(middle="full")} should return your property to?
-fields:
-  - code: |
-      other_return_property_person.name_fields()
+# removed bc combined with return property to whom question above
+#sets:
+#  - other_return_property_person.name.first
+#  - other_return_property_person.name.middle
+#  - other_return_property_person.name.last
+#  - other_return_property_person.name.suffix
+#id: other return property person name
+#question: |
+#  Who is the person ${other_parties[0].name.full(middle="full")} should return your property to?
+#fields:
+#  - code: |
+#      other_return_property_person.name_fields()
 ---
 id: why respondent should return property
 question: |
@@ -2678,8 +2711,8 @@ fields:
   - no label: restrict_property_reason
     datatype: radio
     choices:
-      - I own the property.: petitioner owns
-      - We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.: both own
+      - I own the property.: petitioner
+      - We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.: both
       - I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.: divorce
   - Has a divorce been filed yet?: restrict_divorce_filed
     datatype: yesnoradio
@@ -3007,8 +3040,9 @@ code: |
   if knows_respondent_home == True and service_address_choice != "home":
     alt_service_list.append( { "home": other_parties[0].name.full(middle="full") + "'s home address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
   else:
-    if knows_respondent_home_last == True  and service_address_choice != "home":
-      alt_service_list.append( { "home": other_parties[0].name.full(middle="full") + "'s last known address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
+    if knows_respondent_home == False:
+      if knows_respondent_home_last == True and service_address_choice != "home":
+        alt_service_list.append( { "home": other_parties[0].name.full(middle="full") + "'s last known address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
   if knows_respondent_work == True and service_address_choice != "work":
     alt_service_list.append({ "work": other_parties[0].name.full(middle="full")+ "'s work address (" + other_parties[0].work_address.on_one_line(bare=True) + ")" })
   alt_service_list.append({ "other": "An address I will enter" })
@@ -3605,7 +3639,7 @@ attachment:
     - "has_other_cases_no": ${ has_other_cases == "No" }
     - "has_other_cases_idk": ${ has_other_cases == "I don't know" }
     - "other_cases_type_1": ${ other_cases[0].name.text }
-    - "other_cases_state_county_1": ${ other_cases[0].state + ", " + other_ops[0].county }
+    - "other_cases_state_county_1": ${ other_cases[0].state + ", " + other_cases[0].county }
     - "other_cases_year_1": ${ other_cases[0].year }
     - "other_cases_type_2": ${ other_cases[1].name.text }
     - "other_cases_state_county_2": ${ other_cases[1].state + ", " + other_cases[1].county }
@@ -3907,8 +3941,8 @@ attachment:
     - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == True else "" }
     - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
     - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
-    - "restrict_property_reason_petitioner_owns": ${ True if (restrict_property_reason == "petitioner owns" and restrict_other_property == True) else "" }
-    - "restrict_property_reason_both_own": ${ True if restrict_property_reason == "both own" and restrict_other_property == True else "" }
+    - "restrict_property_reason_petitioner_owns": ${ True if (restrict_property_reason == "petitioner" and restrict_other_property == True) else "" }
+    - "restrict_property_reason_both_own": ${ True if restrict_property_reason == "both" and restrict_other_property == True else "" }
     - "restrict_property_reason_divorce": ${ True if restrict_property_reason == "divorce" and restrict_other_property == True else "" }
     - "restrict_divorce_filed_yes": ${ True if restrict_divorce_filed == True and restrict_other_property == True and restrict_property_reason == "divorce" else "" }
     - "restrict_divorce_filed_no": ${ True if restrict_divorce_filed == False and restrict_other_property == True and restrict_property_reason == "divorce" else "" }
@@ -4177,25 +4211,25 @@ attachment:
     - "other_ops_year_7": ${ other_ops[8].year }
 
     - "other_cases_type_1": ${ other_cases[2].name.text }
-    - "other_cases_state_county_1": ${ other_cases[2].state + ", " + other_ops[2].county }
+    - "other_cases_state_county_1": ${ other_cases[2].state + ", " + other_cases[2].county }
     - "other_cases_year_1": ${ other_cases[2].year }
     - "other_cases_type_2": ${ other_cases[3].name.text }
     - "other_cases_state_county_2": ${ other_cases[3].state + ", " + other_cases[3].county }
     - "other_cases_year_2": ${ other_cases[3].year }
     - "other_cases_type_3": ${ other_cases[4].name.text }
-    - "other_cases_state_county_3": ${ other_cases[4].state + ", " + other_ops[4].county }
+    - "other_cases_state_county_3": ${ other_cases[4].state + ", " + other_cases[4].county }
     - "other_cases_year_3": ${ other_cases[4].year }
     - "other_cases_type_4": ${ other_cases[5].name.text }
     - "other_cases_state_county_4": ${ other_cases[5].state + ", " + other_cases[5].county }
     - "other_cases_year_4": ${ other_cases[5].year }
     - "other_cases_type_5": ${ other_cases[6].name.text }
-    - "other_cases_state_county_5": ${ other_cases[6].state + ", " + other_ops[6].county }
+    - "other_cases_state_county_5": ${ other_cases[6].state + ", " + other_cases[6].county }
     - "other_cases_year_5": ${ other_cases[6].year }
     - "other_cases_type_6": ${ other_cases[7].name.text }
     - "other_cases_state_county_6": ${ other_cases[7].state + ", " + other_cases[7].county }
     - "other_cases_year_6": ${ other_cases[7].year }
     - "other_cases_type_7": ${ other_cases[8].name.text }
-    - "other_cases_state_county_7": ${ other_cases[8].state + ", " + other_ops[8].county }
+    - "other_cases_state_county_7": ${ other_cases[8].state + ", " + other_cases[8].county }
     - "other_cases_year_7": ${ other_cases[8].year }
 ---
 attachment:
@@ -4496,9 +4530,9 @@ attachment:
         % endif
 
     - "respondent_one_time_entry": ${ True if respondent_one_time_entry == True else '' }
-    - "respondent_one_time_entry_police": ${ True if property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
-    - "respondent_one_time_entry_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
-    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
 
     - "same_school_restrictions": ${ True if (same_school and same_school_restrictions != "none") else ""} 
     - "same_school_name": ${ same_school_name if (same_school and same_school_restrictions != "none") else ""}
@@ -4731,8 +4765,8 @@ attachment:
     - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == True else "" }
     - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
     - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
-    - "restrict_property_reason_petitioner_owns": ${ True if restrict_property_reason == "petitioner owns" and restrict_other_property == True else "" }
-    - "restrict_property_reason_both_own": ${ True if restrict_property_reason == "both own" and restrict_other_property == True else "" }
+    - "restrict_property_reason_petitioner_owns": ${ True if restrict_property_reason == "petitioner" and restrict_other_property == True else "" }
+    - "restrict_property_reason_both_own": ${ True if restrict_property_reason == "both" and restrict_other_property == True else "" }
     - "restrict_divorce_filed_yes": ${ True if restrict_divorce_filed == True and restrict_other_property == True and restrict_property_reason == "divorce" else "" }
     - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == True else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }
@@ -4956,9 +4990,9 @@ attachment:
         % endif
 
     - "respondent_one_time_entry": ${ True if respondent_one_time_entry == True else '' }
-    - "respondent_one_time_entry_police": ${ True if property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
-    - "respondent_one_time_entry_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
-    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
 
     - "same_school_restrictions": ${ True if (same_school and same_school_restrictions != "none") else ""} 
     - "same_school_name": ${ same_school_name if (same_school and same_school_restrictions != "none") else ""}
@@ -5204,8 +5238,8 @@ attachment:
     - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == True else "" }
     - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
     - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
-    - "restrict_property_reason_petitioner_owns": ${ True if restrict_property_reason == "petitioner owns" and restrict_other_property == True else "" }
-    - "restrict_property_reason_both_own": ${ True if restrict_property_reason == "both own" and restrict_other_property == True else "" }
+    - "restrict_property_reason_petitioner_owns": ${ True if restrict_property_reason == "petitioner" and restrict_other_property == True else "" }
+    - "restrict_property_reason_both_own": ${ True if restrict_property_reason == "both" and restrict_other_property == True else "" }
     - "restrict_divorce_filed_yes": ${ True if restrict_divorce_filed == True and restrict_other_property == True and restrict_property_reason == "divorce" else "" }
     - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == True else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }

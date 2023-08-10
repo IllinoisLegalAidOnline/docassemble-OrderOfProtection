@@ -921,9 +921,9 @@ review:
   - Edit: restrict_property_reason
     button: |
       **Why should the other property be protected?**
-      % if restrict_property_reason == "petitioner owns":
+      % if restrict_property_reason == "petitioner":
       I own the property.
-      % elif restrict_property_reason == "both own":      
+      % elif restrict_property_reason == "both":      
       We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.
       % else:
       I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.      
@@ -2762,9 +2762,9 @@ review:
   - Edit: restrict_property_reason
     button: |
       **Why should the other property be protected?**
-      % if restrict_property_reason == "petitioner owns":
+      % if restrict_property_reason == "petitioner":
       I own the property.
-      % elif restrict_property_reason == "both own":      
+      % elif restrict_property_reason == "both":      
       We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.
       % else:
       I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.      
