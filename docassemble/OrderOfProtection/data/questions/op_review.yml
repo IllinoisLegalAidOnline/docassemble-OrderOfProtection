@@ -246,9 +246,9 @@ review:
   - Edit: users[0].address.address
     button: |
       % if hide_address:
-      **Your mailing address (will appear on your court papers): **
+      **Your mailing address (will appear on your court papers):**
       % else:
-      **Your home address: **
+      **Your home address:**
       % endif    
       ${ users[0].address.on_one_line(bare=True) }
   - Edit: residence_remedies
@@ -448,7 +448,7 @@ review:
     show if: primary_caretaker == "other"
   - Edit: other_caretaker.address.address
     button: |
-      **${other_caretaker.name.full(middle="full")}'s address: **
+      **${other_caretaker.name.full(middle="full")}'s address:**
       ${ other_caretaker.address.on_one_line(bare=True) }
     show if: primary_caretaker == "other"
 
@@ -1225,7 +1225,7 @@ review:
       ${ word(yesno(knows_respondent_home_last)) }      
   - Edit: other_parties[0].address.address
     button: |
-      **${other_parties[0].name.full(middle="full")}'s home address: **
+      **${other_parties[0].name.full(middle="full")}'s home address:**
       % if other_parties[0].address.address != "":
       % if knows_respondent_home:
       ${ other_parties[0].address.on_one_line(bare=True) }
@@ -1258,7 +1258,7 @@ review:
       ${ word(yesno(knows_respondent_work)) }
   - Edit: other_parties[0].work_address.address
     button: |
-      **${other_parties[0].name.full(middle="full")}'s work info: **
+      **${other_parties[0].name.full(middle="full")}'s work info:**
       % if knows_respondent_work:
       ${ other_parties[0].employer + ", " + other_parties[0].work_address.on_one_line(bare=True) }
       % else:
@@ -1266,7 +1266,7 @@ review:
       % endif
   - Edit: respondent_work_type
     button: |
-      **${other_parties[0].name.full(middle="full")}'s occupation or type of work: **
+      **${other_parties[0].name.full(middle="full")}'s occupation or type of work:**
       % if knows_respondent_work and respondent_work_type != "":
       ${ respondent_work_type }
       % else:
@@ -1313,7 +1313,7 @@ review:
 
   - Edit: other_parties[0].work_hours
     button: |
-      **${other_parties[0].name.full(middle="full")}'s work hours: **
+      **${other_parties[0].name.full(middle="full")}'s work hours:**
       % if knows_respondent_work and other_parties[0].work_hours != "":
       ${ other_parties[0].work_hours }
       % else:
@@ -2078,9 +2078,9 @@ review:
   - Edit: users[0].address.address
     button: |
       % if hide_address:
-      **Your mailing address (will appear on your court papers): **
+      **Your mailing address (will appear on your court papers):**
       % else:
-      **Your home address: **
+      **Your home address:**
       % endif    
       ${ users[0].address.on_one_line(bare=True) }
   - Edit: residence_remedies
@@ -2284,7 +2284,7 @@ review:
     show if: primary_caretaker == "other"
   - Edit: other_caretaker.address.address
     button: |
-      **${other_caretaker.name.full(middle="full")}'s address: **
+      **${other_caretaker.name.full(middle="full")}'s address:**
       ${ other_caretaker.address.on_one_line(bare=True) }
     show if: primary_caretaker == "other"
 
@@ -3076,7 +3076,7 @@ review:
       ${ word(yesno(knows_respondent_home_last)) }      
   - Edit: other_parties[0].address.address
     button: |
-      **${other_parties[0].name.full(middle="full")}'s home address: **
+      **${other_parties[0].name.full(middle="full")}'s home address:**
       % if other_parties[0].address.address != "":
       % if knows_respondent_home:
       ${ other_parties[0].address.on_one_line(bare=True) }
@@ -3109,7 +3109,7 @@ review:
       ${ word(yesno(knows_respondent_work)) }
   - Edit: other_parties[0].work_address.address
     button: |
-      **${other_parties[0].name.full(middle="full")}'s work info: **
+      **${other_parties[0].name.full(middle="full")}'s work info:**
       % if knows_respondent_work:
       ${ other_parties[0].employer + ", " + other_parties[0].work_address.on_one_line(bare=True) }
       % else:
@@ -3117,7 +3117,7 @@ review:
       % endif
   - Edit: respondent_work_type
     button: |
-      **${other_parties[0].name.full(middle="full")}'s occupation or type of work: **
+      **${other_parties[0].name.full(middle="full")}'s occupation or type of work:**
       % if knows_respondent_work and respondent_work_type != "":
       ${ respondent_work_type }
       % else:
@@ -3164,7 +3164,7 @@ review:
 
   - Edit: other_parties[0].work_hours
     button: |
-      **${other_parties[0].name.full(middle="full")}'s work hours: **
+      **${other_parties[0].name.full(middle="full")}'s work hours:**
       % if knows_respondent_work and other_parties[0].work_hours != "":
       ${ other_parties[0].work_hours }
       % else:

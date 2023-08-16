@@ -83,7 +83,6 @@ mandatory: True
 code: |
   nav.set_section('section_intro')
   sees_nav_bar
-  set_days_of_week
   #testing new questions
   #property_transfer_person
   #end testing new questions
@@ -186,8 +185,8 @@ code: |
         restrict_or_deny_pt_reasons
       if parenting_time == "restrict" or parenting_time == "grant":
         if pt_format == "interview":
+          set_days_of_week
           if pt_weekdays:
-            # dow_abb #testing removal of this after 1.6.64 update
             pt_weekday_days
           if pt_weekends:
             pt_weekend_days
@@ -218,15 +217,15 @@ code: |
       return_property_reason
   if return_respo_property:
     respo_property
-  respondent_one_time_entry
-  if property_transfer_present_cb:
-    property_transfer_person
+    respondent_one_time_entry
     
   if return_property == True or return_respo_property == True: 
     if property_transfer_location_cb:
       property_transfer_location.address
-  if property_transfer_know_date:
-    property_transfer_date
+    if property_transfer_present_cb:
+      property_transfer_person
+    if property_transfer_know_date:
+      property_transfer_date
   if possession_of_animals:
     pets.gather()
   if separate_phone_service:
@@ -327,7 +326,7 @@ terms:
 mandatory: True
 code: |
   dow_full = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  dow_abb = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  dow_abb = ['Sun.', 'Mon.', 'Tues.', 'Wed.', 'Thur.', 'Fri.', 'Sat.']
   set_days_of_week = True
 ---
 id: welcome
@@ -336,13 +335,13 @@ question: |
 subquestion: |
   Welcome to Illinois Legal Aid Online's **Order of Protection** Easy Form.
 
-  This program makes forms that help you ask the court to order someone to stop harming or threatening you, your children, or other household members.
+  This program makes forms that help you ask the court to order someone to stop harming or threatening you, your children, or other household members. The Order of Protection can also require the abuser to stay away from protected people or locations.
 
   To learn more, read ILAO's article about [**Orders of Protection**](https://www.illinoislegalaid.org/node/29806).
   
   #### Your safety is important
   
-  * If you are in immediate dange, call 911.
+  * If you are in immediate danger, call 911.
   * If you need to exit this program, click the red **Escape** button at the top of the screen.
 field: sees_nav_bar
 ---
@@ -359,7 +358,7 @@ subquestion: |
   * Details about the abuse and when it happened, and
   * What property and places you want to protect.
 
-  If you have children with the abuse, you also need to know:
+  If you have children with the abuser, you also need to know:
   
   * School or daycare information, and
   * How you want the court to restrict parenting time, if any.
@@ -463,6 +462,14 @@ fields:
     datatype: integer
     code: |
       court_county_lookup()
+  - note: |
+      ${ collapse_template(county_lookup_help) }  
+---
+template: county_lookup_help
+subject: |
+  **What if I need help finding the county?**
+content: |  
+    You can use this [**City-to-County Finder**](https://www.statsamerica.org/CityCountyFinder/) to find the county.
 ---
 template: venue_help
 subject: |
@@ -804,7 +811,7 @@ id: name of first other household member
 question: |
   Who is the household member you want protected by this order?
 subquestion: |
-  If you wanto to include more than one, you can enter their names on following screens.
+  If you want to include more than one, you can enter their names on following screens.
 fields:
   - code: |
       other_hh_members[0].name_fields()
@@ -816,7 +823,7 @@ sets:
   - other_hh_members[i].name.last
   - other_hh_members[i].name.suffix
 question: |
-  What is the name of the ${ ordinal(i) } household member you want protected by this order?
+  Who is the ${ ordinal(i) } household member you want protected by this order?
 fields:
   - code: |
       other_hh_members[i].name_fields()
@@ -1043,7 +1050,11 @@ subquestion: |
 ---
 id: incidents detail
 question: |
-  Tell us about the ${ ordinal(i) } incident of abuse
+  % if i == 1:
+  Tell us about the most recent incident of abuse
+  % else:
+  Tell us about another incident of abuse
+  % endif
 subquestion: |
   Try to be specific about:
   
@@ -1058,11 +1069,11 @@ fields:
   - Date: incidents[i].date
     maxlength: 20
     help: |
-      If you don't remember the exact date, enter the month and year.
+      If you don't remember the exact date, enter the month and year. Use abbreviations if needed.
   - Time: incidents[i].time
     maxlength: 20
     help: |
-      If you don't remember the exact time, enter "morning" or "afternoon" or "night."
+      If you don't remember the exact time, enter "morning" or "afternoon" or "night." Use abbreviations if needed.
   - What happened: incidents[i].name.text
     input type: area
     rows: 12
@@ -1163,8 +1174,8 @@ id: stay away
 question: |
   Do you want the court to order ${other_parties[0].name.full(middle="full")} to stay away and not communicate with people protected by this order?
 subquestion: |
-  * If ordered to **stay away** from Petitioner, Respondent must not have any physical, non-physical, direct or indirect contact with Petitioner.
-  * If ordered to **not communicate** with Petitioner, communication includes oral communication, written communication, sign language, telephone and cell phone calls, faxes, texts, tweets, emails, posts, or communication by any other social media, and all other communication with Petitioner. This also includes contact or communication through others who may not know about the Order of Protection.
+  * If ordered to **stay away** from people protected by the order, ${other_parties[0].name.full(middle="full")} must not have any physical, non-physical, direct or indirect contact with protected people.
+  * If ordered to **not communicate** with people protected by the order, communication includes oral communication, written communication, sign language, telephone and cell phone calls, faxes, texts, tweets, emails, posts, or communication by any other social media, and all other communication with protected people. This also includes contact or communication through others who may not know about the Order of Protection.
   
   Check all that apply.
 fields:
@@ -1593,6 +1604,9 @@ fields:
           If you select this, you can list the parts of the school where ${other_parties[0].name.full(middle="full")} should not go.
       - I don't want the court to order any school restrictions on ${other_parties[0].name.full(middle="full")}.: none
   - Parts of the school where ${other_parties[0].name.full(middle="full")} should not go: parts_of_school
+    input type: area
+    rows: 3
+    maxlength: 150  
     show if: 
       variable: same_school_restrictions
       is: "not present in parts"
@@ -2347,8 +2361,6 @@ fields:
     datatype: yesnoradio
 ---
 
-
----
 depends on: 
   - petitioner_personal_property[i].respo_has
 code: |
@@ -2436,7 +2448,7 @@ fields:
 ---
 id: respondent property
 question: |
-  What personal property should ${other_parties[0].name.full(middle="full")} be returned?
+  What personal property should be returned to ${other_parties[0].name.full(middle="full")}?
 fields:
   - no label: respo_property
     datatype: checkboxes
@@ -2585,7 +2597,9 @@ question: |
   % endif
 fields:
   - Pet name: pets[i].name.text
+    maxlength: 20
   - Description: pets[i].description
+    maxlength: 25
 ---
 id: any other pets
 question: |
@@ -2644,6 +2658,7 @@ question: |
   Cell phone account details
 fields:
   - Cell phone service provider: phone_provider
+    maxlength: 25
     help: |
       Examples: Verizon or T-Mobile
   - Billing phone number: billing_phone_number
@@ -2767,49 +2782,49 @@ fields:
     datatype: yesnowide
   - "Amount": expenses_medical_amount
     datatype: currency
-    min: 0
+    min: 0.01
     show if: expenses_medical
   - "Lost income": expenses_lost_income
     datatype: yesnowide
   - "Amount": expenses_lost_income_amount
     datatype: currency
-    min: 0
+    min: 0.01
     show if: expenses_lost_income
   - "Repair or replace property damaged or taken": expenses_property
     datatype: yesnowide
   - "Amount": expenses_property_amount
     datatype: currency
-    min: 0
+    min: 0.01
     show if: expenses_property    
   - "Moving and other travel expenses": expenses_moving
     datatype: yesnowide
   - "Amount": expenses_moving_amount
     datatype: currency
-    min: 0
+    min: 0.01
     show if: expenses_moving
   - "Temporary housing or counseling at a domestic violence shelter": expenses_shelter
     datatype: yesnowide
   - "Amount": expenses_shelter_amount
     datatype: currency
-    min: 0
+    min: 0.01
     show if: expenses_shelter
   - "Expenses for housing and meals, other than a domestic violence shelter": expenses_housing
     datatype: yesnowide
   - "Amount": expenses_housing_amount
     datatype: currency
-    min: 0
+    min: 0.01
     show if: expenses_housing
   - "Expenses for search and recovery of children": expenses_children
     datatype: yesnowide
   - "Amount": expenses_children_amount
     datatype: currency
-    min: 0
+    min: 0.01
     show if: expenses_children
   - "Attorney's fees": expenses_lawyer
     datatype: yesnowide
   - "Amount": expenses_lawyer_amount
     datatype: currency
-    min: 0
+    min: 0.01
     show if: expenses_lawyer
   - "Other expenses (describe below)": expenses_other
     datatype: yesnowide
@@ -2818,7 +2833,7 @@ fields:
     show if: expenses_other
   - "Amount (if more than one, enter total)": expenses_other_amount
     datatype: currency
-    min: 0
+    min: 0.01
     show if: expenses_other
 validation code: |
   if not (expenses_none or expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_shelter or expenses_housing or expenses_children or expenses_other):
@@ -3186,7 +3201,7 @@ question: |
 subquestion: |
   This information is used to help enforce the Order of Protection.
 fields:
-  - Gender: other_parties[0].race
+  - Race: other_parties[0].race
     datatype: radio
     choices:
       - Asian: Asian
@@ -3234,6 +3249,7 @@ fields:
     datatype: integer
     required: False
     min: 1
+    max: 1500
     help: |
       Example: 170
   - Skin color: other_parties[0].skin
@@ -5113,7 +5129,7 @@ attachment:
     - "pt_attach": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "attach" and minor_kids_with_respondent else ''  }
     - "pt_interview": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekdays": ${ True if pt_weekdays and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekday_list": ${ comma_and_list(dow_abb[int(y)] for y in pt_weekday_days.true_values()) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent == True else '' }
+    - "pt_weekday_list": ${ comma_and_list(dow_full[int(y)] for y in pt_weekday_days.true_values()) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent == True else '' }
     - "pt_weekday_start": ${ format_time(pt_weekday_start) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekday_end": ${ format_time(pt_weekday_end) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_every": ${ True if pt_weekend_cadence == "every" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
