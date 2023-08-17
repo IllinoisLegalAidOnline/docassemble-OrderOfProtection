@@ -541,42 +541,48 @@ id: relationship
 question: |
   Relationship with the person who caused the abuse
 subquestion: |
-  How is the person who caused the abuse related to you or the person you want to protect? You can check more than one.
+  How are you or the person you want to protect related to the person who caused the abuse? You can check more than one.
   
-    ${ collapse_template(relationship_example) } 
+  If you are asking for an Order of Protection for someone other than yourself, select how they are related to the person who caused the abuse.
+  
+  ${ collapse_template(relationship_example) } 
 fields:
   - no label: relationship_type
     datatype: checkboxes
     choices:
-      - Spouse: se
-      - Ex-spouse: xs
-      - Boyfriend, girlfriend, or romantic partner (including ex-): bg
-      - We have a child in common (never married): cc
-      - We share or shared a living space: cs
-      - Child: ch
-      - Parent: pa
-      - Brother, sister, or sibling: sb
-      - Other family member: of
-      - Step child: sc
-      - Step brother, step sister, or step sibling: ss
-      - Step parent: sp
-      - Grandchild: gc
-      - Grandparent: gp
-      - In-law: il
-      - Protected person has a disability and receives care from the abuser: pd
-      - Person responsible for a high risk adult: pc
+      - I am their spouse.: se
+      - I am their ex-spouse.: xs
+      - I am their boyfriend, girlfriend, or romantic partner (including ex-).: bg
+      - We have a child in common (never married).: cc
+      - We share or shared a living space.: cs
+      - I am their child.: ch
+      - I am their parent.: pa
+      - I am their brother, sister, or sibling.: sb
+      - They are another family member.: of
+      - I am their step child.: sc
+      - I am their step brother, step sister, or step siblin.g: ss
+      - I am their step parent.: sp
+      - I am their grandchild.: gc
+      - I am their grandparent.: gp
+      - I am their in-law.: il
+      - I have a disability and receive care from the abuser.: pd
+      - I am a high-risk adult with disabilities and the abuser is my personal caregiver.: pc
         help: |
           A **high risk adult with disabilities** is a person aged 18 or over whose physical or mental disability keeps them from protecting themself from abuse, neglect, or exploitation.
-      - Personal assistant or caregiver to a person with a disability: pr
-      - Family or household member of my foster child: f
-      - Family or household member of my adopted child, or of my prospective adopted child: a
-      - Family or household member of a child that I am the legally-appointed custodian of: l
+      - I have a disability and the abuser is my personal assistant or caregiver.: pr
+      - The abuser is a family or household member of my foster child.: f
+      - The abuser is a family or household member of my adopted child, or of my prospective adopted child.: a
+      - The abuser is a family or household member of a child that I am the legally-appointed custodian of.: l
+validation code: |
+  if (relationship_type['se'] == True or relationship_type['xs'] == True) and relationship_type['cc'] == True:
+    validation_error("You have both married (spouse or ex-spouse) and never married options selected. Please adjust your answers.", field="relationship_type")
+
 ---
 template: relationship_example
 subject: |
   **Can I see some examples?**
 content: |  
-  If you want an Order of Protection against your mother, you will select **Child** because you are the child of that person.
+  If you want an Order of Protection against your mother, select **Child** because you are the child of that person.
   
   If you want an Order of Protection against the father of your foster child, select **Family or household member of my foster child**.
 ---
@@ -3307,7 +3313,7 @@ fields:
     datatype: yesnoradio
   - Probation in which county?: respondent_probation_county
     required: False
-    maxlength: 20
+    maxlength: 25
     show if: 
       variable: respondent_on_probation
       is: True
@@ -3346,12 +3352,12 @@ fields:
     help: |
       Examples: Chevrolet, Honda, and Ford
     required: False
-    maxlength: 30
+    maxlength: 25
   - Car model: cook_vehicle_model
     help: |
       Examples: Malibu, Civic, and Mustang
     required: False
-    maxlength: 30
+    maxlength: 25
   - Car year: cook_vehicle_year
     datatype: integer
     help: |
@@ -3363,7 +3369,7 @@ fields:
     help: |
       Examples: black, white, gray, blue
     required: False
-    maxlength: 30
+    maxlength: 25
   - Car license plate: cook_vehicle_plate
     required: False
     maxlength: 8
@@ -4620,11 +4626,8 @@ attachment:
         % else:
         ${ schools[0].name }
         % endif
-        % if stay_away_schools and schools[0].hide and stay_away_schools_2 and schools[1].hide:
-        ${ ", " }
-        % endif
         % if stay_away_schools_2 and schools[1].hide:
-        ${ "School 2: Confidential" }
+        ${ ", School 2: Confidential" }
         % else:
         ${ ", " + schools[1].name }
         % endif
@@ -5089,15 +5092,12 @@ attachment:
         % else:
         ${ schools[0].name }
         % endif
-        % if stay_away_schools and schools[0].hide and stay_away_schools_2 and schools[1].hide:
-        ${ ", " }
-        % endif
         % if stay_away_schools_2 and schools[1].hide:
-        ${ "School 2: Confidential" }
+        ${ ", School 2: Confidential" }
         % else:
         ${ ", " + schools[1].name }
         % endif
-    
+
     - "schools_get_order": ${ stay_away_schools }
     
     - "get_order_school_1": |
