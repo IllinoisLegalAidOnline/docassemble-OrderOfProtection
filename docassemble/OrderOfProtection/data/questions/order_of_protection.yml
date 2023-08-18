@@ -335,7 +335,7 @@ question: |
 subquestion: |
   Welcome to Illinois Legal Aid Online's **Order of Protection** Easy Form.
 
-  This program makes forms that help you ask the court to order someone to stop harming or threatening you, your children, or other household members. The Order of Protection can also require the abuser to stay away from protected people or locations.
+  This program makes forms that help you ask the court to order someone to stop harming or threatening you, your children, or other household members. The Order of Protection can also require the abuser to stay away from protected people and locations.
 
   To learn more, read ILAO's article about [**Orders of Protection**](https://www.illinoislegalaid.org/node/29806).
   
@@ -852,6 +852,7 @@ question: |
 fields:
   - Date of birth: x.birthdate
     datatype: date
+    min: ${ (today() - date_interval(years=18)).format("yyyy-MM-dd") }
     max: ${ today().format("yyyy-MM-dd") }
   - State of residence: x.address.state
     code: states_list()
@@ -1056,7 +1057,7 @@ subquestion: |
 ---
 id: incidents detail
 question: |
-  % if i == 1:
+  % if i == 0:
   Tell us about the most recent incident of abuse
   % else:
   Tell us about another incident of abuse
@@ -2373,13 +2374,14 @@ code: |
   return_items_qty = 0
   if award_personal_property == False:
     return_property = False
-  for item in petitioner_personal_property:
-    if item.respo_has == True:
-	    return_items_qty += 1
-  if return_items_qty > 0:
-    return_property = True
   else:
-    return_property = False
+    for item in petitioner_personal_property:
+      if item.respo_has == True:
+  	    return_items_qty += 1
+    if return_items_qty > 0:
+      return_property = True
+    else:
+      return_property = False
 ---
 id: return petitioner property to whom
 question: |
@@ -2907,10 +2909,6 @@ fields:
       variable: firearms_reasons['vehicle']
       is: True
 
-
-
-
-
 ---
 reconsider: True
 code: |
@@ -3179,8 +3177,8 @@ subquestion: |
 fields:
   - no label: service_information
     input type: area
-    rows: 3
-    maxlength: 120
+    rows: 4
+    maxlength: 150
     required: False
 ---
 id: respondent gender
@@ -3196,7 +3194,7 @@ fields:
       - Female: female
       - Other: other
   - ${other_parties[0].name.full(middle="full")}'s gender: respondent_gender_other
-    maxlength: 30
+    maxlength: 20
     show if:
       variable: other_parties[0].gender
       is: 'other'
@@ -3224,7 +3222,7 @@ fields:
       - Other: other
       - Unknown: unknown
   - ${other_parties[0].name.full(middle="full")}'s race: respondent_race_other
-    maxlength: 30
+    maxlength: 25
     show if:
       variable: other_parties[0].race
       is: 'other'
@@ -3300,12 +3298,16 @@ subquestion: |
   If you do not know, leave blank.
 fields:
   - Any other things about their appearance?: other_parties[0].tattoos
-    maxlength: 70
+    input type: area
+    rows: 3
+    maxlength: 120
     required: False
     help: |
       Examples: tattoos, scars, birthmarks, mustache, beard
   - Other names used by ${other_parties[0].name.full(middle="full")}:: alias_names
-    maxlength: 70
+    input type: area
+    rows: 3
+    maxlength: 120
     required: False
     help: |
       This could be a name from an earlier marriage or a nickname. If there is more than one, separate by commas.
@@ -3372,7 +3374,7 @@ fields:
     maxlength: 25
   - Car license plate: cook_vehicle_plate
     required: False
-    maxlength: 8
+    maxlength: 10
   - License plate state: cook_vehicle_state
     code: |
       states_list()
