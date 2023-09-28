@@ -228,11 +228,11 @@ review:
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away at all times?**
       ${ word(yesno(stay_away)) }
-  - Edit: stay_away_distance
-    button: |
-      **How far do you want ${other_parties[0].name.full(middle="full")} to stay away, in feet? (optional)**
-      ${ int(stay_away_distance) }
-    show if: stay_away
+#  - Edit: stay_away_distance
+#    button: |
+#      **How far do you want ${other_parties[0].name.full(middle="full")} to stay away, in feet? (optional)**
+#      ${ int(stay_away_distance) }
+#    show if: stay_away
 
   - Edit: no_communication
     button: |
@@ -1823,6 +1823,7 @@ continue button label: Next
 
 ---
 id: basic info review screen
+section: Basic information
 event: section_basic
 question: |
   Basic information
@@ -1935,6 +1936,7 @@ review:
 
 ---
 id: petitioner review screen
+section: People you want to protect
 event: section_petitioner
 question: |
   People you want to protect
@@ -2005,6 +2007,7 @@ review:
 
 ---
 id: incidents review screen
+section: What happened
 event: section_incidents
 question: |
   What happened
@@ -2021,6 +2024,7 @@ review:
 
 ---
 id: protections review screen
+section: Protections
 event: section_protections
 question: |
   Protections
@@ -2060,11 +2064,11 @@ review:
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away at all times?**
       ${ word(yesno(stay_away)) }
-  - Edit: stay_away_distance
-    button: |
-      **How far do you want ${other_parties[0].name.full(middle="full")} to stay away, in feet? (optional)**
-      ${ int(stay_away_distance) }
-    show if: stay_away
+#  - Edit: stay_away_distance
+#    button: |
+#      **How far do you want ${other_parties[0].name.full(middle="full")} to stay away, in feet? (optional)**
+#      ${ int(stay_away_distance) }
+#    show if: stay_away
 
   - Edit: no_communication
     button: |
@@ -2229,6 +2233,7 @@ review:
 
 ---
 id: minor children review screen
+section: About your children (optional)
 event: section_child
 question: |
   About your children (optional)
@@ -2579,6 +2584,7 @@ review:
  
 ---
 id: property details review screen
+section: Property details
 event: section_property
 question: |
   Property details
@@ -2782,6 +2788,7 @@ review:
 
 ---
 id: other remedies review screen
+section: Other remedies
 event: section_remedies
 question: |
   Other remedies
@@ -2911,6 +2918,7 @@ review:
 
 ---
 id: respondent review screen
+section: About the person who caused abuse
 event: section_respondent
 question: |
   About the person who caused abuse
@@ -3267,6 +3275,7 @@ review:
       
 ---
 id: case info review screen
+section: Filing details
 event: section_filing_info
 question: |
   Filing details
