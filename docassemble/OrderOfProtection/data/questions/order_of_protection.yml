@@ -218,7 +218,7 @@ code: |
       return_property_reason
   if return_respo_property:
     respo_property
-    respondent_one_time_entry
+  respondent_one_time_entry
     
   if return_property == True or return_respo_property == True: 
     if property_transfer_location_cb:
@@ -513,6 +513,8 @@ id: jurisdiction
 #continue button field: jurisdiction
 question: |
   Why do you want to file in ${ trial_court.address.county } County?
+subquestion: |
+  Check all that apply.
 fields:
   - no label: jurisdiction_type
     datatype: checkboxes
@@ -863,6 +865,8 @@ fields:
     min: ${ (today() - date_interval(years=18)).format("yyyy-MM-dd") }
     max: ${ today().format("yyyy-MM-dd") }
   - State of residence: x.address.state
+    help: |
+      This is where the child lives.
     code: states_list()
   - Include as a protected person?: x.protect
     datatype: yesnoradio
@@ -1073,8 +1077,10 @@ question: |
 subquestion: |
   Try to be specific about:
   
-  * What ${other_parties[0].name.full(middle="full")} did, and
-  * The effect the abuse had on you or the other survivors.
+  * What ${other_parties[0].name.full(middle="full")} did,
+  * What ${other_parties[0].name.full(middle="full")} said,
+  * Who was there when the abuse happened, and
+  * The effects the abuse had on you, other survivors, and anyone else who was there, including children.
   
   Include any threats or use of a weapon.
   
@@ -1093,6 +1099,8 @@ fields:
     input type: area
     rows: 12
     maxlength: 875
+    help: |
+      The petition has space for up to 875 characters for each incident.
 
 ---
 template: incidents_help
@@ -1136,7 +1144,7 @@ question: |
 subquestion: |
   This includes ordering ${other_parties[0].name.full(middle="full")} to not to threaten to do these things.
 
-  Check all that apply.
+  Check as many as you want, even if ${other_parties[0].name.full(middle="full")} has not done this before.
 fields:
   - Harassment: no_harassment
     datatype: yesnowide
@@ -1263,7 +1271,7 @@ fields:
   - no label: residence_remedies
     datatype: radio
     choices:
-    - I want **exclusive possession** of my residence, and ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive possession
+    - I want **exclusive possession** of the residence, and ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive possession
     - I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live because we share a residence.: provide alternate housing
     - None of the above: none
   
@@ -2009,6 +2017,7 @@ fields:
   - The court should:: parenting_time
     datatype: radio
     choices:
+      - Reserve ${other_parties[0].name.full(middle="full")}'s parenting time until a later hearing: reserve
       - Deny ${other_parties[0].name.full(middle="full")} parenting time (no visits at all): deny
         help: |
           You can enter reasons why you want to deny parenting time on the next screen.
@@ -2016,7 +2025,6 @@ fields:
         help: |
           You can enter reasons why you want to restrict parenting time on the next screen.
       - Grant ${other_parties[0].name.full(middle="full")} parenting (allow visits according to schedule): grant
-      - Reserve ${other_parties[0].name.full(middle="full")}'s parenting time until a later hearing: reserve
 
 ---
 id: restrict or deny parenting time reasons
@@ -2497,6 +2505,8 @@ question: |
   Do you know where you want the personal property transfer to happen?
 subquestion: |
   This is where you will get your property back from ${other_parties[0].name.full(middle="full")}. You can enter the address on the next screen.
+  
+  You may want this to happen at a police department or sheriff's office.
 fields:
   - no label: property_transfer_location_cb
     datatype: yesnoradio
@@ -2504,6 +2514,8 @@ fields:
 id: property transfer location
 question: |
   Where should the property transfer happen?
+subquestion: |
+  This can be at a police department or sheriff's office.
 fields:
   - Street address: property_transfer_location.address
     address autocomplete: True
@@ -2762,7 +2774,11 @@ subquestion: |
   If the Order of Protection will include any elderly people, this can protect their financial resources and property.
 fields:
   - no label: restrict_elderly_petitioner_resources
-    datatype: yesnoradio
+    datatype: radio
+    choices:
+      - Yes: Yes
+      - No: No
+      - Does not apply: dna
 ---
 
 ---
@@ -2886,7 +2902,11 @@ subquestion: |
   This means you were in a romantic relationship with them.
 fields:
   - no label: intimate_partner
-    datatype: yesnoradio
+    datatype: radio
+    choices:
+      - Yes: Yes
+      - No: No
+      - Does not apply: dna
 ---
 id: remove firearms additional reasons
 question: |
@@ -3954,7 +3974,7 @@ attachment:
     - "appear_with_children_exam": ${ True if appear_with_children_exam and return_children_to == "court" and minor_kids_with_respondent else '' }
     - "no_conceal_children_cb": ${ True if no_conceal_children and minor_kids_with_respondent else '' }
 
-    - "return_property_cb": ${ True if award_personal_property else "" }
+    - "return_property_cb": ${ True if (award_personal_property or respondent_one_time_entry) else "" }
     - "award_petitioner_property_cb": ${ True if award_personal_property else "" }
     - "petitioner_property_awarded_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property]) if award_personal_property else "" }
     - "respondent_ordered_return_property_cb": ${ True if award_personal_property == True and return_property == True else "" }
@@ -3981,7 +4001,7 @@ attachment:
     - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
     - "property_transfer_time": ${ format_time(property_transfer_time) if property_transfer_know_date == True else ''  }
-    - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == True else "" }
+    - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == "Yes" else "" }
     - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
     - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
     - "restrict_property_reason_petitioner_owns": ${ True if (restrict_property_reason == "petitioner" and restrict_other_property == True) else "" }
@@ -3989,7 +4009,7 @@ attachment:
     - "restrict_property_reason_divorce": ${ True if restrict_property_reason == "divorce" and restrict_other_property == True else "" }
     - "restrict_divorce_filed_yes": ${ True if restrict_divorce_filed == True and restrict_other_property == True and restrict_property_reason == "divorce" else "" }
     - "restrict_divorce_filed_no": ${ True if restrict_divorce_filed == False and restrict_other_property == True and restrict_property_reason == "divorce" else "" }
-    - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == True else '' }
+    - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == "Yes" else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }
     - "animals_list": ${ comma_and_list([item.name.text + " (a " + item.description + ")" for item in pets]) if possession_of_animals else "" }
     - "temp_support_cb": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) or (temp_maintenance == True and (relationship_type['se'] == True or relationship_type['xs'] == True)) else '' }
@@ -4079,7 +4099,7 @@ attachment:
     
     - "firearms_cb": ${ True if firearms_turnover else '' }
     - "firearms_turnover": ${ True if firearms_turnover else '' }
-    - "firearms_not_intimate_partner": ${ "*Respondent is not an intimate partner of Petitioner.*" if firearms_turnover == True and intimate_partner == False else "" }    
+    - "firearms_not_intimate_partner": ${ "*Respondent is not an intimate partner of Petitioner.*" if firearms_turnover == True and intimate_partner != "Yes" else "" }    
     - "respondent_violent": ${ True if firearms_reasons['violence'] == True else ''  }
     - "respondent_firearms_history": ${ True if firearms_reasons['use'] == True else ''  }
     - "respondent_firearms_on_person": ${ True if firearms_reasons['vehicle'] == True else ''  }
@@ -4763,7 +4783,7 @@ attachment:
     - "appear_with_children_return": ${ True if appear_with_children_return and return_children_to == "court" and minor_kids_with_respondent else '' }
     - "appear_with_children_exam": ${ True if appear_with_children_exam and return_children_to == "court" and minor_kids_with_respondent else '' }
 
-    - "return_property_cb": ${ True if award_personal_property else "" }
+    - "return_property_cb": ${ True if (award_personal_property or respondent_one_time_entry) else "" }
     - "award_petitioner_property_cb": ${ True if award_personal_property else "" }
     - "petitioner_property_awarded_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property]) if award_personal_property else "" }
     - "respondent_ordered_return_property_cb": ${ True if award_personal_property == True and return_property == True else "" }
@@ -4802,19 +4822,19 @@ attachment:
     - "request_police_at_transfer_petitioner": ${ True if request_police_person == "petitioner" and property_transfer_person == 'police' and property_transfer_present_cb == True else "" }    
     - "request_police_at_transfer_respondent": ${ True if request_police_person == "respondent" and property_transfer_person == 'police' and property_transfer_present_cb == True else "" }    
     
-    - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == True else "" }
+    - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == "Yes" else "" }
     - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
     - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
     - "restrict_property_reason_petitioner_owns": ${ True if restrict_property_reason == "petitioner" and restrict_other_property == True else "" }
     - "restrict_property_reason_both_own": ${ True if restrict_property_reason == "both" and restrict_other_property == True else "" }
     - "restrict_divorce_filed_yes": ${ True if restrict_divorce_filed == True and restrict_other_property == True and restrict_property_reason == "divorce" else "" }
-    - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == True else '' }
+    - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == "Yes" else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }
     - "animals_list": ${ comma_and_list([item.name.text + " (a " + item.description + ")" for item in pets]) if possession_of_animals else "" }
     - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
     - "firearms_cb": ${ True if firearms_turnover else '' }
     - "firearms_turnover": ${ True if firearms_turnover else '' }
-    - "firearms_not_intimate_partner": ${ "*Respondent is not an intimate partner of Petitioner.*" if firearms_turnover == True and intimate_partner == False else "" }    
+    - "firearms_not_intimate_partner": ${ "*Respondent is not an intimate partner of Petitioner.*" if firearms_turnover == True and intimate_partner != "Yes" else "" }    
     - "firearms_remedy__1": ${ True if firearms_turnover else '' }
     - "firearms_remedy__2": ${ True if firearms_turnover else '' }
     - "firearms_remedy__3": ${ True if firearms_turnover else '' }
@@ -4848,6 +4868,30 @@ attachment:
     - "cell_number_3": ${ phone_number_formatted(cell_numbers[2].name.text) if separate_phone_service else '' }
     - "cell_number_4": ${ phone_number_formatted(cell_numbers[3].name.text) if separate_phone_service else '' }
 
+     # page 9
+
+    - "relationship_se": ${ relationship_type['se'] }
+    - "relationship_xs": ${ relationship_type['xs'] }
+    - "relationship_bg": ${ relationship_type['bg'] }
+    - "relationship_cc": ${ relationship_type['cc'] }
+    - "relationship_cs": ${ relationship_type['cs'] }
+    - "relationship_ch": ${ relationship_type['ch'] }
+    - "relationship_pa": ${ relationship_type['pa'] }
+    - "relationship_sb": ${ relationship_type['sb'] }
+    - "relationship_of": ${ relationship_type['of'] }
+    - "relationship_il": ${ relationship_type['il'] }
+    - "relationship_sc": ${ relationship_type['sc'] }
+    - "relationship_ss": ${ relationship_type['ss'] }
+    - "relationship_sp": ${ relationship_type['sp'] }
+    - "relationship_gc": ${ relationship_type['gc'] }
+    - "relationship_gp": ${ relationship_type['gp'] }
+    - "relationship_pc": ${ relationship_type['pc'] }
+    - "relationship_pr": ${ relationship_type['pr'] }
+    - "relationship_f": ${ relationship_type['f'] }
+    - "relationship_a": ${ relationship_type['a'] }
+    - "relationship_l": ${ relationship_type['l'] }
+    - "relationship_ot": ${ relationship_type['ot'] }
+    - "relationship_pd": ${ relationship_type['pd'] }
 
 ---
 attachment:
@@ -5232,7 +5276,7 @@ attachment:
     - "appear_with_children_return": ${ True if appear_with_children_return and return_children_to == "court" and minor_kids_with_respondent else '' }
     - "appear_with_children_exam": ${ True if appear_with_children_exam and return_children_to == "court" and minor_kids_with_respondent else '' }
 
-    - "return_property_cb": ${ True if award_personal_property else "" }
+    - "return_property_cb": ${ True if (award_personal_property or respondent_one_time_entry) else "" }
     - "award_petitioner_property_cb": ${ True if award_personal_property else "" }
     - "petitioner_property_awarded_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property]) if award_personal_property else "" }
     - "respondent_ordered_return_property_cb": ${ True if award_personal_property == True and return_property == True else "" }
@@ -5272,13 +5316,13 @@ attachment:
     - "request_police_at_transfer_petitioner": ${ True if request_police_person == "petitioner" and property_transfer_person == 'police' and property_transfer_present_cb == True else "" }    
     - "request_police_at_transfer_respondent": ${ True if request_police_person == "respondent" and property_transfer_person == 'police' and property_transfer_present_cb == True else "" }    
     
-    - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == True else "" }
+    - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == "Yes" else "" }
     - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
     - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
     - "restrict_property_reason_petitioner_owns": ${ True if restrict_property_reason == "petitioner" and restrict_other_property == True else "" }
     - "restrict_property_reason_both_own": ${ True if restrict_property_reason == "both" and restrict_other_property == True else "" }
     - "restrict_divorce_filed_yes": ${ True if restrict_divorce_filed == True and restrict_other_property == True and restrict_property_reason == "divorce" else "" }
-    - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == True else '' }
+    - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == "Yes" else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }
     - "animals_list": ${ comma_and_list([item.name.text + " (a " + item.description + ")" for item in pets]) if possession_of_animals else "" }
     - "temp_support_cb": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) or (temp_maintenance == True and (relationship_type['se'] == True or relationship_type['xs'] == True)) else '' }
@@ -5366,7 +5410,7 @@ attachment:
     - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
     - "firearms_cb": ${ True if firearms_turnover else '' }
     - "firearms_turnover": ${ True if firearms_turnover else '' }
-    - "firearms_not_intimate_partner": ${ "*Respondent is not an intimate partner of Petitioner.*" if firearms_turnover == True and intimate_partner == False else "" }    
+    - "firearms_not_intimate_partner": ${ "*Respondent is not an intimate partner of Petitioner.*" if firearms_turnover == True and intimate_partner != "Yes" else "" }    
     - "firearms_remedy__1": ${ True if firearms_turnover else '' }
     - "firearms_remedy__2": ${ True if firearms_turnover else '' }
     - "firearms_remedy__3": ${ True if firearms_turnover else '' }
@@ -5408,7 +5452,31 @@ attachment:
     - "cell_number_2": ${ phone_number_formatted(cell_numbers[1].name.text) if separate_phone_service else '' }
     - "cell_number_3": ${ phone_number_formatted(cell_numbers[2].name.text) if separate_phone_service else '' }
     - "cell_number_4": ${ phone_number_formatted(cell_numbers[3].name.text) if separate_phone_service else '' }
----
+
+     # page 11
+
+    - "relationship_se": ${ relationship_type['se'] }
+    - "relationship_xs": ${ relationship_type['xs'] }
+    - "relationship_bg": ${ relationship_type['bg'] }
+    - "relationship_cc": ${ relationship_type['cc'] }
+    - "relationship_cs": ${ relationship_type['cs'] }
+    - "relationship_ch": ${ relationship_type['ch'] }
+    - "relationship_pa": ${ relationship_type['pa'] }
+    - "relationship_sb": ${ relationship_type['sb'] }
+    - "relationship_of": ${ relationship_type['of'] }
+    - "relationship_il": ${ relationship_type['il'] }
+    - "relationship_sc": ${ relationship_type['sc'] }
+    - "relationship_ss": ${ relationship_type['ss'] }
+    - "relationship_sp": ${ relationship_type['sp'] }
+    - "relationship_gc": ${ relationship_type['gc'] }
+    - "relationship_gp": ${ relationship_type['gp'] }
+    - "relationship_pc": ${ relationship_type['pc'] }
+    - "relationship_pr": ${ relationship_type['pr'] }
+    - "relationship_f": ${ relationship_type['f'] }
+    - "relationship_a": ${ relationship_type['a'] }
+    - "relationship_l": ${ relationship_type['l'] }
+    - "relationship_ot": ${ relationship_type['ot'] }
+    - "relationship_pd": ${ relationship_type['pd'] }
 
 ---
 attachment:

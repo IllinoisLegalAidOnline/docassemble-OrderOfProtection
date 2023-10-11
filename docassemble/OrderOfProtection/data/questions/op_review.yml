@@ -937,7 +937,13 @@ review:
   - Edit: restrict_elderly_petitioner_resources
     button: |
       **Should the court protect an elderly person's resources from  ${other_parties[0].name.full(middle="full")}?**
-      ${ word(yesno(restrict_elderly_petitioner_resources)) }
+      % if restrict_elderly_petitioner_resources == "Yes":
+      Yes
+      % elif restrict_elderly_petitioner_resources == "No":
+      No
+      % else:
+      Does not apply
+      % endif
 
   # section: remedies
   - note: |
@@ -1024,7 +1030,14 @@ review:
   - Edit: intimate_partner
     button: |
       **Is ${other_parties[0].name.full(middle="full")} a current or former intimate partner?**
-      ${ word(yesno(intimate_partner)) }
+      % if intimate_partner == "Yes":
+      Yes
+      % elif intimate_partner == "No":
+      No
+      % else:
+      Does not apply
+      % endif
+
   - Edit: firearms_reasons
     button: |
       **Other things the court should know about ${other_parties[0].name.full(middle="full")}:**
@@ -2784,7 +2797,13 @@ review:
   - Edit: restrict_elderly_petitioner_resources
     button: |
       **Should the court protect an elderly person's resources from  ${other_parties[0].name.full(middle="full")}?**
-      ${ word(yesno(restrict_elderly_petitioner_resources)) }
+      % if restrict_elderly_petitioner_resources == "Yes":
+      Yes
+      % elif restrict_elderly_petitioner_resources == "No":
+      No
+      % else:
+      Does not apply
+      % endif
 
 ---
 id: other remedies review screen
@@ -2877,7 +2896,13 @@ review:
   - Edit: intimate_partner
     button: |
       **Is ${other_parties[0].name.full(middle="full")} a current or former intimate partner?**
-      ${ word(yesno(intimate_partner)) }
+      % if intimate_partner == "Yes":
+      Yes
+      % elif intimate_partner == "No":
+      No
+      % else:
+      Does not apply
+      % endif
   - Edit: firearms_reasons
     button: |
       **Other things the court should know about ${other_parties[0].name.full(middle="full")}:**
