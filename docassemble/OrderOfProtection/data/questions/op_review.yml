@@ -1191,13 +1191,19 @@ review:
   - Edit: respondent_on_probation
     button: |
       **Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?**
-      ${ word(yesno(respondent_on_probation)) }
+      % if respondent_on_probation == "Yes":
+      Yes
+      % elif respondent_on_probation == "No":
+      No
+      % else:
+      I don't know.
+      % endif
     show if: trial_court_index == -1
   - Edit: respondent_probation_county
     button: |
       **Probation county:**
       ${ respondent_probation_county }
-    show if: respondent_on_probation and trial_court_index == -1
+    show if: respondent_on_probation == "Yes" and trial_court_index == -1
   - Edit: caution_reasons
     button : |
       **Reasons sheriff should use caution when approaching ${other_parties[0].name.full(middle="full")}:**
@@ -3062,13 +3068,19 @@ review:
   - Edit: respondent_on_probation
     button: |
       **Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?**
-      ${ word(yesno(respondent_on_probation)) }
+      % if respondent_on_probation == "Yes":
+      Yes
+      % elif respondent_on_probation == "No":
+      No
+      % else:
+      I don't know.
+      % endif
     show if: trial_court_index == -1
   - Edit: respondent_probation_county
     button: |
       **Probation county:**
       ${ respondent_probation_county }
-    show if: respondent_on_probation and trial_court_index == -1
+    show if: respondent_on_probation == "Yes" and trial_court_index == -1
   - Edit: caution_reasons
     button : |
       **Reasons sheriff should use caution when approaching ${other_parties[0].name.full(middle="full")}:**

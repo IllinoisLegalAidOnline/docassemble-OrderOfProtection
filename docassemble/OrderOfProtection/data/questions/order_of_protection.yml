@@ -8,14 +8,24 @@ metadata:
 include:
   - docassemble.AssemblyLine:assembly_line.yml
   - docassemble.ALToolbox:escape_button.yml  
-  - docassemble.ALToolbox:phone-number-validation.yml  
   - docassemble.ILAO:ilao-interview-framework.yml
   - docassemble.ILAO:shared-basic-questions.yml
   - op_review.yml
+  #- docassemble.ALToolbox:phone-number-validation.yml  
 #---  added for testing css
 #features:
 #  css:
 #    - temp.css
+---
+default screen parts:
+  right: |
+    **Worried about doing this on your own?** Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate.
+    % if user_has_saved_answers:
+    
+    :bell: Saved answers available!  
+
+    ${action_button_html(url_action('load_answer'), icon="folder-open", label=word("View answers"), size="sm" )}
+    % endif
 ---
 objects:
   - users: ALPeopleList.using(there_are_any=True)
@@ -317,6 +327,7 @@ code: |
 
   nav.set_section('section_download')  
   #clean_up
+  forms_assembling
   get_docs_screen
 ---
 terms:
@@ -557,12 +568,16 @@ fields:
       - I am their boyfriend, girlfriend, or romantic partner (including ex-).: bg
       - We have a child in common (never married).: cc
       - We share or shared a living space.: cs
+        help: |
+          Example: We share a common area like a kitchen. This would not apply if you just had apartments in the same building.
       - I am their child.: ch
       - I am their parent.: pa
       - I am their brother, sister, or sibling.: sb
       - They are another family member.: of
+        help: |
+          Examples: Uncle, aunt, or cousin.
       - I am their step child.: sc
-      - I am their step brother, step sister, or step siblin.g: ss
+      - I am their step brother, step sister, or step sibling.: ss
       - I am their step parent.: sp
       - I am their grandchild.: gc
       - I am their grandparent.: gp
@@ -642,6 +657,11 @@ fields:
         help: |
           For example, "June 3rd" or "Summer of 1990."
       - I don't know it.: idk
+        help: |
+          You can update the Cook County Sheriff's office when you have this information. Email them anytime at ccso.protectiveorders@ccsheriff.org or call them at 312-603-2134 or 312-603-3340 (Monday through Friday, 8AM to 5PM).
+        show if:
+          variable: trial_court_index
+          is: -1
   - ${other_parties[0].name.full(middle="full")}'s date of birth: other_parties[0].birthdate
     datatype: date
     max: ${ today().format("yyyy-MM-dd") }
@@ -859,17 +879,27 @@ id: minor child info
 generic object: ALIndividual
 question: |
   Tell us more about ${ x.name.full(middle="full")}
+subquestion: |
+  ${ collapse_template(minor_child_residence_help) }
 fields:
   - Date of birth: x.birthdate
     datatype: date
     min: ${ (today() - date_interval(years=18)).format("yyyy-MM-dd") }
     max: ${ today().format("yyyy-MM-dd") }
-  - State of residence: x.address.state
+  - State of residence (past 6 months): x.address.state
     help: |
-      This is where the child lives.
+      This is where the child currently lives.
     code: states_list()
   - Include as a protected person?: x.protect
     datatype: yesnoradio
+---
+template: minor_child_residence_help
+subject: |
+  **What if the child has not lived in the same state over the past 6 months?**
+content: |  
+  If ${ x.name.full(middle="full")} has not lived in Illinois or the state you select for the past 6 months, you may want to talk with a lawyer. There are laws that affect which state courts can settle things like child custody.
+  
+  Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate. You can also use [**Get Legal Help**](https://www.illinoislegalaid.org/get-legal-help) to find free or low-cost legal services in your area.
 ---
 code: |
   shared_kids[i].name.first
@@ -907,6 +937,8 @@ fields:
 id: order type
 question: |
   Which type of Order of Protection do you want against ${other_parties[0].name.full(middle="full")}?
+subquestion: |
+  You can ask for both. It is easier to ask for both an Emergency and a Plenary Order of Protection now. If you change your mind later, it involves less paperwork.
 fields:
   - Emergency: eop
     datatype: yesnowide
@@ -926,7 +958,7 @@ fields:
       * ${other_parties[0].name.full(middle="full")} will have a chance to participate in the court case
 validation code: |
   if not (eop or pop):
-    validation_error("You need to select at least one choice to continue.", field="pop")
+    validation_error("You need to select at least one type of order to continue.", field="pop")
 
 ---
 id: other ops
@@ -1080,7 +1112,7 @@ subquestion: |
   * What ${other_parties[0].name.full(middle="full")} did,
   * What ${other_parties[0].name.full(middle="full")} said,
   * Who was there when the abuse happened, and
-  * The effects the abuse had on you, other survivors, and anyone else who was there, including children.
+  * The effects the abuse had on you, other survivors, and anyone else who was there. It is important to mention any children that were present or were affected by the abuse.
   
   Include any threats or use of a weapon.
   
@@ -1107,7 +1139,7 @@ template: incidents_help
 subject: |
   **What if I don't remember the date and time?**
 content: |  
-  If you don't remember the exact date, enter the month and year.  
+  If you don't remember the exact date, enter the month or season and year.  
 
   If you don't remember the exact time, enter "morning" or "afternoon" or "night."
 ---
@@ -1150,6 +1182,15 @@ fields:
     datatype: yesnowide
     help: |
       **Harassment** means knowing conduct which is not necessary to accomplish a purpose that is reasonable under the circumstances, would cause a reasonable person emotional distress, and does cause emotional distress to Petitioner.
+      
+      Examples of harassment include:
+      
+       * Name calling or yelling
+       * Threatening harm to you, other people, animals, or property
+       * Constant calls, texts, social media messages, or emails
+       * Breaking or throwing property
+       * Threats to commit suicide
+       * Sharing personal images without your consent
   - Physical abuse: no_physical
     datatype: yesnowide
     help: |
@@ -1158,6 +1199,14 @@ fields:
       * Knowing or reckless use of physical force, confinement or restraint, 
       * Knowing, repeated and unnecessary sleep deprivation, or
       * Knowing or reckless conduct which creates an immediate risk of physical harm.
+      
+      Examples of physical abuse include:
+      
+       * Slapping, punching, kicking, strangling (choking)
+       * Pushing, pulling, shaking,
+       * Pulling hair, pinching, poking, biting
+       * Rape (even between married parties), sexual assault, or sexual abuse
+       * Use of guns, knives, or other weapons
   - Stalking: no_stalking
     datatype: yesnowide
     help: |
@@ -1166,14 +1215,30 @@ fields:
       * At any time transmitting a threat of immediate or future bodily harm, sexual assault, confinement or restraint and the threat is directed towards that person or a family member of that person,
       * Placing that person in reasonable apprehension of immediate or future bodily harm, sexual assault, confinement or restraint, or
       * Placing that person in reasonable apprehension that a family member will receive immediate or future bodily harm, sexual assault, confinement, or restraint.
+      
+      Examples of stalking include:
+      
+       * Following you
+       * Sitting/waiting outside of your residence or job
+       * Communicating to you that they know things you have done that day, such as “I know you were at the store this morning.”
   - Willful deprivation: no_willful
     datatype: yesnowide
     help: |
       **Willful deprivation** means willfully denying a person who because of age, health or disability requires medication, medical care, shelter, food, therapeutic device, or other physical assistance, and thereby exposing that person to the risk of physical, mental or emotional harm, except with regard to medical care or treatment when the dependent person has expressed an intent to forego such medical care or treatment. This paragraph does not create any new affirmative duty to provide support to dependent persons.
+      
+      Examples of willful deprivation include:
+      
+      * Not giving you medicine if they are responsible for this
+      * Not shopping for your food if they are responsible for this
   - Intimidation of a dependent: no_intimidation
     datatype: yesnowide
     help: |
       **Intimidation of a dependent** means subjecting a person who is dependent because of age, health or disability to participation in or the witnessing of: physical force against another or physical confinement or restraint of another which constitutes physical abuse as defined in this Act, regardless of whether the abused person is a family or household member.
+      
+      Examples of Intimidation of a Dependent include:
+
+      * Any physical abuse in front of a child or dependent
+      * Using a child or dependent in order to physically abuse another
   - Exploitation of a high-risk adult with disabilities: no_exploitation
     datatype: yesnowide
     help: |
@@ -1192,6 +1257,16 @@ fields:
     datatype: yesnowide
     help: |
       **Interference with personal liberty** means committing or threatening physical abuse, harassment, intimidation or willful deprivation so as to compel another to engage in conduct from which she or he has a right to abstain or to refrain from conduct in which she or he has a right to engage.
+      
+      Examples of interference with personal liberty include:
+      
+      * Preventing you from using the phone
+      * Preventing you from leaving the house or vehicle
+      * Isolating you from family and friends
+      * Controlling your movements, such as who you talk to, where you go, etc.
+      * Stealing or breaking a cell phone, or pulling a phone out of the wall
+      * Disabling your vehicle, such as putting sugar in gas tank
+      * Any other form of restraint
 ---
 id: stay away
 question: |
@@ -1724,8 +1799,8 @@ subquestion: |
   
   If the parents are not married, parentage can be established by the following:  
   
-  * Parents can be listed on the birth certificate,
-  * Parents can sign a Voluntary Acknowledgment of Paternity, also called a VAP,
+  * Both parents can be listed on the birth certificate, though this alone does not establish parentage,
+  * Both parents can sign a Voluntary Acknowledgment of Paternity, also called a VAP, that must be filed with the appropriate state agency,
   * A court or administrative order can establish parentage, or
   * In rare cases, another legal process can established parentage.
 fields:
@@ -1742,7 +1817,7 @@ question: |
 fields:
   - We are listed on the birth certificate.: parentage_birth_certificate
     datatype: yesnowide
-  - We signed a Voluntary Acknowledgment of Paternity, also called a VAP.: parentage_vap 
+  - We signed and filed a Voluntary Acknowledgment of Paternity, also called a VAP.: parentage_vap 
     datatype: yesnowide
   - A court or administrative order established us as the legal parents of the children.: parentage_order 
     datatype: yesnowide
@@ -1793,11 +1868,14 @@ fields:
 ---
 id: temporary custody
 question: |
-  Do you want the court to grant you temporary decisionmaking responsibility of the children you have with ${other_parties[0].name.full(middle="full")}?
+  Do you want the court to grant you temporary decision-making responsibility of the children you have with ${other_parties[0].name.full(middle="full")}?
 subquestion: |
   This used to be called "custody" in Illinois.
   
-  Note: The court can order this only after ${other_parties[0].name.full(middle="full")} received **{advance written notice}** or attended the court hearing where this is decided.
+  Notes:
+  
+  * This is not the same as primary decision-making responsibility.
+  * The court can order this only after ${other_parties[0].name.full(middle="full")} received **{advance written notice}** or attended the court hearing where this is decided.
 
 fields:
   - no label: temp_custody_of_children
@@ -1865,7 +1943,7 @@ id: have current possession of children
 question: |
   Do you currently have physical care and possession of your children with  ${other_parties[0].name.full(middle="full")}?
 subquestion: |
-  The court can order ${other_parties[0].name.full(middle="full")} to return the children to you, to another person, or to bring the children to court.
+  If the children are not with you, the court can order ${other_parties[0].name.full(middle="full")} to return them to you, to another person, or to bring the children to court.
 fields:
   - no label: current_possession_of_children
     datatype: yesnoradio
@@ -2010,7 +2088,7 @@ fields:
 ---
 id: parenting time
 question: |
-  How do you want the court to handle parenting time?
+  How do you want the court to handle parenting time for the children you have with ${other_parties[0].name.full(middle="full")}?
 subquestion: |
   This used to be called "visitation" in Illinois.
 fields:
@@ -2809,7 +2887,7 @@ question: |
 subquestion: |
   The court can order ${other_parties[0].name.full(middle="full")} to pay only after they have received written notice or attended the court hearing where this is decided.
 
-  If you do not know the exact amount you can estimate. Bring receipts and proof of payment to court if you have them.
+  If you do not know the exact amount you can estimate. Bring receipts and proof of ownership and payment to court if you have them.
 fields:
   - I do not want to request any repayment: expenses_none
     datatype: yesnowide
@@ -2881,7 +2959,7 @@ question: |
 subquestion: |
   Just knowing that ${other_parties[0].name.full(middle="full")} has a weapon can be a threat if you are afraid they could use it.
   
-  Note: If ${other_parties[0].name.full(middle="full")} threatened with a weapon, be sure to explain that in the [**What happened**](${ url_action('section_incidents') }) section. Threats are incidents of abuse that are important to your case.
+  Note: If ${other_parties[0].name.full(middle="full")} threatened with a weapon, be sure to explain the threats and the weapon in the [**What happened**](${ url_action('section_incidents') }) section. Threats are incidents of abuse that are important to your case.
 fields:
   - no label: firearms_threat
     datatype: yesnoradio
@@ -2890,7 +2968,7 @@ id: remove firearms
 question: |
   Do you want the court to order ${other_parties[0].name.full(middle="full")} to turn over their guns?
 subquestion: |
-  The court may require that ${other_parties[0].name.full(middle="full")} receives written notice or attends a court hearing before deciding that their guns should be taken away.
+  Reminder: If ${other_parties[0].name.full(middle="full")} threatened with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
 fields:
   - no label: firearms_turnover
     datatype: yesnoradio
@@ -3038,6 +3116,11 @@ question: |
   Where can ${other_parties[0].name.full(middle="full")} be found?
 subquestion: |
   This is where they will be served with Order of Protection court papers.
+  
+  % if trial_court_index == -1:
+  You can update the Cook County Sheriff's office when you have this information. Email them anytime at ccso.protectiveorders@ccsheriff.org or call them at 312-603-2134 or 312-603-3340 (Monday through Friday, 8AM to 5PM).
+  % endif
+  
 fields:
   - no label: service_address_choice
     datatype: radio
@@ -3183,7 +3266,7 @@ id: service method
 question: |
   Who do you want to deliver court papers to ${other_parties[0].name.full(middle="full")}?
 subquestion: |
-  This is called service.
+  This is called service. Sheriffs usually serve Orders of Protection.
   
   Note: There may be a charge for a special process server or a licensed private detective.
 fields:
@@ -3344,13 +3427,16 @@ fields:
     help: |
       This could be a name from an earlier marriage or a nickname. If there is more than one, separate by commas.
   - Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?: respondent_on_probation
-    datatype: yesnoradio
+    choices:
+      - Yes: Yes
+      - No: No
+      - I don't know.: idk
   - Probation in which county?: respondent_probation_county
     required: False
     maxlength: 25
     show if: 
       variable: respondent_on_probation
-      is: True
+      is: "Yes"
 ---
 id: respondent caution
 question: |
@@ -3450,7 +3536,15 @@ subquestion: |
 fields:
   - Case number: case_number
     required: False
-
+---
+id: forms assembling
+continue button field: forms_assembling
+question: |
+  Almost done
+subquestion: |
+  Click **Next** to finish making your forms. 
+  
+  This might take a little while. You do not need to refresh your screen.
 ---
 id: get docs screen
 question: |
@@ -5562,8 +5656,8 @@ attachment:
     - "respondent_weapons_in_home": ${ True if caution_reasons['home'] == True else "" }
     - "respondent_weapons_description": ${ weapons_description if caution_reasons['armed'] or caution_reasons['home'] == True else "" }        
     - "respondent_suicidal": ${ True if firearms_reasons['suicidal'] == True else ''  }    
-    - "respondent_on_probation":  ${ True if respondent_on_probation == True else ''  } 
-    - "respondent_probation_county":  ${ respondent_probation_county if respondent_on_probation == True else ''  } 
+    - "respondent_on_probation":  ${ True if respondent_on_probation == "Yes" else ''  } 
+    - "respondent_probation_county":  ${ respondent_probation_county if respondent_on_probation == "Yes" else ''  } 
     
     - "respondent_employer": |
         % if knows_respondent_work:
