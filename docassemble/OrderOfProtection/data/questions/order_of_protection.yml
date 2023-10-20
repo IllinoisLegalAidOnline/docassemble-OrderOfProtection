@@ -129,12 +129,12 @@ code: |
     shared_kids.gather()
   if protect_petitioner_kids:
     petitioner_kids.gather()
-  if protect_other_hh_members:
-    other_hh_members.gather()
   if protect_dependent_adult:
     dependent_adult.name.first
   if protect_high_risk_adult:
     high_risk_adult.name.first
+  if protect_other_hh_members:
+    other_hh_members.gather()
 
   nav.set_section('section_incidents')
   incidents_intro
@@ -375,7 +375,7 @@ subquestion: |
 
   * An address where the court can contact you,
   * Information about other people you want to protect including other court cases,
-  * Details about the abuser,
+  * Details about the abuser, including where they can be found,
   * Details about the abuse and when it happened, and
   * What property and places you want to protect.
 
@@ -477,7 +477,12 @@ continue button field: case_county
 question: |
   In which county will you file your ${ form_name }?
 subquestion: |
-    ${ collapse_template(venue_help) } 
+  You can file your case in the county:
+  
+  * Where you live,
+  * Where the person who caused the abuse lives,
+  * Where the abuse occurred, or
+  * Where you are staying to avoid abuse.
 fields:
   - no label: trial_court_index
     datatype: integer
@@ -491,18 +496,6 @@ subject: |
   **What if I need help finding the county?**
 content: |  
     You can use this [**City-to-County Finder**](https://www.statsamerica.org/CityCountyFinder/) to find the county.
----
-template: venue_help
-subject: |
-  **What if I don't know which county to choose?**
-content: |  
-  You can file your case in the county:
-  
-  * Where you live,
-  * Where the person who caused the abuse lives,
-  * Where the abuse occurred, or
-  * Where you are staying to avoid abuse.
-
 ---
 depends on:
   - trial_court_index
@@ -562,11 +555,11 @@ buttons:
 ---
 id: relationship
 question: |
-  Relationship with the person who caused the abuse
+  How are you related to the person who caused the abuse?
 subquestion: |
-  How are you or the person you want to protect related to the person who caused the abuse? You can check more than one.
-  
   If you are asking for an Order of Protection for someone other than yourself, select how they are related to the person who caused the abuse.
+  
+  You can check more than one.
 fields:
   - no label: relationship_type
     datatype: checkboxes
@@ -946,7 +939,9 @@ id: order type
 question: |
   Which type of Order of Protection do you want against ${other_parties[0].name.full(middle="full")}?
 subquestion: |
-  You can ask for both. It is easier to ask for both an Emergency and a Plenary Order of Protection now. If you change your mind later, it involves less paperwork.
+  You can ask for both.
+  
+  **Important:** It is easier to ask for both an Emergency and a Plenary Order of Protection now. If you change your mind later, it involves less paperwork.
 fields:
   - Emergency: eop
     datatype: yesnowide
@@ -980,7 +975,7 @@ fields:
     choices:
       - Yes: Yes
       - No: No
-      - I don't know: I don't know
+      - I don't know.: I don't know
 ---
 id: other ops detail
 question: |
@@ -1041,7 +1036,7 @@ fields:
     choices:
       - Yes: Yes
       - No: No
-      - I don't know: I don't know
+      - I don't know.: I don't know
 
 ---
 id: other cases detail
@@ -1138,9 +1133,9 @@ fields:
   - What happened: incidents[i].name.text
     input type: area
     rows: 12
-    maxlength: 875
+    maxlength: 750
     help: |
-      The petition has space for up to 875 characters for each incident.
+      The petition has space for about 750 characters for each incident.
 
 ---
 template: incidents_help
@@ -2722,7 +2717,7 @@ question: |
   Do you have another pets you want to protect?
 subquestion: |
   % if len(pets.elements) >= 1:  
-  So far you have told us about ${comma_and_list([item.name.text + " (a " + item.description + ")" for item in pets])}.
+  So far you have told us about ${comma_and_list([item.name.text + " (" + indefinite_article(item.description) + ")" for item in pets])}.
   % endif
 fields:
   - "Any other pets?": pets.there_is_another
@@ -3062,6 +3057,8 @@ id: e-signature
 question: |
   Do you want to add your e-signature to your Petition for Order of Protection?
 subquestion: |
+  This program can put “**/s/ ${users[0].name.full(middle='full')}**” where you would sign your name. The court will accept this as your signature.
+
   If you do not add your **{e-signature}**, you must sign your paper form before you file it.
 
   ${ collapse_template(signature_help) }  
@@ -3108,7 +3105,7 @@ question: |
 subquestion: |
   **This email will appear on your court forms.** If you do not want to enter your personal email address, you can create a new email account to get email about your case.
   
-  Try one of these email services to make a new account:
+  To make a new email account try one of these email services:
   
   * [**Gmail**](https://accounts.google.com/SignUp)
   * [**Outlook**](https://outlook.live.com/owa/?nlp=1&signup=1)
@@ -3274,7 +3271,7 @@ id: service method
 question: |
   Who do you want to deliver court papers to ${other_parties[0].name.full(middle="full")}?
 subquestion: |
-  This is called service. Sheriffs usually serve Orders of Protection.
+  This is called service. In Illinois, **Sheriffs usually serve Orders of Protection.**
   
   Note: There may be a charge for a special process server or a licensed private detective.
 fields:
@@ -3300,7 +3297,7 @@ subquestion: |
 fields:
   - no label: service_information
     input type: area
-    rows: 4
+    rows: 2
     maxlength: 150
     required: False
 ---
@@ -3435,6 +3432,7 @@ fields:
     help: |
       This could be a name from an earlier marriage or a nickname. If there is more than one, separate by commas.
   - Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?: respondent_on_probation
+    datatype: radio
     choices:
       - Yes: Yes
       - No: No
@@ -3511,7 +3509,7 @@ id: any previous cook cases
 question: |
   Have you filed any divorce or parentage cases in Cook County before?
 subquestion: |
-  This will help the court clerk assign your case to the correct location. If there is more than 1, enter information about the most recent.
+  This will help the court clerk assign your case to the correct location. If you were involved in more than one, choose the most recent.
 
 fields:
   - no label: previous_cook_case_type
@@ -3525,7 +3523,7 @@ id: previous cook case details
 question: |
   Tell us about the ${ previous_cook_case_type } case with ${other_parties[0].name.full(middle="full")} in Cook County
 subquestion: |
-  If there is more than 1, enter information about the most recent.
+  If there is more than one, enter information about the most recent.
 fields:
   - Date case was filed: previous_cook_case_date
     datatype: date
@@ -3550,7 +3548,7 @@ continue button field: forms_assembling
 question: |
   Almost done
 subquestion: |
-  After you click **Next**, it will take us a few seconds to finish making your forms.
+  After you click **Next**, it will take a few seconds to finish making your forms.
   
   You do not need to refresh your screen. Hang in there!
 ---
@@ -3982,7 +3980,7 @@ attachment:
     - "return_children_possession": ${ True if (return_children_to == "petitioner" or return_children_to == "other") and minor_kids_with_respondent else '' }
     - "return_children_other_person": ${ return_children_other_person.name.full(middle="full") if return_children_to == "other" and minor_kids_with_respondent else '' }
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
-    - "confidential_schools__2": ${ True if keep_schools_confidential and minor_kids_with_respondent else '' }
+    - "confidential_schools__2": ${ True if (schools[0].hide or schools[1].hide) and stay_away_schools and minor_kids_with_respondent else False }
     - "temp_custody_cb": ${ True if temp_custody_of_children and minor_kids_with_respondent else '' }
     - "requests_temp_custody": ${ True if temp_custody_of_children and minor_kids_with_respondent else '' }
     - "parenting_time_cb": ${ True if parenting_time and minor_kids_with_respondent else '' }
@@ -4113,7 +4111,7 @@ attachment:
     - "restrict_divorce_filed_no": ${ True if restrict_divorce_filed == False and restrict_other_property == True and restrict_property_reason == "divorce" else "" }
     - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == "Yes" else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }
-    - "animals_list": ${ comma_and_list([item.name.text + " (a " + item.description + ")" for item in pets]) if possession_of_animals else "" }
+    - "animals_list": ${ comma_and_list([item.name.text + " (" + indefinite_article(item.description) + ")" for item in pets]) if possession_of_animals else "" }
     - "temp_support_cb": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) or (temp_maintenance == True and (relationship_type['se'] == True or relationship_type['xs'] == True)) else '' }
     - "temp_child_support": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) else '' }
     - "temp_maintenance": ${ True if (temp_maintenance == True and (relationship_type['se'] == True or relationship_type['xs'] == True)) else '' }
@@ -4764,6 +4762,7 @@ attachment:
     
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
     - "no_removal_schools_list": |
+        % if no_removal_school and minor_kids_with_respondent:    
         % if stay_away_schools and schools[0].hide:
         ${ "School 1: Confidential" }
         % else:
@@ -4774,23 +4773,28 @@ attachment:
         % else:
         ${ ", " + schools[1].name }
         % endif
-    
-    - "schools_get_order": ${ stay_away_schools }
+        % endif
+
+    - "schools_get_order": ${ True if stay_away_schools and minor_kids_with_respondent else '' }
     
       # page 5
     - "get_order_school_1": |
+        % if minor_kids_with_respondent:
         % if schools[0].hide:
         ${ "Confidential" }
         % else:
         ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
         % endif
+        % endif
     - "get_order_school_2": |
+        % if minor_kids_with_respondent:
         % if schools[1].hide:
         ${ "Confidential" }
         % else:
         ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
-    - "confidential_schools__2": ${ True if keep_schools_confidential and minor_kids_with_respondent else '' }
+        % endif
+    - "confidential_schools__2": ${ True if (schools[0].hide or schools[1].hide) and stay_away_schools and minor_kids_with_respondent else False }
     - "parenting_time_cb": ${ True if parenting_time and minor_kids_with_respondent else '' }
     - "parenting_time_grant": ${ True if parenting_time == "grant" and minor_kids_with_respondent else '' }
     - "parenting_time_reserve": ${ True if parenting_time == "reserve" and minor_kids_with_respondent else '' }
@@ -4932,7 +4936,7 @@ attachment:
     - "restrict_divorce_filed_yes": ${ True if restrict_divorce_filed == True and restrict_other_property == True and restrict_property_reason == "divorce" else "" }
     - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == "Yes" else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }
-    - "animals_list": ${ comma_and_list([item.name.text + " (a " + item.description + ")" for item in pets]) if possession_of_animals else "" }
+    - "animals_list": ${ comma_and_list([item.name.text + " (" + indefinite_article(item.description) + ")" for item in pets]) if possession_of_animals else "" }
     - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
     - "firearms_cb": ${ True if firearms_turnover else '' }
     - "firearms_turnover": ${ True if firearms_turnover else '' }
@@ -5254,6 +5258,7 @@ attachment:
     
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
     - "no_removal_schools_list": |
+        % if no_removal_school and minor_kids_with_respondent:    
         % if stay_away_schools and schools[0].hide:
         ${ "School 1: Confidential" }
         % else:
@@ -5264,20 +5269,25 @@ attachment:
         % else:
         ${ ", " + schools[1].name }
         % endif
+        % endif
 
-    - "schools_get_order": ${ stay_away_schools }
+    - "schools_get_order": ${ True if stay_away_schools and minor_kids_with_respondent else ''}
     
     - "get_order_school_1": |
+        % if minor_kids_with_respondent:
         % if schools[0].hide:
         ${ "Confidential" }
         % else:
         ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
         % endif
+        % endif
     - "get_order_school_2": |
+        % if minor_kids_with_respondent:
         % if schools[1].hide:
         ${ "Confidential" }
         % else:
         ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
+        % endif
         % endif
     - "confidential_schools__2": ${ True if keep_schools_confidential and minor_kids_with_respondent else '' }
     
@@ -5426,7 +5436,7 @@ attachment:
     - "restrict_divorce_filed_yes": ${ True if restrict_divorce_filed == True and restrict_other_property == True and restrict_property_reason == "divorce" else "" }
     - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == "Yes" else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }
-    - "animals_list": ${ comma_and_list([item.name.text + " (a " + item.description + ")" for item in pets]) if possession_of_animals else "" }
+    - "animals_list": ${ comma_and_list([item.name.text + " (" + indefinite_article(item.description) + ")" for item in pets]) if possession_of_animals else "" }
     - "temp_support_cb": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) or (temp_maintenance == True and (relationship_type['se'] == True or relationship_type['xs'] == True)) else '' }
     - "temp_child_support": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) else '' }    
     

@@ -877,7 +877,7 @@ review:
       **Pets you want possession of:**
 
       % for my_var in pets:
-        * ${ my_var.name.text } (a ${ my_var.description })
+        * ${ my_var.name.text } (${ indefinite_article(my_var.description) })
       % endfor
     show if: (possession_of_animals == True)
   - Edit: separate_phone_service
@@ -2743,7 +2743,7 @@ review:
       **Pets you want possession of:**
 
       % for my_var in pets:
-        * ${ my_var.name.text } (a ${ my_var.description })
+        * ${ my_var.name.text } (${ indefinite_article(my_var.description) })
       % endfor
     show if: (possession_of_animals == True)
   - Edit: separate_phone_service
