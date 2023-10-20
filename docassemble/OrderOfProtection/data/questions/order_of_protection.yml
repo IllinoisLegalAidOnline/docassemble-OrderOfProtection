@@ -18,14 +18,22 @@ include:
 #    - temp.css
 ---
 default screen parts:
-  right: |
+#  right: |
+#    **Worried about doing this on your own?** Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate.
+#    % if user_has_saved_answers:
+#    
+#    :bell: Saved answers available!  
+#
+#    ${action_button_html(url_action('load_answer'), icon="folder-open", label=word("View answers"), size="sm" )}
+#    % endif
+  under: |
     **Worried about doing this on your own?** Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate.
-    % if user_has_saved_answers:
+    % if not user_logged_in():
     
-    :bell: Saved answers available!  
-
-    ${action_button_html(url_action('load_answer'), icon="folder-open", label=word("View answers"), size="sm" )}
+    [${fa_icon("sign-in-alt", color="#0079d0", size="sm")} **Sign in**](${url_of('login', next=interview_url())}) or [**create**](${url_of('register', next=interview_url())}) an ILAO Easy Form account to save your progress (optional).
     % endif
+    
+    Feedback, suggestions, or comments? [**Let us know**](${ interview_url(i="docassemble.ILAO:feedback.yml", easy_form_interview=ilao_easy_form_url , easy_form_title=ilao_easy_form_title, easy_form_page=user_info().question_id, easy_form_variable=user_info().variable, local=False,reset=1) } ){:target="_blank"}.
 ---
 objects:
   - users: ALPeopleList.using(there_are_any=True)
@@ -3542,9 +3550,9 @@ continue button field: forms_assembling
 question: |
   Almost done
 subquestion: |
-  Click **Next** to finish making your forms. 
+  After you click **Next**, it will take us a few seconds to finish making your forms.
   
-  This might take a little while. You do not need to refresh your screen.
+  You do not need to refresh your screen. Hang in there!
 ---
 id: get docs screen
 question: |
