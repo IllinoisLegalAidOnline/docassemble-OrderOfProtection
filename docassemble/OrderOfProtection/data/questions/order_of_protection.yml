@@ -1133,9 +1133,9 @@ fields:
   - What happened: incidents[i].name.text
     input type: area
     rows: 12
-    maxlength: 750
+    maxlength: 800
     help: |
-      The petition has space for about 750 characters for each incident.
+      The petition has space for about 800 characters for each incident.
 
 ---
 template: incidents_help
@@ -2450,6 +2450,8 @@ question: |
   % else:
   Next item you want possession of
   % endif
+subquestion: |
+  If you are listing a car, include the make, model, and year. For example: Chevy Malibu.
 fields:
   - Item name: petitioner_personal_property[i].name.text
   - Do you want the court to order ${other_parties[0].name.full(middle="full")} to return it to you?: petitioner_personal_property[i].respo_has
@@ -3507,7 +3509,7 @@ fields:
 ---
 id: any previous cook cases
 question: |
-  Have you filed any divorce or parentage cases in Cook County before?
+  Have you filed any divorce or parentage cases with ${other_parties[0].name.full(middle="full")} in Cook County before?
 subquestion: |
   This will help the court clerk assign your case to the correct location. If you were involved in more than one, choose the most recent.
 
@@ -3686,7 +3688,7 @@ attachment:
   name: instructions
   filename: op_instructions
   skip undefined: True
-  editable: False
+  #editable: False
   pdf template file: op_instructions.pdf
   fields:
     - "fake": ${ "" }
@@ -3696,7 +3698,8 @@ attachment:
   name: petition
   filename: petition
   skip undefined: True
-  editable: False
+  #editable: False
+  #rendering font: "/usr/share/fonts/truetype/msttcorefonts/Arial.ttf"
   pdf template file: op_petition.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -3997,25 +4000,25 @@ attachment:
     - "pt_interview": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekdays": ${ True if pt_weekdays and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekday_list": ${ comma_and_list(dow_abb[int(y)] for y in pt_weekday_days.true_values()) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent == True else '' }
-    - "pt_weekday_start": ${ format_time(pt_weekday_start) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekday_end": ${ format_time(pt_weekday_end) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekday_start": ${ format_time(pt_weekday_start, format='h:mm a') if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekday_end": ${ format_time(pt_weekday_end, format='h:mm a') if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_every": ${ True if pt_weekend_cadence == "every" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_every_other": ${ True if pt_weekend_cadence == "other" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_fri_sat": ${ True if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_fri_sat_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_fri_sat_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sat_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sat_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_fri_sun": ${ True if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_fri_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_fri_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sun_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sun_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_sat": ${ True if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sat_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sat_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_sat_sun": ${ True if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sat_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sat_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_sun_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_sun_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_sun": ${ True if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sun_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sun_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_start_date_cb": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_start_date": ${ pt_start_date if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
 
@@ -4023,8 +4026,8 @@ attachment:
       # page 7
     - "pt_holidays": ${ pt_holidays if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_holiday_list": ${ pt_holiday_list if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
-    - "pt_holiday_start": ${ format_time(pt_holiday_start) if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
-    - "pt_holiday_end": ${ format_time(pt_holiday_end) if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+    - "pt_holiday_start": ${ format_time(pt_holiday_start, format='h:mm a') if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+    - "pt_holiday_end": ${ format_time(pt_holiday_end, format='h:mm a') if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
     - "pt_transportation_cb": ${ True if pt_transportation != "later" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_transportation_person_name": |
         % if pt_transportation == "petitioner" and (parenting_time == "restrict" or parenting_time == "grant"):
@@ -4100,7 +4103,7 @@ attachment:
     - "property_transfer_present_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
-    - "property_transfer_time": ${ format_time(property_transfer_time) if property_transfer_know_date == True else ''  }
+    - "property_transfer_time": ${ format_time(property_transfer_time, format='h:mm a') if property_transfer_know_date == True else ''  }
     - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == "Yes" else "" }
     - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
     - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
@@ -4256,7 +4259,7 @@ attachment:
   name: confidential_schools
   filename: confidential_schools
   skip undefined: True
-  editable: False
+  # editable: False
   pdf template file: op_schools.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -4291,7 +4294,7 @@ attachment:
   name: additional_incidents
   filename: additional_incidents
   skip undefined: True
-  editable: False
+  # editable: False
   pdf template file: additional_incidents.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -4332,7 +4335,7 @@ attachment:
   name: additional_cases
   filename: additional_cases
   skip undefined: True
-  editable: False
+  # editable: False
   pdf template file: additional_cases.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -4400,7 +4403,7 @@ attachment:
   name: affidavit_pt_supervisor
   filename: affidavit_pt_supervisor
   skip undefined: True
-  editable: False
+  # editable: False
   pdf template file: affidavit_pt_supervisor.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -4427,7 +4430,7 @@ attachment:
   name: efiling_exemption
   filename: efiling_exemption
   skip undefined: True
-  editable: False
+  #editable: False
   pdf template file: efiling_exemption.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -4446,7 +4449,7 @@ attachment:
   name: op_summons
   filename: op_summons
   skip undefined: True
-  editable: False
+  #editable: False
   pdf template file: op_summons.pdf
   fields:
     - "county__1": ${ trial_court.address.county.upper() }
@@ -4525,7 +4528,7 @@ attachment:
   name: emergency_op
   filename: emergency_op
   skip undefined: True
-  editable: False
+  #editable: False
   pdf template file: emergency_op.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -4757,7 +4760,7 @@ attachment:
     - "return_children_on": ${ True if on_or_by == "on" and knows_return_children_details and minor_kids_with_respondent else "" }
     - "return_children_by": ${ True if on_or_by == "by" and knows_return_children_details and minor_kids_with_respondent else "" }
     - "return_children_date": ${ return_children_date if knows_return_children_details and minor_kids_with_respondent else "" }
-    - "return_children_time": ${ format_time(return_children_time) if knows_return_children_details and minor_kids_with_respondent else "" }
+    - "return_children_time": ${ format_time(return_children_time, format='h:mm a') if knows_return_children_details and minor_kids_with_respondent else "" }
     - "return_children_present_name": ${ return_children_present_name if knows_return_children_details and return_children_present and minor_kids_with_respondent else "" }
     
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
@@ -4809,31 +4812,31 @@ attachment:
     - "pt_interview": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekdays": ${ True if pt_weekdays and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekday_list": ${ comma_and_list(dow_abb[int(y)] for y in pt_weekday_days.true_values()) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent == True else '' }
-    - "pt_weekday_start": ${ format_time(pt_weekday_start) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekday_end": ${ format_time(pt_weekday_end) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekday_start": ${ format_time(pt_weekday_start, format='h:mm a') if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekday_end": ${ format_time(pt_weekday_end, format='h:mm a') if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_every": ${ True if pt_weekend_cadence == "every" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_every_other": ${ True if pt_weekend_cadence == "other" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_fri_sat": ${ True if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_fri_sat_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_fri_sat_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sat_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sat_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_fri_sun": ${ True if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_fri_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_fri_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sun_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sun_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_sat": ${ True if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sat_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sat_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_sat_sun": ${ True if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sat_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sat_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_sun_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_sun_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_sun": ${ True if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sun_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sun_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_start_date_cb": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_start_date": ${ pt_start_date if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_holidays": ${ pt_holidays if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_holiday_list": ${ pt_holiday_list if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
-    - "pt_holiday_start": ${ format_time(pt_holiday_start) if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
-    - "pt_holiday_end": ${ format_time(pt_holiday_end) if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+    - "pt_holiday_start": ${ format_time(pt_holiday_start, format='h:mm a') if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+    - "pt_holiday_end": ${ format_time(pt_holiday_end, format='h:mm a') if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
     - "pt_transportation_cb": ${ True if pt_transportation != "later" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_transportation_person_name": |
         % if pt_transportation == "petitioner" and (parenting_time == "restrict" or parenting_time == "grant"):
@@ -4924,7 +4927,7 @@ attachment:
     - "property_transfer_present_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
-    - "property_transfer_time": ${ format_time(property_transfer_time) if property_transfer_know_date == True else ''  }
+    - "property_transfer_time": ${ format_time(property_transfer_time, format='h:mm a') if property_transfer_know_date == True else ''  }
     - "request_police_at_transfer_petitioner": ${ True if request_police_person == "petitioner" and property_transfer_person == 'police' and property_transfer_present_cb == True else "" }    
     - "request_police_at_transfer_respondent": ${ True if request_police_person == "respondent" and property_transfer_person == 'police' and property_transfer_present_cb == True else "" }    
     
@@ -5005,7 +5008,7 @@ attachment:
   name: plenary_op
   filename: plenary_op
   skip undefined: True
-  editable: False
+  #editable: False
   pdf template file: plenary_op.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -5253,7 +5256,7 @@ attachment:
     - "return_children_on": ${ True if on_or_by == "on" and knows_return_children_details and minor_kids_with_respondent else "" }
     - "return_children_by": ${ True if on_or_by == "by" and knows_return_children_details and minor_kids_with_respondent else "" }
     - "return_children_date": ${ return_children_date if knows_return_children_details and minor_kids_with_respondent else "" }
-    - "return_children_time": ${ format_time(return_children_time) if knows_return_children_details and minor_kids_with_respondent else "" }
+    - "return_children_time": ${ format_time(return_children_time, format='h:mm a') if knows_return_children_details and minor_kids_with_respondent else "" }
     - "return_children_present_name": ${ return_children_present_name if knows_return_children_details and return_children_present and minor_kids_with_respondent else "" }
     
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
@@ -5307,33 +5310,33 @@ attachment:
     - "pt_interview": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekdays": ${ True if pt_weekdays and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekday_list": ${ comma_and_list(dow_full[int(y)] for y in pt_weekday_days.true_values()) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent == True else '' }
-    - "pt_weekday_start": ${ format_time(pt_weekday_start) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekday_end": ${ format_time(pt_weekday_end) if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekday_start": ${ format_time(pt_weekday_start, format='h:mm a') if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekday_end": ${ format_time(pt_weekday_end, format='h:mm a') if pt_weekdays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_every": ${ True if pt_weekend_cadence == "every" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_every_other": ${ True if pt_weekend_cadence == "other" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_fri_sat": ${ True if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_fri_sat_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_fri_sat_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sat_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sat_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "frisat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_fri_sun": ${ True if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_fri_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_fri_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sun_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_fri_sun_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "frisun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_sat": ${ True if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sat_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sat_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "sat" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_sat_sun": ${ True if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sat_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sat_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_sun_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sat_sun_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "satsun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_sun": ${ True if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sun_start": ${ format_time(pt_weekend_start) if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    - "pt_weekend_sun_end": ${ format_time(pt_weekend_end) if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sun_start": ${ format_time(pt_weekend_start, format='h:mm a') if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
+    - "pt_weekend_sun_end": ${ format_time(pt_weekend_end, format='h:mm a') if pt_weekend_days == "sun" and pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_start_date_cb": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_start_date": ${ pt_start_date if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     
       # page 6    
     - "pt_holidays": ${ pt_holidays if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_holiday_list": ${ pt_holiday_list if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
-    - "pt_holiday_start": ${ format_time(pt_holiday_start) if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
-    - "pt_holiday_end": ${ format_time(pt_holiday_end) if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+    - "pt_holiday_start": ${ format_time(pt_holiday_start, format='h:mm a') if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
+    - "pt_holiday_end": ${ format_time(pt_holiday_end, format='h:mm a') if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
     - "pt_transportation_cb": ${ True if pt_transportation != "later" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_transportation_person_name": |
         % if pt_transportation == "petitioner" and (parenting_time == "restrict" or parenting_time == "grant"):
@@ -5424,7 +5427,7 @@ attachment:
     - "property_transfer_present_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
-    - "property_transfer_time": ${ format_time(property_transfer_time) if property_transfer_know_date == True else ''  }
+    - "property_transfer_time": ${ format_time(property_transfer_time, format='h:mm a') if property_transfer_know_date == True else ''  }
     - "request_police_at_transfer_petitioner": ${ True if request_police_person == "petitioner" and property_transfer_person == 'police' and property_transfer_present_cb == True else "" }    
     - "request_police_at_transfer_respondent": ${ True if request_police_person == "respondent" and property_transfer_person == 'police' and property_transfer_present_cb == True else "" }    
     
@@ -5596,7 +5599,7 @@ attachment:
   name: cook_dv_cover_sheet
   filename: cook_dv_cover_sheet
   skip undefined: True
-  editable: False
+  #editable: False
   pdf template file: cook_dv_cover_sheet.pdf
   fields:
     - "petitioner__1": ${ users[0].name.full(middle="full") }
@@ -5629,7 +5632,7 @@ attachment:
   name: cook_sheriff_info_sheet
   filename: cook_sheriff_info_sheet
   skip undefined: True
-  editable: False
+  #editable: False
   pdf template file: cook_sheriff_info_sheet.pdf
   fields:
     - "respondent": ${other_parties[0].name.full(middle="full")}
