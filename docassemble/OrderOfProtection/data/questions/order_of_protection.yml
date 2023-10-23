@@ -11,11 +11,6 @@ include:
   - docassemble.ILAO:ilao-interview-framework.yml
   - docassemble.ILAO:shared-basic-questions.yml
   - op_review.yml
-  #- docassemble.ALToolbox:phone-number-validation.yml  
-#---  added for testing css
-#features:
-#  css:
-#    - temp.css
 ---
 default screen parts:
 #  right: |
@@ -49,7 +44,6 @@ objects:
   - incidents: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
   - jobs: ALAddressList.using(there_are_any=True)
   - schools: ALAddressList.using(there_are_any=True)
-  #- schools[i].kids_who_attend: DADict
   - other_locations: ALAddressList.using(there_are_any=True)
   - other_caretaker: ALIndividual
   - return_children_other_person: ALIndividual
@@ -59,7 +53,6 @@ objects:
   - pt_pickup_location: ALAddress
   - pt_transportation_person: ALIndividual
   - pt_return_location: ALAddress
-  #- pt_return_person: ALIndividual   ### Removed because not needed on forms
   - petitioner_personal_property: DAList.using(object_type=Thing, there_are_any=True)
   - other_return_property_person: ALIndividual
   - other_transfer_property_person: ALIndividual
@@ -93,7 +86,7 @@ sections:
   - section_property: Property details
   - section_remedies: Other remedies
   - section_respondent: About the person who caused abuse
-  - section_filing_info: Filing details
+  - section_filing_info: Filing and service details
   - section_download: Download
 ---
 # interview order block
@@ -113,6 +106,7 @@ code: |
     not_in_illinois
   
   nav.set_section('section_basic')
+  set_progress(10)
   trial_court
   if jurisdiction_type.all_false():
     other_jurisdiction_location
@@ -122,6 +116,7 @@ code: |
   other_parties.gather(number=1)
 
   nav.set_section('section_petitioner')
+  set_progress(20)
   minor_kids_with_respondent
   minor_kids_logic_check
   protect_petitioner
@@ -137,10 +132,12 @@ code: |
     other_hh_members.gather()
 
   nav.set_section('section_incidents')
+  set_progress(30)
   incidents_intro
   incidents.gather()
 
   nav.set_section('section_protections')
+  set_progress(40)
   no_harassment
   stay_away
   hide_address
@@ -179,6 +176,7 @@ code: |
       same_school_name
     
   nav.set_section('section_child')
+  set_progress(50)
   if minor_kids_with_respondent:
     if parentage == "parentage_established_other":
       parentage_other
@@ -227,6 +225,7 @@ code: |
         pt_immediate_return
 
   nav.set_section('section_property')
+  set_progress(60)
   #appear_alone_for_exam
   if award_personal_property:
     petitioner_personal_property.gather()
@@ -257,6 +256,7 @@ code: |
   restrict_elderly_petitioner_resources 
  
   nav.set_section('section_remedies')
+  set_progress(70)
   if minor_kids_with_respondent:
     temp_child_support
   if relationship_type['se'] == True or relationship_type['xs'] == True:
@@ -274,6 +274,7 @@ code: |
   misc_remedies_text
 
   nav.set_section('section_respondent')
+  set_progress(80)
   knows_respondent_dob
   if knows_respondent_dob == "exact":  
     if other_parties[0].age_in_years() < 18:
@@ -307,6 +308,8 @@ code: |
   if has_other_cases == "Yes":
     other_cases.gather()  
 
+  nav.set_section('section_filing_info')
+  set_progress(90)
   service_method
   if service_method == "sheriff" and service_state != "IL":
     service_county
@@ -321,7 +324,6 @@ code: |
   if trial_court_index == -1:
     service_information
   
-  nav.set_section('section_filing_info')
   eop 
   case_number
   if trial_court_index == -1:
@@ -334,6 +336,7 @@ code: |
   e_signature
 
   nav.set_section('section_download')  
+  set_progress(100)
   #clean_up
   forms_assembling
   get_docs_screen
@@ -403,7 +406,7 @@ question: |
 subquestion: |
   After you download your ${ form_name } forms, you must file them with the court. This program does not file your ${ form_name } for you.
   
-  Read the "How to Ask for an Order of Protection" instructions you can download at the end of this program. 
+  You can also download "How to ask for an Order of Protection" instructions at the end of this program. The instructions can guide you through filing your forms and going to court. 
 ---
 template: get_legal_help
 subject: |
@@ -434,7 +437,7 @@ subquestion: |
 id: important op info
 continue button field: important_op_info
 question: |
-  Before you get started
+  Things you should know
 subquestion: |
   The person who caused the abuse is called **the Respondent**. In court, the judge will use this word to refer to the abuser. This program and the forms will do the same.
 
@@ -442,8 +445,6 @@ subquestion: |
 
   **You will need to include an address where the Respondent can be found.** This is so the sheriff can deliver the court papers. Delivery of the court papers is called **service.** This might be where the Respondent lives, works, or a place where they stay. **Note: the Respondent will get a copy of all the court forms, except for the ones that are confidential like school or daycare location.**
 
-  At the end of this program, you can get your forms. You will also get instructions on how to file them.
-  
   **The Order of Protection is not valid until signed by a judge.** You must go to court, either in person or remotely, where a judge will decide whether or not to grant you an Order of Protection.
 ---
 id: in illinois
@@ -674,7 +675,6 @@ fields:
     show if:
       variable: knows_respondent_dob
       is: some
-
   
 ---
 id: minor kids with respondent
@@ -692,43 +692,6 @@ code: |
   if minor_kids_with_respondent == False:
     protect_shared_kids = False
   minor_kids_logic_check = True
-
----
-# code block not setting protect_shared_kids - maybe revisit
-#mandatory: True
-#reconsider: True
-##depends on: minor_kids_with_respondent
-#code: |
-#  if minor_kids_with_respondent == False:
-#    protect_shared_kids = False
-#  else:
-#    protect_shared_kids
-#    
-#  if shared_kids.protect.any_true():
-#    protect_shared_kids = True
-#  else:
-#    protect_shared_kids = False
-    
----
-# code to build protected shared kids list put into attachment blocks
-#reconsider: True
-#code: |
-#  if minor_kids_with_respondent:
-#    if shared_kids.number() > 0:
-#      protected_minor_kids_list = []
-#      for person in shared_kids:
-#        if person.protect == True:
-#          protected_minor_kids_list.append( person.name.full(middle="full") )
-#---
-#sets:
-#  - protect_shared_kids
-#reconsider: True
-#code: |
-#  if minor_kids_with_respondent:
-#    protect_shared_kids = False
-#    for person in shared_kids:
-#      if person.protect:
-#        protect_shared_kids = True
 
 ---
 id: protected parties
@@ -1133,9 +1096,9 @@ fields:
   - What happened: incidents[i].name.text
     input type: area
     rows: 12
-    maxlength: 800
+    maxlength: 775
     help: |
-      The petition has space for about 800 characters for each incident.
+      The petition has space for about 775 characters for each incident.
 
 ---
 template: incidents_help
@@ -1171,8 +1134,6 @@ code: |
   if incidents.number_gathered() >= 9:
     incidents.there_is_another = False
 ---
-
-
 id: no abuse
 question: |
   What do you want the court to order ${other_parties[0].name.full(middle="full")} to not do?
@@ -1352,38 +1313,7 @@ fields:
     - I want **exclusive possession** of the residence, and ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive possession
     - I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live because we share a residence.: provide alternate housing
     - None of the above: none
-  
-#  
-#fields:
-#  - I want **exclusive possession** of my residence, and ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive_possession
-#    datatype: yesnowide
-#  #- I want ${other_parties[0].name.full(middle="full")} **not to stay** at my residence while under the influence of drugs or alcohol. This would be a threat to the safety or well-being of myself or my children.: no_stay_under_influence
-#  #  datatype: yesnowide
-#  #  hide if: 
-#  #    code: |
-#  #      any((no_communication, stay_away)) 
-#  - I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live because we share a residence.: provide_alt_housing
-#    datatype: yesnowide
-#  - None of the above: no_residence_remedy
-#    datatype: yesnowide
 
-# alt question radio buttons but no show if functionality
-#---
-#id: residence remedies
-#question: |
-#  What do you want the court to order about where you are living?
-#subquestion: |
-#  This does not affect who owns the property, only who gets to use or occupy it.
-#field: residence_remedy
-#choices:
-#  - I want **exclusive possession** of my residence, and ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive_possession
-#  - I want ${other_parties[0].name.full(middle="full")} **not to stay** at my residence while under the influence of drugs or alcohol. This would be a threat to the safety or well-being of myself or my children.: no_stay_under_influence
-#    hide if: 
-#      code: |
-#        any((no_communication, stay_away)) 
-#  - I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live because we share a residence.: provide_alt_housing
-#  - None of the above: none
-#
 ---
 id: exclusive possession reason
 question: |
@@ -1888,7 +1818,7 @@ id: physical care and possession of children
 question: |
   Do you want the court to grant you physical care and possession of the children you have with ${other_parties[0].name.full(middle="full")}?
 subquestion: |
-  Note: This is **not** the same as primary decisionmaking responsibility, or what used to be called "custody" in Illinois. This just means getting the children back to you.
+  Note: This is **not** the same as primary decision-making responsibility, or what used to be called "custody" in Illinois. This just means getting the children back to you.
 fields:
   - no label: physical_care_of_children
     datatype: yesnoradio
@@ -2058,15 +1988,6 @@ fields:
     datatype: yesnowide
   - To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}: appear_with_children_exam
     datatype: yesnowide
----
-# question removed because remedy is only in conjunction with children
-#id: respondent should be ordered to appear for exam
-#question: |
-#  Should ${other_parties[0].name.full(middle="full")} be ordered to go to court for an interview or examination?
-#fields:
-#  - no label: appear_alone_for_exam
-#    datatype: yesnoradio    
-#    
 ---
 id: childrens records
 question: |
@@ -2418,31 +2339,6 @@ fields:
   - no label: award_personal_property
     datatype: yesnoradio
 ---
-#id: list collect petitioner personal property
-#question: |
-#  Personal property you want possession of
-#subquestion: |
-#  List each item below. If ${other_parties[0].name.full(middle="full")} has the item and you want the court to order it returned to you, click **Yes**.
-#  
-#  If you need to add more items, click **+ Add more**.
-##list collect: True
-#fields:
-#  - Item name: petitioner_personal_property[i].name
-#  - Do you want the court to order ${other_parties[0].name.full(middle="full")} to return it to you?: petitioner_personal_property[i].respo_has
-#    datatype: yesnoradio
-#list collect:
-#  allow delete: True
-#  add another label: Add more
-#  label: |
-#    Item ${ i+1 }:
-##add another label: Add more
-#  #enable: not petitioner_personal_property.has_been_gathered()
----
-#code: |
-#  petitioner_personal_property[i].name
-#  petitioner_personal_property[i].respo_has
-#  petitioner_personal_property[i].complete = True
----
 id: petitioner personal property to protect
 question: |
   % if i == 0:
@@ -2451,7 +2347,7 @@ question: |
   Next item you want possession of
   % endif
 subquestion: |
-  If you are listing a car, include the make, model, and year. For example: Chevy Malibu.
+  If you are listing a car, include the year, make, and model. For example: 2019 Chevy Malibu.
 fields:
   - Item name: petitioner_personal_property[i].name.text
   - Do you want the court to order ${other_parties[0].name.full(middle="full")} to return it to you?: petitioner_personal_property[i].respo_has
@@ -2462,7 +2358,7 @@ question: |
   Do you have another item you want protected by this order?
 subquestion: |
   % if len(petitioner_personal_property.elements) >= 1:  
-  So far you have told us about ${comma_and_list([item.name.text for item in petitioner_personal_property])}.
+  So far you have told us about your ${comma_and_list([item.name.text for item in petitioner_personal_property])}.
   % endif
 fields:
   - "Any other items?": petitioner_personal_property.there_is_another
@@ -2514,19 +2410,6 @@ fields:
       variable: return_property_person
       is: "other"
       
----
-# removed bc combined with return property to whom question above
-#sets:
-#  - other_return_property_person.name.first
-#  - other_return_property_person.name.middle
-#  - other_return_property_person.name.last
-#  - other_return_property_person.name.suffix
-#id: other return property person name
-#question: |
-#  Who is the person ${other_parties[0].name.full(middle="full")} should return your property to?
-#fields:
-#  - code: |
-#      other_return_property_person.name_fields()
 ---
 id: why respondent should return property
 question: |
@@ -2816,7 +2699,6 @@ question: |
 subquestion: |
   The court can order ${other_parties[0].name.full(middle="full")} not to take, hide, damage, or dispose of property. This can include personal property or real estate. 
   
-  If you are listing a car, include the make, model, and year.
 fields:
   - no label: restrict_other_property
     datatype: yesnoradio
@@ -2826,6 +2708,8 @@ question: |
   What property should ${other_parties[0].name.full(middle="full")} be protected?
 subquestion: |
   The court can order ${other_parties[0].name.full(middle="full")} not to take, hide, damage, or dispose of property. This can include personal property or real estate. 
+  
+  If you are listing a car, include the year, make, and model, and year. For example: 2019 Chevy Malibu.
 fields:
   - Other property to protect (separate by commas): restricted_property
     input type: area
@@ -3045,14 +2929,14 @@ fields:
   - ${other_parties[0].name.full(middle="full")} should be ordered to:: misc_remedies_text
     input type: area
     rows: 4
-    maxlength: 400
+    maxlength: 415
     required: False
     default: |
       ${ no_contact_text }
   - Because:: misc_remedies_because_text
     input type: area
     rows: 4
-    maxlength: 400
+    maxlength: 375
     required: False
 ---
 id: e-signature
@@ -3214,10 +3098,6 @@ subject: |
   **How do I look up the county?**
 content: |  
   You can use this **[City-to-County Finder](https://www.statsamerica.org/CityCountyFinder/)** to find the county.
----
-
-
-
 ---
 id: second other service address
 question: |
@@ -3511,14 +3391,13 @@ id: any previous cook cases
 question: |
   Have you filed any divorce or parentage cases with ${other_parties[0].name.full(middle="full")} in Cook County before?
 subquestion: |
-  This will help the court clerk assign your case to the correct location. If you were involved in more than one, choose the most recent.
-
+  This will help the court clerk in Cook County assign your case to the correct location. If you were involved in more than one, choose the most recent.
 fields:
   - no label: previous_cook_case_type
     datatype: radio
     choices:
-      - There was an earlier divorce case with ${other_parties[0].name.full(middle="full")}.: divorce
-      - There was an earlier parentage case with ${other_parties[0].name.full(middle="full")} involving children we had together.: parentage
+      - I was in an earlier divorce case with ${other_parties[0].name.full(middle="full")}.: divorce
+      - I was in an earlier parentage case with ${other_parties[0].name.full(middle="full")} involving children we had together.: parentage
       - No earlier divorce or parentage cases were filed in Cook County.: none
 ---
 id: previous cook case details
@@ -3642,13 +3521,6 @@ code: |
       if schools[0].hide or schools[1].hide:
         op_schools.enabled = True
   
-  # old logic
-  #  if stay_away_schools:
-  #    if minor_kids_with_respondent:
-  #  	  if no_removal_school or protect_petitioner_kids:
-  #        if schools[0].hide or schools[1].hide:
-  #          op_schools.enabled = True
-  
 
   if minor_kids_with_respondent:
     if parenting_time == "restrict" or parenting_time == "allow":
@@ -3664,16 +3536,6 @@ code: |
   if trial_court_index == -1:
     cook_dv_cover_sheet.enabled = True
     cook_sheriff_info_sheet.enabled = True
-
-
-
-# old
-#  if stay_away_schools or no_removal_school:
-#    if minor_kids_with_respondent or protect_petitioner_kids:
-#      if schools[0].hide or schools[1].hide:
-#        op_schools.enabled = True
-
-
 
 
 ---
@@ -4766,15 +4628,19 @@ attachment:
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
     - "no_removal_schools_list": |
         % if no_removal_school and minor_kids_with_respondent:    
-        % if stay_away_schools and schools[0].hide:
-        ${ "School 1: Confidential" }
+        % if stay_away_schools:
+        % if schools[0].hide:
+        ${ "School 1: Confidential  " }
         % else:
-        ${ schools[0].name }
+        ${ schools[0].name + "  " }
         % endif
-        % if stay_away_schools_2 and schools[1].hide:
-        ${ ", School 2: Confidential" }
+        % endif
+        % if stay_away_schools_2:
+        % if schools[1].hide:
+        ${ "School 2: Confidential" }
         % else:
-        ${ ", " + schools[1].name }
+        ${ schools[1].name }
+        % endif
         % endif
         % endif
 
@@ -5262,15 +5128,19 @@ attachment:
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
     - "no_removal_schools_list": |
         % if no_removal_school and minor_kids_with_respondent:    
-        % if stay_away_schools and schools[0].hide:
-        ${ "School 1: Confidential" }
+        % if stay_away_schools:
+        % if schools[0].hide:
+        ${ "School 1: Confidential  " }
         % else:
-        ${ schools[0].name }
+        ${ schools[0].name + "  " }
         % endif
-        % if stay_away_schools_2 and schools[1].hide:
-        ${ ", School 2: Confidential" }
+        % endif
+        % if stay_away_schools_2:
+        % if schools[1].hide:
+        ${ "School 2: Confidential" }
         % else:
-        ${ ", " + schools[1].name }
+        ${ schools[1].name }
+        % endif
         % endif
         % endif
 
@@ -5763,4 +5633,3 @@ attachment:
 
     - "preparer_name": ${ users[0].name.full(middle="full") }
     - "preparer_phone": ${ phone_number_formatted(users[0].phone_number) }
-

@@ -1367,6 +1367,10 @@ review:
       % endfor
     show if: has_other_cases == "Yes"
 
+  # section: filing info
+  - note: |
+      [**----------- Filing and service details -----------**](${ url_action('section_filing_info') })
+
   - Edit: service_method
     button: |
       **How do you want ${other_parties[0].name.full(middle="full")} to be served?**
@@ -1432,11 +1436,7 @@ review:
       **Additional information to help serve court papers on ${other_parties[0].name.full(middle="full")}:**
       ${ service_information }
     show if: trial_court_index == -1
-
-
-  # section: filing info
-  - note: |
-      [**----------- Filing details -----------**](${ url_action('section_filing_info') })
+      
   - Edit: eop
     button: |
       **Order type:**
@@ -3243,7 +3243,16 @@ review:
         * ${ my_var.name.text } in ${ my_var.year }
       % endfor
     show if: has_other_cases == "Yes"
-
+      
+---
+id: case info review screen
+section: Filing and service details
+event: section_filing_info
+question: |
+  Filing and service details
+subquestion: |
+  Edit your answers below.
+review:
   - Edit: service_method
     button: |
       **How do you want ${other_parties[0].name.full(middle="full")} to be served?**
@@ -3309,16 +3318,7 @@ review:
       **Additional information to help serve court papers on ${other_parties[0].name.full(middle="full")}:**
       ${ service_information }
     show if: trial_court_index == -1
-      
----
-id: case info review screen
-section: Filing details
-event: section_filing_info
-question: |
-  Filing details
-subquestion: |
-  Edit your answers below.
-review:
+
   - Edit: eop
     button: |
       **Order type:**
