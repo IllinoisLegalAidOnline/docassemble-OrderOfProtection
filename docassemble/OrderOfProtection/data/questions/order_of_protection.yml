@@ -3550,7 +3550,7 @@ attachment:
   name: instructions
   filename: op_instructions
   skip undefined: True
-  #editable: False
+  editable: False
   pdf template file: op_instructions.pdf
   fields:
     - "fake": ${ "" }
@@ -3560,7 +3560,7 @@ attachment:
   name: petition
   filename: petition
   skip undefined: True
-  #editable: False
+  editable: False
   #rendering font: "/usr/share/fonts/truetype/msttcorefonts/Arial.ttf"
   pdf template file: op_petition.pdf
   fields:
@@ -4121,7 +4121,7 @@ attachment:
   name: confidential_schools
   filename: confidential_schools
   skip undefined: True
-  # editable: False
+  editable: False
   pdf template file: op_schools.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -4156,7 +4156,7 @@ attachment:
   name: additional_incidents
   filename: additional_incidents
   skip undefined: True
-  # editable: False
+  editable: False
   pdf template file: additional_incidents.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -4197,7 +4197,7 @@ attachment:
   name: additional_cases
   filename: additional_cases
   skip undefined: True
-  # editable: False
+  editable: False
   pdf template file: additional_cases.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -4265,7 +4265,7 @@ attachment:
   name: affidavit_pt_supervisor
   filename: affidavit_pt_supervisor
   skip undefined: True
-  # editable: False
+  editable: False
   pdf template file: affidavit_pt_supervisor.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -4292,7 +4292,7 @@ attachment:
   name: efiling_exemption
   filename: efiling_exemption
   skip undefined: True
-  #editable: False
+  editable: False
   pdf template file: efiling_exemption.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -4311,7 +4311,7 @@ attachment:
   name: op_summons
   filename: op_summons
   skip undefined: True
-  #editable: False
+  editable: False
   pdf template file: op_summons.pdf
   fields:
     - "county__1": ${ trial_court.address.county.upper() }
@@ -4390,7 +4390,7 @@ attachment:
   name: emergency_op
   filename: emergency_op
   skip undefined: True
-  #editable: False
+  editable: False
   pdf template file: emergency_op.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -4874,7 +4874,7 @@ attachment:
   name: plenary_op
   filename: plenary_op
   skip undefined: True
-  #editable: False
+  editable: False
   pdf template file: plenary_op.pdf
   fields:
     - "county": ${ trial_court.address.county.upper() }
@@ -5469,7 +5469,7 @@ attachment:
   name: cook_dv_cover_sheet
   filename: cook_dv_cover_sheet
   skip undefined: True
-  #editable: False
+  editable: False
   pdf template file: cook_dv_cover_sheet.pdf
   fields:
     - "petitioner__1": ${ users[0].name.full(middle="full") }
@@ -5502,7 +5502,7 @@ attachment:
   name: cook_sheriff_info_sheet
   filename: cook_sheriff_info_sheet
   skip undefined: True
-  #editable: False
+  editable: False
   pdf template file: cook_sheriff_info_sheet.pdf
   fields:
     - "respondent": ${other_parties[0].name.full(middle="full")}
