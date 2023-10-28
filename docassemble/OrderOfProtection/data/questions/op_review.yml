@@ -1297,20 +1297,20 @@ review:
     button: |
       **Details on ${other_parties[0].name.full(middle="full")}'s car:**
 
-      % if cook_vehicle_make == "":
+      % if respondent_car_make == "":
       * Car make: None entered
       % else:
-      * Car make: ${ cook_vehicle_make }
+      * Car make: ${ respondent_car_make }
       % endif
-      % if cook_vehicle_model == "":
+      % if respondent_car_model == "":
       * Car model: None entered
       % else:
-      * Car model: ${ cook_vehicle_model }
+      * Car model: ${ respondent_car_model }
       % endif
       % if cook_vehicle_year > 0:
-      * Car year: None entered
-      % else:
       * Car year: ${ cook_vehicle_year }
+      % else:
+      * Car year: None entered
       % endif
       % if cook_vehicle_color == "":
       * Color: None entered
@@ -3174,20 +3174,20 @@ review:
     button: |
       **Details on ${other_parties[0].name.full(middle="full")}'s car:**
 
-      % if cook_vehicle_make == "":
+      % if respondent_car_make == "":
       * Car make: None entered
       % else:
-      * Car make: ${ cook_vehicle_make }
+      * Car make: ${ respondent_car_make }
       % endif
-      % if cook_vehicle_model == "":
+      % if respondent_car_model == "":
       * Car model: None entered
       % else:
-      * Car model: ${ cook_vehicle_model }
+      * Car model: ${ respondent_car_model }
       % endif
       % if cook_vehicle_year > 0:
-      * Car year: None entered
-      % else:
       * Car year: ${ cook_vehicle_year }
+      % else:
+      * Car year: None entered
       % endif
       % if cook_vehicle_color == "":
       * Color: None entered

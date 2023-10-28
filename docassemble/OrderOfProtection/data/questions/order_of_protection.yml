@@ -13,14 +13,6 @@ include:
   - op_review.yml
 ---
 default screen parts:
-#  right: |
-#    **Worried about doing this on your own?** Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate.
-#    % if user_has_saved_answers:
-#    
-#    :bell: Saved answers available!  
-#
-#    ${action_button_html(url_action('load_answer'), icon="folder-open", label=word("View answers"), size="sm" )}
-#    % endif
   under: |
     **Worried about doing this on your own?** Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate.
     % if not user_logged_in():
@@ -213,10 +205,10 @@ code: |
         if pt_supervised:
           if pt_supervisor_type == "person":
             pt_supervisor.name.first
+            if pt_location_identified:
+              pt_location.address
           else:
             pt_visitation_center_name
-        if pt_location_identified:
-          pt_location.address
         pt_transportation
         if pt_separate_pickup_location:
           pt_pickup_location.address
@@ -1326,7 +1318,7 @@ choices:
 ---
 id: respondent info
 question: |
-  Tell us more about ${other_parties[0].name.full(middle="full")}
+  What are ${other_parties[0].name.full(middle="full")}'s phone number and email address?
 subquestion: |
   If you do not know, leave these blank.
 fields:
@@ -1657,7 +1649,7 @@ fields:
 ---
 id: minor respondent parents help
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")}'s parent or guardian help them follow the Order of Protection?
+  Do you want ${other_parties[0].name.full(middle="full")}'s parent or guardian to help them follow the Order of Protection?
 subquestion: |
   You can ask for this if you know or think ${other_parties[0].name.full(middle="full")} is under age 18.
 fields:
@@ -1818,7 +1810,9 @@ id: physical care and possession of children
 question: |
   Do you want the court to grant you physical care and possession of the children you have with ${other_parties[0].name.full(middle="full")}?
 subquestion: |
-  Note: This is **not** the same as primary decision-making responsibility, or what used to be called "custody" in Illinois. This just means getting the children back to you.
+  This means the children would live with you on a day-to-day basis.
+
+  Note: This is **not** the same as primary decision-making responsibility, or what used to be called "custody" in Illinois. Having physical care and possession of the children just means the children would live with you.
 fields:
   - no label: physical_care_of_children
     datatype: yesnoradio
@@ -1876,7 +1870,7 @@ id: have current possession of children
 question: |
   Do you currently have physical care and possession of your children with  ${other_parties[0].name.full(middle="full")}?
 subquestion: |
-  If the children are not with you, the court can order ${other_parties[0].name.full(middle="full")} to return them to you, to another person, or to bring the children to court.
+  If the children are not with you now, the court can order ${other_parties[0].name.full(middle="full")} to return them to you, to another person, or to bring the children to court.
 fields:
   - no label: current_possession_of_children
     datatype: yesnoradio
@@ -1993,7 +1987,7 @@ id: childrens records
 question: |
   Do you want the court to prevent ${other_parties[0].name.full(middle="full")} from accessing your children's records?
 subquestion: |
-  These include school records, health care records, or any other records. 
+  These include school records, health care records, or any other records. The records may have address and contact information you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
 
   If you want to deny ${other_parties[0].name.full(middle="full")} accessing to your children's records, select the reasons why. Check all that apply.
 fields:
@@ -2199,6 +2193,7 @@ subquestion: |
   If you do not know this, leave it blank.
 fields:
   - Agency name: pt_visitation_center_name
+    required: False
 ---
 id: parenting time location identified
 question: |
@@ -2848,7 +2843,7 @@ question: |
 subquestion: |
   Just knowing that ${other_parties[0].name.full(middle="full")} has a weapon can be a threat if you are afraid they could use it.
   
-  Note: If ${other_parties[0].name.full(middle="full")} threatened with a weapon, be sure to explain the threats and the weapon in the [**What happened**](${ url_action('section_incidents') }) section. Threats are incidents of abuse that are important to your case.
+  Note: If ${other_parties[0].name.full(middle="full")} threatened you or your children with a weapon, be sure to explain the threats and the weapon in the [**What happened**](${ url_action('section_incidents') }) section. Threats are incidents of abuse that are important to your case.
 fields:
   - no label: firearms_threat
     datatype: yesnoradio
@@ -2857,7 +2852,7 @@ id: remove firearms
 question: |
   Do you want the court to order ${other_parties[0].name.full(middle="full")} to turn over their guns?
 subquestion: |
-  Reminder: If ${other_parties[0].name.full(middle="full")} threatened with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
+  Reminder: If ${other_parties[0].name.full(middle="full")} threatened you or your children with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
 fields:
   - no label: firearms_turnover
     datatype: yesnoradio
@@ -2895,7 +2890,7 @@ fields:
     help: |
       Examples: Chevrolet, Honda, and Ford
     required: False
-    maxlength: 30
+    maxlength: 25
     show if:
       variable: firearms_reasons['vehicle']
       is: True
@@ -2903,7 +2898,7 @@ fields:
     help: |
       Examples: Malibu, Civic, and Mustang
     required: False
-    maxlength: 30
+    maxlength: 25
     show if:
       variable: firearms_reasons['vehicle']
       is: True
@@ -3356,12 +3351,14 @@ subquestion: |
   
   If you do not know, leave blank.
 fields:
-  - Car make: cook_vehicle_make
+  - Car make: respondent_car_make
+    #- Car make: cook_vehicle_make
     help: |
       Examples: Chevrolet, Honda, and Ford
     required: False
     maxlength: 25
-  - Car model: cook_vehicle_model
+  - Car model: respondent_car_model
+    #- Car model: cook_vehicle_model
     help: |
       Examples: Malibu, Civic, and Mustang
     required: False
@@ -3371,7 +3368,7 @@ fields:
     help: |
       Example: 2017
     min: 1900
-    max: ${ today().year }
+    max: ${ (today().year + 1) }
     required: False
   - Color: cook_vehicle_color
     help: |
@@ -3429,7 +3426,7 @@ continue button field: forms_assembling
 question: |
   Almost done
 subquestion: |
-  After you click **Next**, it will take a few seconds to finish making your forms.
+  After you click **Next**, it will take a few moments to finish making your forms.
   
   You do not need to refresh your screen. Hang in there!
 ---
@@ -3455,7 +3452,9 @@ subquestion: |
   Thank you for using ILAO Easy Forms!
 event: get_docs_screen
 under: |
+  **Worried about doing this on your own?** Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate.
   % if not user_logged_in():
+  
   [${fa_icon("sign-in-alt", color="#0079d0", size="sm")} Sign-in](${url_of('login', next=interview_url())}) or [create](${url_of('register', next=interview_url())}) an ILAO Easy Form account to save your progress (optional).
   % endif 
 
@@ -4845,6 +4844,10 @@ attachment:
 
      # page 9
 
+    - "protect_petitioner_findings": ${ protect_petitioner }
+    - "protect_shared_kids_findings": ${ protect_shared_kids }
+    - "protect_others_findings": ${ True if protect_petitioner_kids or protect_dependent_adult or protect_high_risk_adult or protect_other_hh_members else '' }
+
     - "relationship_se": ${ relationship_type['se'] }
     - "relationship_xs": ${ relationship_type['xs'] }
     - "relationship_bg": ${ relationship_type['bg'] }
@@ -5440,6 +5443,10 @@ attachment:
 
      # page 11
 
+    - "protect_petitioner_findings": ${ protect_petitioner }
+    - "protect_shared_kids_findings": ${ protect_shared_kids }
+    - "protect_others_findings": ${ True if protect_petitioner_kids or protect_dependent_adult or protect_high_risk_adult or protect_other_hh_members else '' }
+
     - "relationship_se": ${ relationship_type['se'] }
     - "relationship_xs": ${ relationship_type['xs'] }
     - "relationship_bg": ${ relationship_type['bg'] }
@@ -5624,8 +5631,10 @@ attachment:
         % endif
     - "respondent_phone": ${ phone_number_formatted(other_parties[0].phone_number) }
     - "service_information": ${ service_information }
-    - "cook_vehicle_make": ${ cook_vehicle_make }
-    - "cook_vehicle_model": ${ cook_vehicle_model }
+    - "cook_vehicle_make": ${ respondent_car_make }
+    - "cook_vehicle_model": ${ respondent_car_model }
+    #- "cook_vehicle_make": ${ cook_vehicle_make }
+    #- "cook_vehicle_model": ${ cook_vehicle_model }
     - "cook_vehicle_year": ${ cook_vehicle_year }
     - "cook_vehicle_color": ${ cook_vehicle_color }
     - "cook_vehicle_plate": ${ cook_vehicle_plate }
