@@ -825,6 +825,15 @@ review:
     button: |
       **Should ${other_parties[0].name.full(middle="full")} be allowed to enter the home only one time to get their personal property?**
       ${ word(yesno(respondent_one_time_entry)) }
+  - Edit: one_time_transfer_choice
+    button: |
+      **Who should be present when ${other_parties[0].name.full(middle="full")} enters the home one time to get their personal property?**
+      % if one_time_transfer_choice == 'police':
+      Law enforcement
+      % else:
+      ${ one_time_transfer_person.name.full(middle="full") }
+      % endif
+    show if: respondent_one_time_entry == True      
   - Edit: property_transfer_present_cb
     button: |
       **Do you want anyone else present at the property transfer?**
@@ -2691,6 +2700,15 @@ review:
     button: |
       **Should ${other_parties[0].name.full(middle="full")} be allowed to enter the home only one time to get their personal property?**
       ${ word(yesno(respondent_one_time_entry)) }
+  - Edit: one_time_transfer_choice
+    button: |
+      **Who should be present when ${other_parties[0].name.full(middle="full")} enters the home one time to get their personal property?**
+      % if one_time_transfer_choice == 'police':
+      Law enforcement
+      % else:
+      ${ one_time_transfer_person.name.full(middle="full") }
+      % endif
+    show if: respondent_one_time_entry == True      
   - Edit: property_transfer_present_cb
     button: |
       **Do you want anyone else present at the property transfer?**

@@ -2506,7 +2506,6 @@ fields:
       variable: one_time_transfer_choice
       is: "other"
 
-
 ---
 id: know property transfer address
 question: |
