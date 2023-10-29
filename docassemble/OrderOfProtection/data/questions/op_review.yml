@@ -470,10 +470,10 @@ review:
     button: |
       **Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot remove the children from your care or from a school or daycare?**
       ${ word(yesno(no_removal_school)) }
-  - Edit: keep_schools_confidential
-    button: |
-      **Do you want the court to keep the school or daycare information confidential?**
-      ${ word(yesno(keep_schools_confidential)) }
+#- Edit: keep_schools_confidential
+#  button: |
+#    **Do you want the court to keep the school or daycare information confidential?**
+#    ${ word(yesno(keep_schools_confidential)) }
   - Edit: current_possession_of_children
     button: |
       **Do you currently have physical care and possession of your children with  ${other_parties[0].name.full(middle="full")}?**
@@ -2330,10 +2330,10 @@ review:
     button: |
       **Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot remove the children from your care or from a school or daycare?**
       ${ word(yesno(no_removal_school)) }
-  - Edit: keep_schools_confidential
-    button: |
-      **Do you want the court to keep the school or daycare information confidential?**
-      ${ word(yesno(keep_schools_confidential)) }
+#- Edit: keep_schools_confidential
+#  button: |
+#    **Do you want the court to keep the school or daycare information confidential?**
+#    ${ word(yesno(keep_schools_confidential)) }
   - Edit: current_possession_of_children
     button: |
       **Do you currently have physical care and possession of your children with  ${other_parties[0].name.full(middle="full")}?**

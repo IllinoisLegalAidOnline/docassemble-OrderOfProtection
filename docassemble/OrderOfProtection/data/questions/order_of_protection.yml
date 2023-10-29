@@ -46,6 +46,7 @@ objects:
   - pt_transportation_person: ALIndividual
   - pt_return_location: ALAddress
   - petitioner_personal_property: DAList.using(object_type=Thing, there_are_any=True)
+  - one_time_transfer_person: ALIndividual
   - other_return_property_person: ALIndividual
   - other_transfer_property_person: ALIndividual
   - property_transfer_location: ALAddress
@@ -178,8 +179,10 @@ code: |
     temp_custody_of_children  
     physical_care_of_children
     no_conceal_children
-    if no_removal_school:
-      keep_schools_confidential
+    no_removal_school
+    
+    #if no_removal_school:
+      #keep_schools_confidential
     no_records_no_contact
     if current_possession_of_children == False:
       return_children_to
@@ -227,7 +230,8 @@ code: |
       return_property_reason
   if return_respo_property:
     respo_property
-  respondent_one_time_entry
+  if respondent_one_time_entry:
+    one_time_transfer_choice
     
   if return_property == True or return_respo_property == True: 
     if property_transfer_location_cb:
@@ -652,10 +656,11 @@ fields:
           For example, "June 3rd" or "Summer of 1990."
       - I don't know it.: idk
         help: |
+          % if trial_court_index == -1:
           You can update the Cook County Sheriff's office when you have this information. Email them anytime at ccso.protectiveorders@ccsheriff.org or call them at 312-603-2134 or 312-603-3340 (Monday through Friday, 8AM to 5PM).
-        show if:
-          variable: trial_court_index
-          is: -1
+          % else:
+          You may want to update the sheriff's office when you have this information.
+          % endif
   - ${other_parties[0].name.full(middle="full")}'s date of birth: other_parties[0].birthdate
     datatype: date
     max: ${ today().format("yyyy-MM-dd") }
@@ -717,7 +722,7 @@ fields:
       **Other household members** include spouses, former spouses, parents, children, stepchildren and other persons related by blood or by present or prior marriage, persons who share or formerly shared a common dwelling, persons who have or allegedly have a child in common, persons who share or allegedly share a blood relationship through a child, persons who have or have had a dating or engagement relationship, persons with disabilities and their personal assistants, and caregivers. 
 validation code: |
   if not (protect_petitioner or protect_shared_kids or protect_petitioner_kids or protect_dependent_adult or protect_high_risk_adult or protect_other_hh_members):
-    validation_error("You need to select at least one choice to continue.", field="protect_other_hh_members")
+    validation_error("Please select at least one choice to continue.", field="protect_other_hh_members")
 ---
 sets:
   - shared_kids[0].name.first
@@ -916,7 +921,7 @@ fields:
       * ${other_parties[0].name.full(middle="full")} will have a chance to participate in the court case
 validation code: |
   if not (eop or pop):
-    validation_error("You need to select at least one type of order to continue.", field="pop")
+    validation_error("Please select at least one type of order to continue.", field="pop")
 
 ---
 id: other ops
@@ -1088,9 +1093,9 @@ fields:
   - What happened: incidents[i].name.text
     input type: area
     rows: 12
-    maxlength: 775
+    maxlength: 800
     help: |
-      The petition has space for about 775 characters for each incident.
+      The petition has space for about 800 characters for each incident.
 
 ---
 template: incidents_help
@@ -1474,6 +1479,8 @@ question: |
   % else:
   Tell us about the other school, kindergarten, or daycare
   % endif
+subquestion: |  
+  If you do not want this information on your court forms, which can be seen by ${ other_parties[0].name.full(middle="full") }, check **Yes** to the **Hide this information** question below.
 fields:
   - School or daycare name: schools[i].name
   - Street address: schools[i].address
@@ -1831,10 +1838,13 @@ question: |
   Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot remove the children from your care or from a school or daycare?
 subquestion: |
   You can keep the name and location of the school or daycare hidden from ${other_parties[0].name.full(middle="full")}.
+
+  If you want to change confidential schools, edit information about schools in [**Protections**](${ url_action('section_protections') }) section.
 fields:
   - no label: no_removal_school
     datatype: yesnoradio    
 ---
+# redundant question - using hide schools option
 id: confidential schools
 question: |
   Do you want the court to keep the school or daycare information confidential?
@@ -2089,6 +2099,9 @@ fields:
     datatype: time
   - End time: pt_weekday_end
     datatype: time
+validation code: |
+  if not (pt_weekday_days['1'] == True or pt_weekday_days['2'] == True or pt_weekday_days['3'] == True or pt_weekday_days['4'] == True or pt_weekday_days['5'] == True):
+    validation_error("Please select at least one weekday.", field="pt_weekday_days")    
 ---
 id: parenting time weekends
 question: |
@@ -2461,6 +2474,40 @@ fields:
   - no label: respondent_one_time_entry
     datatype: yesnoradio
 ---
+id: property transfer person name
+question: |
+  Who should be present when ${other_parties[0].name.full(middle="full")} enters the home **only one time** to get their personal property?
+subquestion: |
+  It may be safer if a law enforcement officer is present when the property is transferred.
+fields:
+  - no label: one_time_transfer_choice
+    datatype: radio
+    choices:
+      - Law enforcement: police
+      - Another person: other
+  - First: one_time_transfer_person.name.first
+    show if:
+      variable: one_time_transfer_choice
+      is: "other"
+  - Middle: one_time_transfer_person.name.middle
+    required: False
+    show if:
+      variable: one_time_transfer_choice
+      is: "other"
+  - Last: one_time_transfer_person.name.last
+    show if:
+      variable: one_time_transfer_choice
+      is: "other"
+  - Suffix: one_time_transfer_person.name.suffix
+    required: False
+    code: |
+      name_suffix()
+    show if:
+      variable: one_time_transfer_choice
+      is: "other"
+
+
+---
 id: know property transfer address
 question: |
   Do you know where you want the personal property transfer to happen?
@@ -2494,9 +2541,6 @@ question: |
   Do you want anyone else present at the property transfer?
 subquestion: |
   It may be safer if a law enforcement officer or another person is present when the property is transferred.
-  % if respondent_one_time_entry:
-   They can also be present when ${other_parties[0].name.full(middle="full")} enters the home one time to get their things.
-  % endif
 fields:
   - no label: property_transfer_present_cb
     datatype: yesnoradio
@@ -2506,9 +2550,6 @@ question: |
   Who should be present at the property transfer?
 subquestion: |
   It may be safer if a law enforcement officer is present when the property is transferred.
-  % if respondent_one_time_entry:
-   They can also be present when ${other_parties[0].name.full(middle="full")} enters the home one time to get their things.
-  % endif
 fields:
   - no label: property_transfer_person
     datatype: radio
@@ -2773,7 +2814,7 @@ subquestion: |
 
   If you do not know the exact amount you can estimate. Bring receipts and proof of ownership and payment to court if you have them.
 fields:
-  - I do not want to request any repayment: expenses_none
+  - I do not want to request any repayment.: expenses_none
     datatype: yesnowide
     disable others: True
   - Medical expenses: expenses_medical
@@ -2835,7 +2876,7 @@ fields:
     show if: expenses_other
 validation code: |
   if not (expenses_none or expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_shelter or expenses_housing or expenses_children or expenses_other):
-    validation_error("Check at least one option.", field="expenses_other")
+    validation_error("Please check at least one option.", field="expenses_other")
 ---
 id: firearms threat
 question: |
@@ -3437,7 +3478,7 @@ subquestion: |
   
   Your forms are ready. View and download your forms below. Click **Make changes** to fix any mistakes.
 
-  This program does not file your ${ form_name } with the court. You will need to do this yourself.
+  This program does not file your ${ form_name } forms with the court. You will need to do this yourself.
 
   ${ action_button_html(url_action('review_answers'), label=':edit: Make changes', color='success', size="md") }
   
@@ -3447,7 +3488,7 @@ subquestion: |
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
 
-  **Note:** This program does not file your ${ form_name } with the court.
+  **Note:** This program does not file your ${ form_name } forms with the court.
   
   Thank you for using ILAO Easy Forms!
 event: get_docs_screen
@@ -3517,9 +3558,13 @@ code: |
 
   if stay_away_schools:
     if (minor_kids_with_respondent and no_removal_school) or protect_petitioner_kids:
-      if schools[0].hide or schools[1].hide:
+      if schools[0].hide:
         op_schools.enabled = True
-  
+
+  if stay_away_schools_2:
+    if (minor_kids_with_respondent and no_removal_school) or protect_petitioner_kids:
+      if schools[1].hide:
+        op_schools.enabled = True
 
   if minor_kids_with_respondent:
     if parenting_time == "restrict" or parenting_time == "allow":
@@ -3838,7 +3883,8 @@ attachment:
     - "caretaker_other": ${ True if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "other_caretaker_name": ${ other_caretaker.name.full(middle="full") if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "other_caretaker_address": ${ other_caretaker.address.on_one_line(bare=True) if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
-    - "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or keep_schools_confidential else '' }
+    - "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or ((schools[0].hide or schools[1].hide) and stay_away_schools and minor_kids_with_respondent) else '' }
+    # - "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or keep_schools_confidential else '' }
 
     - "physical_care_of_children": ${ True if physical_care_of_children and minor_kids_with_respondent else '' }
     - "return_children_possession": ${ True if (return_children_to == "petitioner" or return_children_to == "other") and minor_kids_with_respondent else '' }
@@ -4557,9 +4603,9 @@ attachment:
         % endif
 
     - "respondent_one_time_entry": ${ True if respondent_one_time_entry == True else '' }
-    - "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
-    - "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
-    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and one_time_transfer_choice == 'police' else '' }
+    - "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and one_time_transfer_choice == 'other' else '' }
+    - "respondent_one_time_entry_name": ${ one_time_transfer_person.name.full(middle="full") if respondent_one_time_entry == True and one_time_transfer_choice == 'other' else '' }
 
     - "same_school_restrictions": ${ True if (same_school and same_school_restrictions != "none") else ""} 
     - "same_school_name": ${ same_school_name if (same_school and same_school_restrictions != "none") else ""}
@@ -4609,7 +4655,8 @@ attachment:
     - "caretaker_other": ${ True if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "other_caretaker_name": ${ other_caretaker.name.full(middle="full") if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "other_caretaker_address": ${ other_caretaker.address.on_one_line(bare=True) if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
-    - "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or keep_schools_confidential else '' }
+    # care_and_possession_cb not used in orders
+    #- "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or ((schools[0].hide or schools[1].hide) and stay_away_schools and minor_kids_with_respondent) else '' }
     - "physical_care_of_children": ${ True if physical_care_of_children and minor_kids_with_respondent else '' }
     
     - "return_children_possession": ${ True if (return_children_to == "petitioner" or return_children_to == "other") and minor_kids_with_respondent else '' }
@@ -5052,9 +5099,14 @@ attachment:
         % endif
 
     - "respondent_one_time_entry": ${ True if respondent_one_time_entry == True else '' }
-    - "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
-    - "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
-    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and one_time_transfer_choice == 'police' else '' }
+    - "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and one_time_transfer_choice == 'other' else '' }
+    - "respondent_one_time_entry_name": ${ one_time_transfer_person.name.full(middle="full") if respondent_one_time_entry == True and one_time_transfer_choice == 'other' else '' }
+
+    # old
+    #- "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
+    #- "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    #- "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
 
     - "same_school_restrictions": ${ True if (same_school and same_school_restrictions != "none") else ""} 
     - "same_school_name": ${ same_school_name if (same_school and same_school_restrictions != "none") else ""}
@@ -5110,7 +5162,8 @@ attachment:
     - "caretaker_other": ${ True if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "other_caretaker_name": ${ other_caretaker.name.full(middle="full") if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "other_caretaker_address": ${ other_caretaker.address.on_one_line(bare=True) if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
-    - "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or keep_schools_confidential else '' }
+    # care_and_possession does not exist on orders?
+    #- "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or ((schools[0].hide or schools[1].hide) and stay_away_schools and minor_kids_with_respondent) else '' }
     - "physical_care_of_children": ${ True if physical_care_of_children and minor_kids_with_respondent else '' }
     
     - "return_children_possession": ${ True if (return_children_to == "petitioner" or return_children_to == "other") and minor_kids_with_respondent else '' }
@@ -5165,7 +5218,7 @@ attachment:
         ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
         % endif
-    - "confidential_schools__2": ${ True if keep_schools_confidential and minor_kids_with_respondent else '' }
+    - "confidential_schools__2": ${ True if (schools[0].hide or schools[1].hide) and stay_away_schools and minor_kids_with_respondent else False }
     
     - "temp_custody_cb": ${ True if temp_custody_of_children and minor_kids_with_respondent else '' }
     
