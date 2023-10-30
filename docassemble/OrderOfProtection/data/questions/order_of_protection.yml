@@ -3541,16 +3541,14 @@ code: |
     if other_cases.number() > 2:
       additional_cases.enabled = True
 
-
   if stay_away_schools:
     if (minor_kids_with_respondent and no_removal_school) or protect_petitioner_kids:
       if schools[0].hide:
         op_schools.enabled = True
-
-  if stay_away_schools_2:
-    if (minor_kids_with_respondent and no_removal_school) or protect_petitioner_kids:
-      if schools[1].hide:
-        op_schools.enabled = True
+    if stay_away_schools_2:
+      if (minor_kids_with_respondent and no_removal_school) or protect_petitioner_kids:
+        if schools[1].hide:
+          op_schools.enabled = True
 
   if minor_kids_with_respondent:
     if parenting_time == "restrict" or parenting_time == "allow":
