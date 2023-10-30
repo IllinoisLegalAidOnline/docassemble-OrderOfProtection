@@ -233,7 +233,7 @@ code: |
     respo_property
   respondent_one_time_entry
   
-  if return_property == True or return_respo_property == True: 
+  if return_property == True or return_respo_property == True or respondent_one_time_entry: 
     if property_transfer_location_cb:
       property_transfer_location.address
     if property_transfer_present_cb:
