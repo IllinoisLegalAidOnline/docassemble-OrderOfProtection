@@ -97,6 +97,7 @@ code: |
   important_op_info
   if in_illinois == False:
     not_in_illinois
+  cook_after_hours
   
   nav.set_section('section_basic')
   set_progress(10)
@@ -111,7 +112,7 @@ code: |
   nav.set_section('section_petitioner')
   set_progress(20)
   minor_kids_with_respondent
-  minor_kids_logic_check
+  #minor_kids_logic_check
   protect_petitioner
   if minor_kids_with_respondent:
     shared_kids.gather()
@@ -230,9 +231,8 @@ code: |
       return_property_reason
   if return_respo_property:
     respo_property
-  if respondent_one_time_entry:
-    one_time_transfer_choice
-    
+  respondent_one_time_entry
+  
   if return_property == True or return_respo_property == True: 
     if property_transfer_location_cb:
       property_transfer_location.address
@@ -442,6 +442,21 @@ subquestion: |
   **You will need to include an address where the Respondent can be found.** This is so the sheriff can deliver the court papers. Delivery of the court papers is called **service.** This might be where the Respondent lives, works, or a place where they stay. **Note: the Respondent will get a copy of all the court forms, except for the ones that are confidential like school or daycare location.**
 
   **The Order of Protection is not valid until signed by a judge.** You must go to court, either in person or remotely, where a judge will decide whether or not to grant you an Order of Protection.
+---
+id: cook after hours option
+continue button field: cook_after_hours
+question: |
+  Cook County after-hours court
+subquestion: |
+  **Cook County domestic violence courts have additional hours during nights and weekends.**
+  
+  Cook County after-hours court clerks and judges are available **only**:
+
+  * Monday through Friday: 9:00 PM to 3:00 AM
+  * Saturday and Sunday: 1:00 PM to 6:00 PM
+  
+  If you want to schedule a remote hearing during these limited hours, use the [**Emergency Order of Protection - Cook County Easy Form**](https://www.illinoislegalaid.org/legal-information/emergency-order-protection-cook-county) instead. 
+
 ---
 id: in illinois
 question: |
@@ -684,13 +699,16 @@ choices:
   - Yes: True
   - No: False
 ---
-depends on: minor_kids_with_respondent
-code: |
-  if minor_kids_with_respondent == False:
-    protect_shared_kids = False
-  minor_kids_logic_check = True
-
+# removing while debugging
+#reconsider: True
+#depends on: minor_kids_with_respondent
+#code: |
+#  if minor_kids_with_respondent == False:
+#    protect_shared_kids = False
+#  minor_kids_logic_check = True
+#
 ---
+depends on: minor_kids_with_respondent
 id: protected parties
 question: |
   Who do you want protected by this Order of Protection?
@@ -703,9 +721,9 @@ fields:
   - Minor children I have with ${other_parties[0].name.full(middle="full")}: protect_shared_kids
     datatype: yesnowide
     # removing this show if to accommodate adding minor children thru review, maybe revisit
-    show if:
-      code: |
-        minor_kids_with_respondent == True
+    #show if:
+    #  code: |
+    #    minor_kids_with_respondent == True
   - My minor children I **did not** have with ${other_parties[0].name.full(middle="full")}: protect_petitioner_kids
     datatype: yesnowide
   - A dependent adult: protect_dependent_adult
@@ -1204,6 +1222,7 @@ fields:
     datatype: yesnowide
     help: |
       **Exploitation** means the illegal, including tortious, use of a high-risk adult with disabilities or of the assets or resources of a high-risk adult with disabilities. Exploitation includes, but is not limited to, the misappropriation of assets or resources of a high-risk adult with disabilities by undue influence, by breach of a fiduciary relationship, by fraud, deception, or extortion, or the use of such assets or resources in a manner contrary to law.
+
   - Neglect of a high-risk adult with disabilities: no_neglect
     datatype: yesnowide
     help: |
@@ -1904,9 +1923,9 @@ fields:
   - no label: return_children_to
     datatype: radio
     choices:
-      - ${other_parties[0].name.full(middle="full")} should bring the children to court. This is usually 14 to 21 days after you file your petition.: court
       - ${other_parties[0].name.full(middle="full")} should return the children to me.: petitioner
       - ${other_parties[0].name.full(middle="full")} should return the children to someone else.: other
+      - ${other_parties[0].name.full(middle="full")} should bring the children to court. This is usually 14 to 21 days after you file your petition.: court
   - note: |
       Enter the name of the person ${other_parties[0].name.full(middle="full")} should return the children to. 
     show if:
@@ -2095,13 +2114,13 @@ fields:
       - Wednesday: "3"
       - Thursday: "4"
       - Friday: "5"
+    minlength: 1
+    validation messages:
+      minlength: "Please select at least one weekday."
   - Start time: pt_weekday_start
     datatype: time
   - End time: pt_weekday_end
     datatype: time
-validation code: |
-  if not (pt_weekday_days['1'] == True or pt_weekday_days['2'] == True or pt_weekday_days['3'] == True or pt_weekday_days['4'] == True or pt_weekday_days['5'] == True):
-    validation_error("Please select at least one weekday.", field="pt_weekday_days")    
 ---
 id: parenting time weekends
 question: |
@@ -2473,47 +2492,15 @@ subquestion: |
 fields:
   - no label: respondent_one_time_entry
     datatype: yesnoradio
----
-id: property transfer person name
-question: |
-  Who should be present when ${other_parties[0].name.full(middle="full")} enters the home **only one time** to get their personal property?
-subquestion: |
-  It may be safer if a law enforcement officer is present when the property is transferred.
-fields:
-  - no label: one_time_transfer_choice
-    datatype: radio
-    choices:
-      - Law enforcement: police
-      - Another person: other
-  - First: one_time_transfer_person.name.first
-    show if:
-      variable: one_time_transfer_choice
-      is: "other"
-  - Middle: one_time_transfer_person.name.middle
-    required: False
-    show if:
-      variable: one_time_transfer_choice
-      is: "other"
-  - Last: one_time_transfer_person.name.last
-    show if:
-      variable: one_time_transfer_choice
-      is: "other"
-  - Suffix: one_time_transfer_person.name.suffix
-    required: False
-    code: |
-      name_suffix()
-    show if:
-      variable: one_time_transfer_choice
-      is: "other"
 
 ---
 id: know property transfer address
 question: |
   Do you know where you want the personal property transfer to happen?
 subquestion: |
-  This is where you will get your property back from ${other_parties[0].name.full(middle="full")}. You can enter the address on the next screen.
+  This is where you will get your property back from ${other_parties[0].name.full(middle="full")}, and where they will get their property back. 
   
-  You may want this to happen at a police department or sheriff's office.
+  You may want this to happen at a police department or sheriff's office. You can enter the address on the next screen.
 fields:
   - no label: property_transfer_location_cb
     datatype: yesnoradio
@@ -2771,7 +2758,7 @@ fields:
 ---
 id: restrict resources of elderly petitioner
 question: |
-  Should ${other_parties[0].name.full(middle="full")} be ordered not to use an elderly person's money or property for themselves?
+  Should ${other_parties[0].name.full(middle="full")} be ordered not to improperly use an elderly person's money or property for themselves?
 subquestion: |
   If the Order of Protection will include any elderly people, this can protect their financial resources and property.
 fields:
@@ -4602,9 +4589,9 @@ attachment:
         % endif
 
     - "respondent_one_time_entry": ${ True if respondent_one_time_entry == True else '' }
-    - "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and one_time_transfer_choice == 'police' else '' }
-    - "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and one_time_transfer_choice == 'other' else '' }
-    - "respondent_one_time_entry_name": ${ one_time_transfer_person.name.full(middle="full") if respondent_one_time_entry == True and one_time_transfer_choice == 'other' else '' }
+    - "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
 
     - "same_school_restrictions": ${ True if (same_school and same_school_restrictions != "none") else ""} 
     - "same_school_name": ${ same_school_name if (same_school and same_school_restrictions != "none") else ""}
@@ -5098,14 +5085,9 @@ attachment:
         % endif
 
     - "respondent_one_time_entry": ${ True if respondent_one_time_entry == True else '' }
-    - "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and one_time_transfer_choice == 'police' else '' }
-    - "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and one_time_transfer_choice == 'other' else '' }
-    - "respondent_one_time_entry_name": ${ one_time_transfer_person.name.full(middle="full") if respondent_one_time_entry == True and one_time_transfer_choice == 'other' else '' }
-
-    # old
-    #- "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
-    #- "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
-    #- "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
 
     - "same_school_restrictions": ${ True if (same_school and same_school_restrictions != "none") else ""} 
     - "same_school_name": ${ same_school_name if (same_school and same_school_restrictions != "none") else ""}
