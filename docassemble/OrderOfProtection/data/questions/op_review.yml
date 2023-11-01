@@ -413,11 +413,8 @@ review:
     button: |
       **Legal parentage of the children has been established by:**
       
-      % if parentage_birth_certificate:
-      * We are listed on the birth certificate.
-      % endif
       % if parentage_vap:
-      * We signed a Voluntary Acknowledgement of Paternity, also called a VAP.
+      * We signed and filed a Voluntary Acknowledgement of Paternity, also called a VAP.
       % endif
       % if parentage_order:
       * A court or administrative order established us as the legal parents of the children.
@@ -2273,11 +2270,8 @@ review:
     button: |
       **Legal parentage of the children has been established by:**
       
-      % if parentage_birth_certificate:
-      * We are listed on the birth certificate.
-      % endif
       % if parentage_vap:
-      * We signed a Voluntary Acknowledgement of Paternity, also called a VAP.
+      * We signed and filed a Voluntary Acknowledgement of Paternity, also called a VAP.
       % endif
       % if parentage_order:
       * A court or administrative order established us as the legal parents of the children.
