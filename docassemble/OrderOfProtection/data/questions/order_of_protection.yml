@@ -354,7 +354,7 @@ question: |
 subquestion: |
   Welcome to Illinois Legal Aid Online's **Order of Protection** Easy Form.
 
-  This program makes forms that help you ask the court to order someone to stop harming or threatening you, your children, or other household members. The Order of Protection can also require the abuser to stay away from protected people and locations.
+  This program makes forms that help you ask the court to order someone to stop harming or threatening you, your children, or other household members. The Order of Protection can also require the abuser to stay away from other protected people and locations.
 
   To learn more, read ILAO's article about [**Orders of Protection**](https://www.illinoislegalaid.org/node/29806).
   
@@ -372,11 +372,12 @@ question: |
 subquestion: |
   To use this program you will need to know: 
 
-  * An address where the court can contact you,
-  * Information about other people you want to protect including other court cases,
+  * A mailing address where the court can contact you,
+  * Information about people you want to protect,
   * Details about the abuser, including where they can be found,
-  * Details about the abuse and when it happened, and
-  * What property and places you want to protect.
+  * Details about the abuse and when it happened,
+  * What property and places you want to protect, and
+  * Information about other court cases involving you and the abuser, if known.
 
   If you have children with the abuser, you also need to know:
   
@@ -400,7 +401,7 @@ continue button field: whats_next
 question: |
   After you finish this program
 subquestion: |
-  After you download your ${ form_name } forms, you must file them with the court. This program does not file your ${ form_name } for you.
+  After you download your ${ form_name } forms, you must file them with the court clerk's office. This program does not file your ${ form_name } forms for you.
   
   You can also download "How to ask for an Order of Protection" instructions at the end of this program. The instructions can guide you through filing your forms and going to court. 
 ---
@@ -417,7 +418,7 @@ continue button field: who_can_be_protected
 question: |
   Who can get an Order of Protection
 subquestion: |
-  You can ask for an Order of Protection if you have been abused by a family or household member, such as a:
+  You can ask for an Order of Protection if you have been abused by a romantic partner or a family or household member, such as a:
   
   * Current or ex-romantic partner,
   * Current or ex-spouse,
@@ -569,7 +570,7 @@ id: relationship
 question: |
   How are you related to the person who caused the abuse?
 subquestion: |
-  If you are asking for an Order of Protection for someone other than yourself, select how they are related to the person who caused the abuse.
+  If you are asking for an Order of Protection for someone other than yourself, select how **they** are related to the person who caused the abuse.
   
   You can check more than one.
 fields:
@@ -2805,9 +2806,12 @@ subquestion: |
 
   If you do not know the exact amount you can estimate. Bring receipts and proof of ownership and payment to court if you have them.
 fields:
-  - I do not want to request any repayment.: expenses_none
+  - No. I do not want to request any repayment.: expenses_none
     datatype: yesnowide
     disable others: True
+  - note: |
+      ---
+      Yes. I want the court to order ${other_parties[0].name.full(middle="full")} to pay for:
   - Medical expenses: expenses_medical
     datatype: yesnowide
   - "Amount": expenses_medical_amount
