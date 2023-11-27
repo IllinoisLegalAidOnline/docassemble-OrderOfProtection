@@ -418,9 +418,8 @@ continue button field: who_can_be_protected
 question: |
   Who can get an Order of Protection
 subquestion: |
-  You can ask for an Order of Protection if you have been abused by a romantic partner or a family or household member, such as a:
+  You can ask for an Order of Protection if you have been abused by a current or ex-romantic partner or a family or household member, such as a:
   
-  * Current or ex-romantic partner,
   * Current or ex-spouse,
   * Person with whom you live or used to live,
   * Parent of your child,
@@ -688,7 +687,42 @@ fields:
     show if:
       variable: knows_respondent_dob
       is: some
+---  
+id: debug test
+question: |
+  Debugging firearms_reasons
+subquestion: |
+  **Other things the court should know about ${other_parties[0].name.full(middle="full")}:**
   
+  % if firearms_reasons['violence']:
+  * ${other_parties[0].name.full(middle="full")} has a history of violence.
+  % endif
+  % if firearms_reasons['use']:
+  * ${other_parties[0].name.full(middle="full")} has a history of possession or use of firearms.
+  % endif
+  % if firearms_reasons['safety']:
+  * ${other_parties[0].name.full(middle="full")} may be a threat to the safety of the public or police officers.
+  % endif
+  % if firearms_reasons['suicidal']:
+  * ${other_parties[0].name.full(middle="full")} is now or has been suicidal.
+  % endif
+  % if firearms_reasons['vehicle']:
+  * ${other_parties[0].name.full(middle="full")} carries a firearm on their person or in a vehicle.
+  % if firearms_reasons['vehicle'] and respondent_car_make == "":
+  Car make: None entered
+  % else:
+  Car make: ${respondent_car_make }
+  % endif
+  % if firearms_reasons['vehicle'] and respondent_car_model == "":
+  Car model: None entered
+  % else:
+  Car model: ${respondent_car_model }
+  % endif
+  % endif
+  % if firearms_reasons.all_false():
+  None entered
+  % endif  
+continue button field: debug_test
 ---
 id: minor kids with respondent
 question: |
@@ -2877,12 +2911,28 @@ id: firearms threat
 question: |
   Is ${other_parties[0].name.full(middle="full")} a threat to the physical safety of you or your children?
 subquestion: |
-  Just knowing that ${other_parties[0].name.full(middle="full")} has a weapon can be a threat if you are afraid they could use it.
-  
-  Note: If ${other_parties[0].name.full(middle="full")} threatened you or your children with a weapon, be sure to explain the threats and the weapon in the [**What happened**](${ url_action('section_incidents') }) section. Threats are incidents of abuse that are important to your case.
+  Just knowing that ${other_parties[0].name.full(middle="full")} has a weapon can be a threat if you are afraid they could use it against you.
+ 
+  Note: If ${other_parties[0].name.full(middle="full")} threatened you or your children with a weapon, be sure to explain the threats, the weapon and its location in the [**What happened**](${ url_action('section_incidents') }) section. Threats are incidents of abuse that are important to your case.
 fields:
   - no label: firearms_threat
     datatype: yesnoradio
+---
+template: dv_risk_factors
+subject: |
+  **What other things should I consider?**
+content: |  
+  ${other_parties[0].name.full(middle="full")} might be more likely to threaten your safety if:
+
+  * You recently separated from them or are currently separating from them.
+  * They tried to strangle or choke you.
+  * They have access to a firearm or other weapon.
+  * They are constantly or violently jealous.
+  * They have forced you to have sex with them.
+  * They have threatened to commit suicide.
+  * They try to control most or all of your daily activities.
+  * They monitor your phone, computer, or social media use.
+
 ---
 id: remove firearms
 question: |
@@ -2897,7 +2947,7 @@ id: intimate partner
 question: |
   Is ${other_parties[0].name.full(middle="full")} a current or former intimate partner?
 subquestion: |
-  This means you were in a romantic relationship with them. This information may be part of the decision to remove Respondent's guns
+  This means you were in a romantic relationship with them. This information may be part of the court's decision to remove Respondent's guns
 fields:
   - no label: intimate_partner
     datatype: radio
@@ -2942,7 +2992,7 @@ fields:
 ---
 reconsider: True
 code: |
-  if stay_away or no_communication:
+  if (stay_away or no_communication) and trial_court_index != 71:
     no_contact_text = "No contact by any means with protected parties. "
     add_no_contact_language = True
   else: 
@@ -2953,7 +3003,7 @@ id: misc remedies
 question: |
   What else do you want the court to order ${other_parties[0].name.full(middle="full")} to do or to stop doing?
 subquestion: |
-  % if add_no_contact_language:
+  % if add_no_contact_language and trial_court_index != 71:
   Because you are asking the court to order ${other_parties[0].name.full(middle="full")} to stay away or to stop communication, "No contact by any means with protected parties" will be added. You can change this below.
   % endif
 fields:
@@ -3250,8 +3300,8 @@ fields:
       - Native Hawaiian: Native Hawaiian
       - North African: North African
       - Pacific Islander: Pacific Islander
-      - 2 or more races: Multiracial
       - White: White
+      - 2 or more races: Multiracial
       - Other: other
       - Unknown: unknown
   - ${other_parties[0].name.full(middle="full")}'s race: respondent_race_other
@@ -4113,10 +4163,10 @@ attachment:
     - "respondent_threat": ${ True if firearms_reasons['safety'] == True else ''  }
     - "respondent_suicidal": ${ True if firearms_reasons['suicidal'] == True else ''  }    
     
-    - "childrens_records_cb": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and ( no_records_no_contact or no_records_hide_address or no_records_no_removal ) else "" }
-    - "no_records_no_contact": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_contact else "" }
-    - "no_records_hide_address": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_hide_address else "" }
-    - "no_records_no_removal": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_removal else "" }
+    - "childrens_records_cb": ${ True if minor_kids_with_respondent and ( no_records_no_contact or no_records_hide_address or no_records_no_removal ) else "" }
+    - "no_records_no_contact": ${ True if minor_kids_with_respondent and no_records_no_contact else "" }
+    - "no_records_hide_address": ${ True if minor_kids_with_respondent and no_records_hide_address else "" }
+    - "no_records_no_removal": ${ True if minor_kids_with_respondent and no_records_no_removal else "" }
     - "expenses_shelter":  |
         % if not expenses_none:
         ${ expenses_shelter }
@@ -4548,7 +4598,11 @@ attachment:
     - "stay_away_jobs": ${ stay_away_jobs }
     - "stay_away_job_1": |
         % if hide_work_address and stay_away_jobs:
+        % if trial_court_index == 71:
+        ${ "" }
+        % else:
         ${ "Wherever protected party may be employed" }
+        % endif
         % elif stay_away_jobs:
         ${ jobs[0].employer + ", " + jobs[0].on_one_line(bare=True) }
         % else:
@@ -4859,10 +4913,10 @@ attachment:
     - "firearms_remedy__5": ${ True if firearms_turnover else '' }
     - "firearms_remedy__6": ${ True if firearms_turnover else '' }
 
-    - "childrens_records_cb": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and ( no_records_no_contact or no_records_hide_address or no_records_no_removal ) else "" }
-    - "no_records_no_contact": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_contact else "" }
-    - "no_records_hide_address": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_hide_address else "" }
-    - "no_records_no_removal": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_removal else "" }
+    - "childrens_records_cb": ${ True if minor_kids_with_respondent and ( no_records_no_contact or no_records_hide_address or no_records_no_removal ) else "" }
+    - "no_records_no_contact": ${ True if minor_kids_with_respondent and no_records_no_contact else "" }
+    - "no_records_hide_address": ${ True if minor_kids_with_respondent and no_records_hide_address else "" }
+    - "no_records_no_removal": ${ True if minor_kids_with_respondent and no_records_no_removal else "" }
 
     - "misc_remedies_cb__1": ${ True if misc_remedies_text != '' else '' }
     - "misc_remedies_cb__2": ${ True if misc_remedies_text != '' else '' }
@@ -5044,7 +5098,11 @@ attachment:
     - "stay_away_jobs": ${ stay_away_jobs }
     - "stay_away_job_1": |
         % if hide_work_address and stay_away_jobs:
+        % if trial_court_index == 71:
+        ${ "" }
+        % else:
         ${ "Wherever protected party may be employed" }
+        % endif
         % elif stay_away_jobs:
         ${ jobs[0].employer + ", " + jobs[0].on_one_line(bare=True) }
         % else:
@@ -5450,10 +5508,10 @@ attachment:
     
     - "firearms_remedy__6": ${ True if firearms_turnover else '' }
 
-    - "childrens_records_cb": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and ( no_records_no_contact or no_records_hide_address or no_records_no_removal ) else "" }
-    - "no_records_no_contact": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_contact else "" }
-    - "no_records_hide_address": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_hide_address else "" }
-    - "no_records_no_removal": ${ True if (minor_kids_with_respondent or protect_petitioner_kids) and no_records_no_removal else "" }
+    - "childrens_records_cb": ${ True if minor_kids_with_respondent and ( no_records_no_contact or no_records_hide_address or no_records_no_removal ) else "" }
+    - "no_records_no_contact": ${ True if minor_kids_with_respondent and no_records_no_contact else "" }
+    - "no_records_hide_address": ${ True if minor_kids_with_respondent and no_records_hide_address else "" }
+    - "no_records_no_removal": ${ True if minor_kids_with_respondent and no_records_no_removal else "" }
 
     - "expenses_shelter":  |
         % if not expenses_none:

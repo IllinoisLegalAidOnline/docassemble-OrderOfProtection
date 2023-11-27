@@ -670,11 +670,39 @@ review:
   - Edit: pt_visitation_center_name
     button: |
       **Official supervised visitation center:**
-      % if pt_visitation_center_name != "":
-      ${ pt_visitation_center_name }
+  - Edit: firearms_reasons
+    button: |
+      **Other things the court should know about ${other_parties[0].name.full(middle="full")}:**
+
+      % if firearms_reasons['violence']:
+      * ${other_parties[0].name.full(middle="full")} has a history of violence.
+      % endif
+      % if firearms_reasons['use']:
+      * ${other_parties[0].name.full(middle="full")} has a history of possession or use of firearms.
+      % endif
+      % if firearms_reasons['safety']:
+      * ${other_parties[0].name.full(middle="full")} may be a threat to the safety of the public or police officers.
+      % endif
+      % if firearms_reasons['suicidal']:
+      * ${other_parties[0].name.full(middle="full")} is now or has been suicidal.
+      % endif
+      % if firearms_reasons['vehicle']:
+      * ${other_parties[0].name.full(middle="full")} carries a firearm on their person or in a vehicle.
+      % if firearms_reasons['vehicle'] and respondent_car_make == "":
+      Car make: None entered
       % else:
+      Car make: ${respondent_car_make }
+      % endif
+      % if firearms_reasons['vehicle'] and respondent_car_model == "":
+      Car model: None entered
+      % else:
+      Car model: ${respondent_car_model }
+      % endif
+      % endif
+      % if firearms_reasons.all_false():
       None entered
       % endif
+
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervised == True and pt_supervisor_type == "agency"
   - Edit: pt_location_identified
     button: |
@@ -1039,30 +1067,33 @@ review:
     button: |
       **Other things the court should know about ${other_parties[0].name.full(middle="full")}:**
 
-      % if firearms_reasons['violence'] and firearms_turnover:
+      % if firearms_reasons['violence']:
       * ${other_parties[0].name.full(middle="full")} has a history of violence.
       % endif
-      % if firearms_reasons['use'] and firearms_turnover:
+      % if firearms_reasons['use']:
       * ${other_parties[0].name.full(middle="full")} has a history of possession or use of firearms.
       % endif
-      % if firearms_reasons['safety'] and firearms_turnover:
+      % if firearms_reasons['safety']:
       * ${other_parties[0].name.full(middle="full")} may be a threat to the safety of the public or police officers.
       % endif
-      % if firearms_reasons['suicidal'] and firearms_turnover:
+      % if firearms_reasons['suicidal']:
       * ${other_parties[0].name.full(middle="full")} is now or has been suicidal.
       % endif
-      % if firearms_reasons['vehicle'] and firearms_turnover:
+      % if firearms_reasons['vehicle']:
       * ${other_parties[0].name.full(middle="full")} carries a firearm on their person or in a vehicle.
-      % endif
-      % if firearms_reasons['vehicle'] and firearms_turnover and respondent_car_make == "":
+      % if firearms_reasons['vehicle'] and respondent_car_make == "":
       Car make: None entered
       % else:
       Car make: ${respondent_car_make }
       % endif
-      % if firearms_reasons['vehicle'] and firearms_turnover and respondent_car_model == "":
-      Car model: None entered.
+      % if firearms_reasons['vehicle'] and respondent_car_model == "":
+      Car model: None entered
       % else:
       Car model: ${respondent_car_model }
+      % endif
+      % endif
+      % if firearms_reasons.all_false():
+      None entered
       % endif
   - Edit: misc_remedies_text
     button: |
@@ -1448,7 +1479,11 @@ review:
   - Edit: case_number
     button: |
       **Case number:**
+      % if case_number == "":
+      None entered
+      % else:
       ${ case_number }   
+      % endif    
     
   - Edit: previous_cook_case_type
     button: |
@@ -2907,30 +2942,33 @@ review:
     button: |
       **Other things the court should know about ${other_parties[0].name.full(middle="full")}:**
 
-      % if firearms_reasons['violence'] and firearms_turnover:
+      % if firearms_reasons['violence']:
       * ${other_parties[0].name.full(middle="full")} has a history of violence.
       % endif
-      % if firearms_reasons['use'] and firearms_turnover:
+      % if firearms_reasons['use']:
       * ${other_parties[0].name.full(middle="full")} has a history of possession or use of firearms.
       % endif
-      % if firearms_reasons['safety'] and firearms_turnover:
+      % if firearms_reasons['safety']:
       * ${other_parties[0].name.full(middle="full")} may be a threat to the safety of the public or police officers.
       % endif
-      % if firearms_reasons['suicidal'] and firearms_turnover:
+      % if firearms_reasons['suicidal']:
       * ${other_parties[0].name.full(middle="full")} is now or has been suicidal.
       % endif
-      % if firearms_reasons['vehicle'] and firearms_turnover:
+      % if firearms_reasons['vehicle']:
       * ${other_parties[0].name.full(middle="full")} carries a firearm on their person or in a vehicle.
-      % endif
-      % if firearms_reasons['vehicle'] and firearms_turnover and respondent_car_make == "":
+      % if firearms_reasons['vehicle'] and respondent_car_make == "":
       Car make: None entered
       % else:
       Car make: ${respondent_car_make }
       % endif
-      % if firearms_reasons['vehicle'] and firearms_turnover and respondent_car_model == "":
-      Car model: None entered.
+      % if firearms_reasons['vehicle'] and respondent_car_model == "":
+      Car model: None entered
       % else:
       Car model: ${respondent_car_model }
+      % endif
+      % endif
+      % if firearms_reasons.all_false():
+      None entered
       % endif
   - Edit: misc_remedies_text
     button: |
@@ -3327,8 +3365,11 @@ review:
   - Edit: case_number
     button: |
       **Case number:**
+      % if case_number == "":
+      None entered
+      % else:
       ${ case_number }   
-    
+      % endif    
   - Edit: previous_cook_case_type
     button: |
       **Previous Cook County case involving ${other_parties[0].name.full(middle="full")}:**
