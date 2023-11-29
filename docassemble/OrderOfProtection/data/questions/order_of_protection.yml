@@ -97,13 +97,16 @@ code: |
   important_op_info
   if in_illinois == False:
     not_in_illinois
-  cook_after_hours
   
   nav.set_section('section_basic')
   set_progress(10)
   trial_court
+  
   if jurisdiction_type.all_false():
     other_jurisdiction_location
+  if trial_court_index == -1:
+    cook_after_hours
+    
   if relationship_type.all_false():
     other_relief
   users.gather(number=1)
@@ -455,7 +458,7 @@ subquestion: |
   * Monday through Friday: 9:00 PM to 3:00 AM
   * Saturday and Sunday: 1:00 PM to 6:00 PM
   
-  If you want to schedule a remote hearing during these limited hours, use the [**Emergency Order of Protection - Cook County Easy Form**](https://www.illinoislegalaid.org/legal-information/emergency-order-protection-cook-county) instead. 
+  If you want to schedule a remote hearing during these limited hours, use the [**Emergency Order of Protection - Cook County Easy Form**](https://www.illinoislegalaid.org/legal-information/emergency-order-protection-cook-county) instead. Otherwise, click **Next** to continue making your forms.
 
 ---
 id: in illinois
@@ -605,7 +608,7 @@ fields:
       - The abuser is a family or household member of a child that I am the legally-appointed custodian of.: l
 validation code: |
   if (relationship_type['se'] == True or relationship_type['xs'] == True) and relationship_type['cc'] == True:
-    validation_error("You have both married (spouse or ex-spouse) and never married options selected. Please adjust your answers.", field="relationship_type")
+    validation_error("You have both married (spouse or ex-spouse) and never married options selected. Please adjust your answers.")
 
 ---
 # removed after relationship answers reworded
@@ -687,42 +690,6 @@ fields:
     show if:
       variable: knows_respondent_dob
       is: some
----  
-id: debug test
-question: |
-  Debugging firearms_reasons
-subquestion: |
-  **Other things the court should know about ${other_parties[0].name.full(middle="full")}:**
-  
-  % if firearms_reasons['violence']:
-  * ${other_parties[0].name.full(middle="full")} has a history of violence.
-  % endif
-  % if firearms_reasons['use']:
-  * ${other_parties[0].name.full(middle="full")} has a history of possession or use of firearms.
-  % endif
-  % if firearms_reasons['safety']:
-  * ${other_parties[0].name.full(middle="full")} may be a threat to the safety of the public or police officers.
-  % endif
-  % if firearms_reasons['suicidal']:
-  * ${other_parties[0].name.full(middle="full")} is now or has been suicidal.
-  % endif
-  % if firearms_reasons['vehicle']:
-  * ${other_parties[0].name.full(middle="full")} carries a firearm on their person or in a vehicle.
-  % if firearms_reasons['vehicle'] and respondent_car_make == "":
-  Car make: None entered
-  % else:
-  Car make: ${respondent_car_make }
-  % endif
-  % if firearms_reasons['vehicle'] and respondent_car_model == "":
-  Car model: None entered
-  % else:
-  Car model: ${respondent_car_model }
-  % endif
-  % endif
-  % if firearms_reasons.all_false():
-  None entered
-  % endif  
-continue button field: debug_test
 ---
 id: minor kids with respondent
 question: |
@@ -1195,93 +1162,81 @@ fields:
   - Harassment: no_harassment
     datatype: yesnowide
     help: |
-      **Harassment** means knowing conduct which is not necessary to accomplish a purpose that is reasonable under the circumstances, would cause a reasonable person emotional distress, and does cause emotional distress to Petitioner.
+      **Harassment** means doing something that is unreasonable, that would cause most people to be upset, and causes this particular person to be upset.
       
       Examples of harassment include:
       
-       * Name calling or yelling
-       * Threatening harm to you, other people, animals, or property
-       * Constant calls, texts, social media messages, or emails
-       * Breaking or throwing property
-       * Threats to commit suicide
-       * Sharing personal images without your consent
+      * Name calling or yelling
+      * Threatening to hurt you, other people, animals, or property
+      * Constantly contacting you through phone calls, text messages, social media messages, or emails
+      * Threating to commit suicide
+      * Sharing personal images without your permission
+      * Stalking or following you
   - Physical abuse: no_physical
     datatype: yesnowide
     help: |
-      **Physical abuse** includes sexual abuse and means any of the following:
-
-      * Knowing or reckless use of physical force, confinement or restraint, 
-      * Knowing, repeated and unnecessary sleep deprivation, or
-      * Knowing or reckless conduct which creates an immediate risk of physical harm.
+      **Physical abuse** means physically hurting someone, sexually abusing or assaulting them, keeping them from leaving, forcing them to stay awake when they want to sleep, and putting them at risk by acting recklessly.
       
       Examples of physical abuse include:
       
-       * Slapping, punching, kicking, strangling (choking)
-       * Pushing, pulling, shaking,
-       * Pulling hair, pinching, poking, biting
-       * Rape (even between married parties), sexual assault, or sexual abuse
-       * Use of guns, knives, or other weapons
+      * Slapping, punching, kicking, strangling (choking)
+      * Pushing, pulling, shaking
+      * Pulling hair, pinching, poking, biting
+      * Rape (even between married parties), sexual assault, or sexual abuse
+      * Use of guns, knives, or other weapons
   - Stalking: no_stalking
     datatype: yesnowide
     help: |
-      **Stalking** means knowingly and without lawful justification, on at least two (2) separate occasions, following another person or placing the person under surveillance or any combination thereof and:
+      **Stalking** means following or monitoring someone without a good reason at least 2 separate times, or following or monitoring someone while also:
       
-      * At any time transmitting a threat of immediate or future bodily harm, sexual assault, confinement or restraint and the threat is directed towards that person or a family member of that person,
-      * Placing that person in reasonable apprehension of immediate or future bodily harm, sexual assault, confinement or restraint, or
-      * Placing that person in reasonable apprehension that a family member will receive immediate or future bodily harm, sexual assault, confinement, or restraint.
+      * Making threats to harm, sexually assault, or keep a person from leaving against their will; or threatening to do these things to a family member, or
+      * Making a person concerned that they will be harmed, sexually assaulted, or kept from leaving against their will; or concerned that these things will be done to their family member.
       
       Examples of stalking include:
       
-       * Following you
-       * Sitting/waiting outside of your residence or job
-       * Communicating to you that they know things you have done that day, such as “I know you were at the store this morning.”
+       * Following you multiple times 
+       * Sitting/waiting outside of your residence or job and threatening to hurt you
   - Willful deprivation: no_willful
     datatype: yesnowide
     help: |
-      **Willful deprivation** means willfully denying a person who because of age, health or disability requires medication, medical care, shelter, food, therapeutic device, or other physical assistance, and thereby exposing that person to the risk of physical, mental or emotional harm, except with regard to medical care or treatment when the dependent person has expressed an intent to forego such medical care or treatment. This paragraph does not create any new affirmative duty to provide support to dependent persons.
+      **Willful deprivation** means not giving someone the medicine, medical care, shelter, food, medical items, or other physical help that they need because of their age, health issues, or disability; meaning that they might be physically, mentally, or emotionally harmed as a result.
       
       Examples of willful deprivation include:
       
-      * Not giving you medicine if they are responsible for this
-      * Not shopping for your food if they are responsible for this
+      * Not giving an elderly family member who you care for their medicine
+      * Not feeding your child
   - Intimidation of a dependent: no_intimidation
     datatype: yesnowide
     help: |
-      **Intimidation of a dependent** means subjecting a person who is dependent because of age, health or disability to participation in or the witnessing of: physical force against another or physical confinement or restraint of another which constitutes physical abuse as defined in this Act, regardless of whether the abused person is a family or household member.
+      **Intimidation of a dependent** means physically harming someone or physically stopping them from leaving in front of someone who is their dependent because of their age, poor health or disability; or making the dependent help with their abuse.
       
-      Examples of Intimidation of a Dependent include:
-
-      * Any physical abuse in front of a child or dependent
-      * Using a child or dependent in order to physically abuse another
+      An example of intimidation of a dependent is hitting someone in front of their child.
   - Exploitation of a high-risk adult with disabilities: no_exploitation
     datatype: yesnowide
     help: |
-      **Exploitation** means the illegal, including tortious, use of a high-risk adult with disabilities or of the assets or resources of a high-risk adult with disabilities. Exploitation includes, but is not limited to, the misappropriation of assets or resources of a high-risk adult with disabilities by undue influence, by breach of a fiduciary relationship, by fraud, deception, or extortion, or the use of such assets or resources in a manner contrary to law.
+      **Exploitation** means stealing from someone who is considered a high-risk adult with disabilities. This is illegal and often harmful. It includes doing things like lying to someone so that they give you money, or pressuring someone who trusts you to spend their money on something you want.
 
   - Neglect of a high-risk adult with disabilities: no_neglect
     datatype: yesnowide
     help: |
-      **Neglect** means the failure to exercise that degree of care toward a high-risk adult with disabilities which a reasonable person would exercise under the circumstances and includes but is not limited to:
+      **Neglect** means not protecting a high-risk adult with disabilities in the way that most people would. It includes:
       
-      * The failure to take reasonable steps to protect a high-risk adult with disabilities from acts of abuse,
-      * The repeated, careless imposition of unreasonable confinement,
-      * The failure to provide food, shelter, clothing, and personal hygiene to a high-risk adult with disabilities who requires such assistance,
-      * The failure to provide medical and rehabilitative care for the physical and mental health needs of a high-risk adult with disabilities, or
-      * The failure to protect a high-risk adult with disabilities from health and safety hazards.
+      * Not protecting them from abuse,
+      * Holding them against their will or not letting them leave or move around enough,. 
+      * Not providing things they need to survive, like food, shelter, clothes, and baths,    
+      * Not providing the medical or mental health care they need, or   
+      * Not protecting them from health and safety hazards.
+      
   - Interference with personal liberty: no_interference
     datatype: yesnowide
     help: |
-      **Interference with personal liberty** means committing or threatening physical abuse, harassment, intimidation or willful deprivation so as to compel another to engage in conduct from which she or he has a right to abstain or to refrain from conduct in which she or he has a right to engage.
+      **Interference with personal liberty** means stopping someone from doing something they want to do, or forcing someone to do something they do not want to do, by doing or threating to do any of these things: physical abuse, harassment, intimidation or willful deprivation.
       
       Examples of interference with personal liberty include:
       
       * Preventing you from using the phone
-      * Preventing you from leaving the house or vehicle
-      * Isolating you from family and friends
-      * Controlling your movements, such as who you talk to, where you go, etc.
-      * Stealing or breaking a cell phone, or pulling a phone out of the wall
-      * Disabling your vehicle, such as putting sugar in gas tank
-      * Any other form of restraint
+      * Preventing you from leaving the house or car
+      * Stealing or breaking a cell phone
 ---
 id: stay away
 question: |
@@ -1361,7 +1316,7 @@ fields:
   - no label: residence_remedies
     datatype: radio
     choices:
-    - I want **exclusive possession** of the residence, and ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive possession
+    - I want **exclusive possession** of the residence. This means ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive possession
     - I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live because we share a residence.: provide alternate housing
     - None of the above: none
 
@@ -1432,6 +1387,8 @@ fields:
 id: respondent work question
 question: |
   Do you know ${other_parties[0].name.full(middle="full")}'s work information?
+subquestions: |
+  If ${other_parties[0].name.full(middle="full")} is currently unemployed, you can select **No**.
 fields:
   - Know ${other_parties[0].name.full(middle="full")}'s work info?: knows_respondent_work
     datatype: yesnoradio
@@ -1717,7 +1674,12 @@ subquestion: |
   You can ask for this if you know or think ${other_parties[0].name.full(middle="full")} is under age 18.
 fields:
   - no label: respondent_parent_help
-    datatype: yesnoradio
+    datatype: radio
+    choices:
+      - Yes: Yes
+      - No: No
+      - Does not apply: dna
+
 ---
 id: minor respondent parent info
 question: |
@@ -2134,7 +2096,9 @@ id: parenting time weekdays
 question: |
   Do you want ${other_parties[0].name.full(middle="full")} to have parenting time on weekdays?
 subquestion: |
-  You can pick which days and times on the next screen.
+  You can pick which weekdays and times on the next screen.
+  
+  Weekend parenting time is also an option. You can pick weekend days and times on another screen.
 fields:
   - no label: pt_weekdays
     datatype: yesnoradio
@@ -2661,7 +2625,7 @@ fields:
 ---
 id: any other pets
 question: |
-  Do you have another pets you want to protect?
+  Do you have another pet you want to protect?
 subquestion: |
   % if len(pets.elements) >= 1:  
   So far you have told us about ${comma_and_list([item.name.text + " (" + indefinite_article(item.description) + ")" for item in pets])}.
@@ -2683,7 +2647,7 @@ id: cell phone account holder name
 question: |
   Who is the cell phone account holder?
 subquestion: |
-  This is also called the billing account holder.
+  This person's phone number is usually the main or billing phone number associated with the account.
 fields:
   - no label: phone_account_holder
     datatype: radio
@@ -2719,7 +2683,7 @@ fields:
     maxlength: 25
     help: |
       Examples: Verizon or T-Mobile
-  - Billing phone number: billing_phone_number
+  - Phone number of account holder (billing phone number): billing_phone_number
     datatype: al_international_phone
 ---
 id: cell phone number to separate
@@ -2731,6 +2695,10 @@ question: |
   % endif
 subquestion: |
   You can enter up to 4 phone numbers in total. This is the ${ ordinal(i) } number.
+  
+  Your phone number would probably be one of the numbers to separate.
+  
+  **Note:** This phone number will appear on your court forms.
 fields:
   - Phone number: cell_numbers[i].name.text
     datatype: al_international_phone
@@ -2912,6 +2880,8 @@ question: |
   Is ${other_parties[0].name.full(middle="full")} a threat to the physical safety of you or your children?
 subquestion: |
   Just knowing that ${other_parties[0].name.full(middle="full")} has a weapon can be a threat if you are afraid they could use it against you.
+
+  ${ collapse_template(dv_risk_factors) }
  
   Note: If ${other_parties[0].name.full(middle="full")} threatened you or your children with a weapon, be sure to explain the threats, the weapon and its location in the [**What happened**](${ url_action('section_incidents') }) section. Threats are incidents of abuse that are important to your case.
 fields:
@@ -2947,7 +2917,7 @@ id: intimate partner
 question: |
   Is ${other_parties[0].name.full(middle="full")} a current or former intimate partner?
 subquestion: |
-  This means you were in a romantic relationship with them. This information may be part of the court's decision to remove Respondent's guns
+  This means you were in a romantic relationship with them. This information may be part of the court's decision to remove Respondent's guns.
 fields:
   - no label: intimate_partner
     datatype: radio
@@ -3051,6 +3021,8 @@ id: phone number
 question: |
   What phone number do you want to list on your court forms?
 subquestion: |
+  The court might need to contact you about this case.
+
   **This phone number will appear on your court forms.** If you do not want to list a phone number on your forms, leave this blank.
 fields:
   - Phone: users[0].phone_number
@@ -3879,9 +3851,9 @@ attachment:
     - "same_school_change_placement": ${ True if (same_school and same_school_restrictions == "change program") else ""}
     - "same_school_avoid_parts": ${ True if (same_school and same_school_restrictions == "not present in parts") else ""}
     - "same_school_parts": ${ parts_of_school if (same_school and same_school_restrictions == "not present in parts") else ""}
-    - "respondent_parent_help": ${respondent_parent_help}
-    - "respondent_parent_name": ${ respondent_parent_name if respondent_parent_help else "" }
-    - "respondent_parent_order": ${ respondent_parent_order if respondent_parent_help else "" }
+    - "respondent_parent_help": ${True if respondent_parent_help == "Yes" else ""}
+    - "respondent_parent_name": ${ respondent_parent_name if respondent_parent_help == "Yes" else "" }
+    - "respondent_parent_order": ${ respondent_parent_order if respondent_parent_help == "Yes" else "" }
     - "counseling": ${ request_counseling }    
     - "request_counseling": ${ request_counseling }    
     - "dv_counseling": ${ True if request_counseling and dv_counseling else '' }    
@@ -4661,9 +4633,10 @@ attachment:
     - "same_school_change_placement": ${ True if (same_school and same_school_restrictions == "change program") else ""}
     - "same_school_avoid_parts": ${ True if (same_school and same_school_restrictions == "not present in parts") else ""}
     - "same_school_parts": ${ parts_of_school if (same_school and same_school_restrictions == "not present in parts") else ""}
-    - "respondent_parent_help": ${respondent_parent_help}
-    - "respondent_parent_name": ${ respondent_parent_name if respondent_parent_help else "" }
-    - "respondent_parent_order": ${ respondent_parent_order if respondent_parent_help else "" }
+
+    - "respondent_parent_help": ${True if respondent_parent_help == "Yes" else ""}
+    - "respondent_parent_name": ${ respondent_parent_name if respondent_parent_help == "Yes" else "" }
+    - "respondent_parent_order": ${ respondent_parent_order if respondent_parent_help == "Yes" else "" }
 
       # page 4
 
@@ -5161,9 +5134,9 @@ attachment:
     - "same_school_change_placement": ${ True if (same_school and same_school_restrictions == "change program") else ""}
     - "same_school_avoid_parts": ${ True if (same_school and same_school_restrictions == "not present in parts") else ""}
     - "same_school_parts": ${ parts_of_school if (same_school and same_school_restrictions == "not present in parts") else ""}
-    - "respondent_parent_help": ${respondent_parent_help}
-    - "respondent_parent_name": ${ respondent_parent_name if respondent_parent_help else "" }
-    - "respondent_parent_order": ${ respondent_parent_order if respondent_parent_help else "" }
+    - "respondent_parent_help": ${True if respondent_parent_help == "Yes" else ""}
+    - "respondent_parent_name": ${ respondent_parent_name if respondent_parent_help == "Yes" else "" }
+    - "respondent_parent_order": ${ respondent_parent_order if respondent_parent_help == "Yes" else "" }
 
       # page 4
     - "counseling": ${ request_counseling }    

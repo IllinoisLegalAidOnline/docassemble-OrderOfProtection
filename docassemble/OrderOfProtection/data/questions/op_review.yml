@@ -1131,17 +1131,23 @@ review:
   - Edit: respondent_parent_help
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")}'s parent or guardian help them follow the Order of Protection?**
-      ${ word(yesno(respondent_parent_help)) }
+      % if respondent_parent_help == "Yes":
+      Yes
+      % elif respondent_parent_help == "No":
+      No
+      % else:
+      Does not apply
+      % endif
   - Edit: respondent_parent_name
     button: |
       **Parent or guardian name:**
       ${ respondent_parent_name }
-    show if: respondent_parent_help
+    show if: respondent_parent_help == "Yes"
   - Edit: respondent_parent_order
     button: |
       **What should ${other_parties[0].name.full(middle="full")}'s parent or guardian be ordered to do?**
       ${ respondent_parent_order }
-    show if: respondent_parent_help
+    show if: respondent_parent_help == "Yes"
       
   - Edit: other_parties[0].gender
     button: |
@@ -3012,17 +3018,23 @@ review:
   - Edit: respondent_parent_help
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")}'s parent or guardian help them follow the Order of Protection?**
-      ${ word(yesno(respondent_parent_help)) }
+      % if respondent_parent_help == "Yes":
+      Yes
+      % elif respondent_parent_help == "No":
+      No
+      % else:
+      Does not apply
+      % endif
   - Edit: respondent_parent_name
     button: |
       **Parent or guardian name:**
       ${ respondent_parent_name }
-    show if: respondent_parent_help
+    show if: respondent_parent_help == "Yes"
   - Edit: respondent_parent_order
     button: |
       **What should ${other_parties[0].name.full(middle="full")}'s parent or guardian be ordered to do?**
       ${ respondent_parent_order }
-    show if: respondent_parent_help
+    show if: respondent_parent_help == "Yes"
       
   - Edit: other_parties[0].gender
     button: |
