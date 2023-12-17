@@ -111,14 +111,17 @@ code: |
     other_relief
   users.gather(number=1)
   other_parties.gather(number=1)
+  if minor_kids_with_respondent:
+    shared_kids.gather()
 
   nav.set_section('section_petitioner')
   set_progress(20)
-  minor_kids_with_respondent
+  
+  #minor_kids_with_respondent
   #minor_kids_logic_check
   protect_petitioner
-  if minor_kids_with_respondent:
-    shared_kids.gather()
+  #if minor_kids_with_respondent:
+  #  shared_kids.gather()
   if protect_petitioner_kids:
     petitioner_kids.gather()
   if protect_dependent_adult:
@@ -722,6 +725,8 @@ fields:
     default: True
   - Minor children I have with ${other_parties[0].name.full(middle="full")}: protect_shared_kids
     datatype: yesnowide
+    help: |
+      Check this if you want the order to protect your minor children you have with ${other_parties[0].name.full(middle="full")}.
     # removing this show if to accommodate adding minor children thru review, maybe revisit
     #show if:
     #  code: |
@@ -873,6 +878,8 @@ fields:
     code: states_list()
   - Include as a protected person?: x.protect
     datatype: yesnoradio
+    help: |
+      Select **Yes** if you want the order to protect the child from ${other_parties[0].name.full(middle="full")}. 
 ---
 template: minor_child_residence_help
 subject: |
@@ -1084,11 +1091,7 @@ subquestion: |
 ---
 id: incidents detail
 question: |
-  % if i == 0:
-  Tell us about the most recent incident of abuse
-  % else:
   Tell us about another incident of abuse
-  % endif
 subquestion: |
   Try to be specific about:
   
@@ -1116,7 +1119,37 @@ fields:
     maxlength: 800
     help: |
       The petition has space for about 800 characters for each incident.
+---
+id: first incident detail
+question: |
+  Tell us about the most recent incident of abuse
+subquestion: |
+  Try to be specific about:
+  
+  * What ${other_parties[0].name.full(middle="full")} did,
+  * What ${other_parties[0].name.full(middle="full")} said,
+  * Who was there when the abuse happened, and
+  * The effects the abuse had on you, other survivors, and anyone else who was there. It is important to mention any children that were present or were affected by the abuse.
+  
+  Include any threats or use of a weapon.
+  
+  For repeated abuse, you can say things like "weekly" for the date or "anytime I work late" for the time. 
 
+fields:
+  - Date: incidents[0].date
+    maxlength: 20
+    help: |
+      If you don't remember the exact date, enter the month and year. Use abbreviations if needed.
+  - Time: incidents[0].time
+    maxlength: 20
+    help: |
+      If you don't remember the exact time, enter "morning" or "afternoon" or "night." Use abbreviations if needed.
+  - What happened: incidents[0].name.text
+    input type: area
+    rows: 12
+    maxlength: 800
+    help: |
+      The petition has space for about 800 characters for each incident.
 ---
 template: incidents_help
 subject: |
@@ -1327,7 +1360,7 @@ question: |
 field: exclusive_possession_reason
 choices:
   - I have a right to occupy the residence and ${other_parties[0].name.full(middle="full")} has no right.: respondent_no_right_to_stay
-  - Both of us have a right to occupy the residence, but it would be harder on me to leave.: both_parties_right_to_stay
+  - Both of us have a right to occupy the residence, but it would be harder on me or any of my children or dependents to leave.: both_parties_right_to_stay
 
 ---
 id: respondent info

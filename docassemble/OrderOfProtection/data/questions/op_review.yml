@@ -1990,6 +1990,14 @@ review:
     button: |
       **Do you have minor children with ${other_parties[0].name.full(middle="full")}?**
       ${ word(yesno(minor_kids_with_respondent)) }
+  - Edit: shared_kids.revisit
+    button: |
+      **Your minor children with ${other_parties[0].name.full(middle="full")}: (Edit to change names and details)**
+
+      % for my_var in shared_kids:
+        * ${ my_var.name.full(middle="full") }
+      % endfor
+    show if: minor_kids_with_respondent
 
 ---
 id: petitioner review screen
