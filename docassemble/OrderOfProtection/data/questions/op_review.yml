@@ -1625,8 +1625,10 @@ confirm: True
 id: incidents revisit
 continue button field: incidents.revisit
 question: |
-  Edit the details of what happened
+  Edit what happened
 subquestion: |
+  Click **Edit** to review what happened or change details.
+
   ${ incidents.table }
 
   % if incidents.number_gathered() < 9:
@@ -1640,8 +1642,8 @@ columns:
       row_item.date if defined("row_item.date") else ""
   - Time: |
       row_item.time if defined("row_item.time") else ""
-  - Details (what happened): |
-      action_button_html(url_action(row_item.attr_name("review_incidents_details")), label="Edit", icon="pencil-alt")
+edit:
+  - date
 delete buttons: True
 confirm: True
 ---

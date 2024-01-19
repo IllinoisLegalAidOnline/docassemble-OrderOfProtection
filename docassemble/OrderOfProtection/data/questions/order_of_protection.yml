@@ -280,10 +280,10 @@ code: |
   knows_respondent_dob
   if knows_respondent_dob == "exact":  
     if other_parties[0].age_in_years() < 18:
-      if respondent_parent_help:
+      if respondent_parent_help == "Yes":
         respondent_parent_name
   else:
-    if respondent_parent_help:
+    if respondent_parent_help == "Yes":
       respondent_parent_name
   
   other_parties[0].gender
@@ -990,7 +990,7 @@ subquestion: |
   % if len(other_ops.elements) == 1:  
   So far you told us about 1 other order of protection. 
   % else:
-  So far you told us about ${ str(i+1) } other orders of protection. 
+  So far you told us about ${ str(len(other_ops.elements)) } other orders of protection. 
   % endif
 field: other_ops.there_is_another
 choices:
@@ -1012,13 +1012,15 @@ code: |
 
 id: other cases
 question: |
-  Other court cases
+  Other court cases with ${other_parties[0].name.full(middle="full")}
 subquestion: |
   Are there now, or have there ever been, any other court cases (civil or criminal) involving ${other_parties[0].name.full(middle="full")} and you or other people you want to protect in this Order?
+  
   Examples include divorce, custody, child support, paternity, parenting time, guardianship, adoption, or abuse and neglect cases.
+  
   Note: do not include other Orders of Protection.
 fields:
-  - Other cases?: has_other_cases
+  - Other court cases?: has_other_cases
     datatype: radio
     choices:
       - Yes: Yes
@@ -1054,7 +1056,7 @@ subquestion: |
   % if len(other_cases.elements) == 1:  
   So far you told us about 1 other case. 
   % else:
-  So far you told us about ${ str(i+1) } other cases. 
+  So far you told us about ${ str(len(other_cases.elements)) } other cases. 
   % endif
 field: other_cases.there_is_another
 choices:
@@ -1159,7 +1161,7 @@ content: |
 
   If you don't remember the exact time, enter "morning" or "afternoon" or "night."
 ---
-id: more cases
+id: more incidents
 question: |
   Are there any more incidents of abuse you would like to list?
 subquestion: |
@@ -1167,7 +1169,7 @@ subquestion: |
   % if len(incidents.elements) == 1:  
   So far you told us about 1 incident. 
   % else:
-  So far you told us about ${ str(i+1) } incidents. 
+  So far you told us about ${ str(len(incidents.elements)) } incidents. 
   % endif
 field: incidents.there_is_another
 choices:
@@ -1511,7 +1513,7 @@ question: |
 subquestion: |
   The statewide Order of Protection forms have space for up to 2 schools or daycares.
   
-  Note: You can keep the name and address of these schools confidential.
+  Note: You can keep the name and address of these schools confidential if your children attend them.
 fields:
   - no label: stay_away_schools
     datatype: yesnoradio
@@ -1524,7 +1526,9 @@ question: |
   Tell us about the other school, kindergarten, or daycare
   % endif
 subquestion: |  
+  % if minor_kids_with_respondent or protect_petitioner_kids:
   If you do not want this information on your court forms, which can be seen by ${ other_parties[0].name.full(middle="full") }, check **Yes** to the **Hide this information** question below.
+  % endif
 fields:
   - School or daycare name: schools[i].name
   - Street address: schools[i].address
@@ -2910,13 +2914,21 @@ validation code: |
 ---
 id: firearms threat
 question: |
+  % if minor_kids_with_respondent or protect_petitioner_kids:
   Is ${other_parties[0].name.full(middle="full")} a threat to the physical safety of you or your children?
+  % else:
+  Is ${other_parties[0].name.full(middle="full")} a threat to your physical safety?
+  % endif
 subquestion: |
   Just knowing that ${other_parties[0].name.full(middle="full")} has a weapon can be a threat if you are afraid they could use it against you.
 
   ${ collapse_template(dv_risk_factors) }
- 
+
+  % if minor_kids_with_respondent or protect_petitioner_kids:
   Note: If ${other_parties[0].name.full(middle="full")} threatened you or your children with a weapon, be sure to explain the threats, the weapon and its location in the [**What happened**](${ url_action('section_incidents') }) section. Threats are incidents of abuse that are important to your case.
+  % else:
+  Note: If ${other_parties[0].name.full(middle="full")} threatened you with a weapon, be sure to explain the threats, the weapon and its location in the [**What happened**](${ url_action('section_incidents') }) section. Threats are incidents of abuse that are important to your case.
+  % endif
 fields:
   - no label: firearms_threat
     datatype: yesnoradio
@@ -2941,7 +2953,11 @@ id: remove firearms
 question: |
   Do you want the court to order ${other_parties[0].name.full(middle="full")} to turn over their guns?
 subquestion: |
+  % if minor_kids_with_respondent or protect_petitioner_kids:
   Reminder: If ${other_parties[0].name.full(middle="full")} threatened you or your children with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
+  % else:
+  Reminder: If ${other_parties[0].name.full(middle="full")} threatened you with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
+  % endif  
 fields:
   - no label: firearms_turnover
     datatype: yesnoradio
@@ -3519,7 +3535,9 @@ question: |
 subquestion: |
   After you click **Next**, it will take a few moments to finish making your forms.
   
-  You do not need to refresh your screen. Hang in there!
+  ###### You do not need to refresh your screen. Hang in there!
+  
+  &nbsp;
 ---
 id: get docs screen
 question: |
@@ -3844,14 +3862,22 @@ attachment:
         % endif
     - "stay_away_schools": ${ stay_away_schools }
     - "stay_away_school_1": |
+        % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[0].hide:
         ${ "Confidential" }
         % else:
         ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
         % endif
+        % else:
+        ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
+        % endif
     - "stay_away_school_2": |
+        % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[1].hide:
         ${ "Confidential" }
+        % else:
+        ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
+        % endif
         % else:
         ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
@@ -4623,14 +4649,22 @@ attachment:
         % endif
     - "stay_away_schools": ${ stay_away_schools }
     - "stay_away_school_1": |
+        % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[0].hide:
         ${ "Confidential" }
         % else:
         ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
         % endif
+        % else:
+        ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
+        % endif
     - "stay_away_school_2": |
+        % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[1].hide:
         ${ "Confidential" }
+        % else:
+        ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
+        % endif
         % else:
         ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
@@ -5124,14 +5158,22 @@ attachment:
         % endif
     - "stay_away_schools": ${ stay_away_schools }
     - "stay_away_school_1": |
+        % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[0].hide:
         ${ "Confidential" }
         % else:
         ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
         % endif
+        % else:
+        ${ schools[0].name + ", " + schools[0].on_one_line(bare=True) if stay_away_schools else '' }
+        % endif
     - "stay_away_school_2": |
+        % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[1].hide:
         ${ "Confidential" }
+        % else:
+        ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
+        % endif
         % else:
         ${ schools[1].name + ", " + schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
