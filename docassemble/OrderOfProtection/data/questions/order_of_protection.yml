@@ -20,7 +20,15 @@ default screen parts:
     [${fa_icon("sign-in-alt", color="#0079d0", size="sm")} **Sign in**](${url_of('login', next=interview_url())}) or [**create**](${url_of('register', next=interview_url())}) an ILAO Easy Form account to save your progress (optional).
     % endif
     
-    Feedback, suggestions, or comments? [**Let us know**](${ interview_url(i="docassemble.ILAO:feedback.yml", easy_form_interview=ilao_easy_form_url , easy_form_title=ilao_easy_form_title, easy_form_page=user_info().question_id, easy_form_variable=user_info().variable, local=False,reset=1) } ){:target="_blank"}.
+    Feedback, suggestions, or comments? [**Let us know**](${ interview_url(i="docassemble.ILAO:feedback.yml", easy_form_interview=ilao_easy_form_url , easy_form_title=ilao_easy_form_title, easy_form_page=current_context().question_id, easy_form_variable=current_context().variable, local=False,reset=1) } ){:target="_blank"}.
+
+    % if nav.get_section() != None:
+    % if nav.get_section() != "section_intro" and nav.get_section() != "section_download":
+    % if "review screen" not in current_context().question_id:
+    ${ action_button_html(url_action('review_answers'), label=':edit: Edit answers', color='success', size="md") }
+    % endif
+    % endif
+    % endif
 ---
 objects:
   - users: ALPeopleList.using(there_are_any=True)
@@ -350,6 +358,11 @@ code: |
   	'start_time': str(current_datetime().format_datetime()),
   	'started_interview': True, 
   	}
+
+  try:
+    stuff_to_snapshot['ip_address'] = device(ip=True)
+  except:
+    pass
     
   stuff_to_snapshot['zip'] = showifdef('users[0].address.zip')
 
@@ -419,11 +432,11 @@ subquestion: |
  
   ${ collapse_template(help_example) }  
 
-  Click on **{green words}** to learn what they mean. Some questions have a question mark in a circle ${ fa_icon("question-circle", color_css="#0dcaf0" ) } that also gives help.
+  Click on **{green words}** to learn what they mean. Some pages have a question mark in a circle ${ fa_icon("question-circle", color_css="#0dcaf0" ) } that helps explain things.
 ---
 template: help_example
 subject: |
-  **You can expand sections like this to show more information.**
+  **You can click sections like this to show more information.**
 content: |  
   This is an example of help. Click again to hide.
 ---
@@ -635,9 +648,10 @@ fields:
       - The abuser is a family or household member of my adopted child, or of my prospective adopted child.: a
       - The abuser is a family or household member of a child that I am the legally-appointed custodian of.: l
 validation code: |
-  if (relationship_type['se'] == True or relationship_type['xs'] == True) and relationship_type['cc'] == True:
-    validation_error("You have both married (spouse or ex-spouse) and never married options selected. Please adjust your answers.")
-
+  if relationship_type['se'] == True and relationship_type['cc'] == True:
+    validation_error("You have both married (spouse) and never married options selected. Please adjust your answers.")
+  if relationship_type['xs'] == True and relationship_type['cc'] == True:
+    validation_error("You have both formerly married (ex-spouse) and never married options selected. Please adjust your answers.")
 ---
 # removed after relationship answers reworded
 template: relationship_example
@@ -708,8 +722,8 @@ fields:
           You may want to update the sheriff's office when you have this information.
           % endif
   - ${other_parties[0].name.full(middle="full")}'s date of birth: other_parties[0].birthdate
-    datatype: date
-    max: ${ today().format("yyyy-MM-dd") }
+    datatype: ThreePartsDate
+    alMax: ${ today().format("yyyy-MM-dd") }
     show if: 
       variable: knows_respondent_dob
       is: exact
@@ -957,6 +971,7 @@ subquestion: |
 fields:
   - Emergency: eop
     datatype: yesnowide
+    default: True
     help: |
       **Emergency Order of Protection**
 
@@ -1069,7 +1084,18 @@ question: |
 fields:
   - Type of court case: other_cases[i].name.text
     help: |
-      Examples include divorce, custody, child support, paternity, parenting time, guardianship, adoption, or abuse and neglect cases.
+      Examples include:
+      
+      * Divorce
+      * Custody
+      * Child support
+      * Paternity or parentage
+      * Parenting time
+      * Guardianship
+      * Adoption
+      * Abuse and neglect
+      * Domestic battery
+      * Violation of an Order of Protection.
   - State: other_cases[i].state
     code: |
       states_list()
@@ -1141,10 +1167,10 @@ subquestion: |
   
   Include any threats or use of a weapon.
   
-  For repeated abuse, you can say things like "weekly" for the date or "anytime I work late" for the time. 
+  For repeated abuse, include the date and time of the most recent incident. You can add things like "weekly" or "anytime I work late" if it applies. 
 
 fields:
-  - Date: incidents[i].date
+  - Date (month and year): incidents[i].date
     maxlength: 20
     help: |
       If you don't remember the exact date, enter the month and year. Use abbreviations if needed.
@@ -1174,10 +1200,10 @@ subquestion: |
   
   Include any threats or use of a weapon.
   
-  For repeated abuse, you can say things like "weekly" for the date or "anytime I work late" for the time. 
+  For repeated abuse, include the date and time of the most recent incident. You can add things like "weekly" or "anytime I work late" if it applies. 
 
 fields:
-  - Date: incidents[0].date
+  - Date (month and year): incidents[0].date
     maxlength: 20
     help: |
       If you don't remember the exact date, enter the month and year. Use abbreviations if needed.
@@ -1481,10 +1507,10 @@ fields:
     show if: 
       code: |
         trial_court_index == -1
-  - Work hours: other_parties[0].work_hours
+  - Work days and hours: other_parties[0].work_hours
     required: False
     help: |
-      If you don't know the exact hours, you can say something like "weekdays" or "nights."
+      If you don't know the exact days and hours, you can say something like "weekdays" or "nights."
     maxlength: 25
   - Street address: other_parties[0].work_address.address
     address autocomplete: True
@@ -3090,9 +3116,9 @@ id: e-signature
 question: |
   Do you want to add your e-signature to your Petition for Order of Protection?
 subquestion: |
-  This program can put “**/s/ ${users[0].name.full(middle='full')}**” where you would sign your name. The court will accept this as your signature.
+  This program can put "**/s/ ${users[0].name.full(middle='full')}**" where you would sign your name. The court will accept this as your signature.
 
-  If you do not add your **{e-signature}**, you must sign your paper form before you file it.
+  If you do not add your **{e-signature}**, you must sign your paper forms before you file them.
 
   <div class="alert alert-info ilao-info" role="alert">
     <h6 class="alert-heading">What it means to sign your forms</h6>
@@ -3140,7 +3166,7 @@ id: notice by email
 question: |
   Do you have a safe email address?
 subquestion: |
-  If you have a safe email address, you must list it so the court and other parties can contact you about this case.
+  If you have a safe email address, you must list it on the forms so the court and other parties can contact you about this case.
 fields:
   - Have a safe email?: users[0].email_notice
     datatype: yesnoradio
@@ -3337,11 +3363,13 @@ subquestion: |
 
   This will not appear on the forms that will be filed with the court. It goes on the Confidential Protective Order Information Sheet for the Sheriff.
 fields:
-  - no label: service_information
+  - Service information: service_information
     input type: area
     rows: 2
     maxlength: 150
     required: False
+    help: |
+      Include as much information as possible, such as best hours to serve, type of building, etc.
 ---
 id: respondent gender
 question: |
@@ -3603,7 +3631,7 @@ question: |
 subquestion: |
   Your forms are ready. View and download your forms below. Click **Make changes** to fix any mistakes.
 
-  You will not receive an order from the court until you see a judge.
+  **You will not receive an order from the court until you see a judge.**
 
   This program does not file your ${ form_name } forms with the court. You will need to do this yourself.
 
@@ -3627,7 +3655,7 @@ under: |
   % endif 
 
   &nbsp;
-  ${ action_button_html(interview_url(i="docassemble.ILAO:feedback.yml", easy_form_interview=ilao_easy_form_url, easy_form_title=ilao_easy_form_title, easy_form_page=user_info().question_id, easy_form_variable=user_info().variable, local=False,reset=1), label=':comment: Was this program helpful?', color="#181c36", size="md", new_window=True) }
+  ${ action_button_html(interview_url(i="docassemble.ILAO:feedback.yml", easy_form_interview=ilao_easy_form_url, easy_form_title=ilao_easy_form_title, easy_form_page=current_context().question_id, easy_form_variable=current_context().variable, local=False,reset=1), label=':comment: Was this program helpful?', color="#181c36", size="md", new_window=True) }
 ---
 generic object: ALDocumentBundle
 template: x.send_email_template

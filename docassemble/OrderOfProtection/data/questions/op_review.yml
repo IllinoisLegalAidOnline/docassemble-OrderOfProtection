@@ -15,6 +15,10 @@ review:
     button: |
       **Your name:**
       ${users[0].name.full(middle="full")}
+  - Edit: users[0].birthdate
+    button: |
+      **Your birthdate:**
+      ${ users[0].birthdate }
   - Edit: 
       - trial_court_index
       - recompute:
@@ -1893,6 +1897,10 @@ review:
     button: |
       **Your name:**
       ${users[0].name.full(middle="full")}
+  - Edit: users[0].birthdate
+    button: |
+      **Your birthdate:**
+      ${ users[0].birthdate }
   - Edit: 
       - trial_court_index
       - recompute:
