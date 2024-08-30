@@ -24,7 +24,9 @@ default screen parts:
 
     % if nav.get_section() != None:
     % if nav.get_section() != "section_intro" and nav.get_section() != "section_download":
-    % if "review screen" not in current_context().question_id:
+    % if current_context().question_id == None:
+    ${ action_button_html(url_action('review_answers'), label=':edit: Edit answers', color='success', size="md") }
+    % elif "review screen" not in current_context().question_id:
     ${ action_button_html(url_action('review_answers'), label=':edit: Edit answers', color='success', size="md") }
     % endif
     % endif
