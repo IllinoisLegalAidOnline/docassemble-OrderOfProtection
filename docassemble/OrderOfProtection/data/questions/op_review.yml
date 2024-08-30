@@ -1152,15 +1152,72 @@ review:
       **What should ${other_parties[0].name.full(middle="full")}'s parent or guardian be ordered to do?**
       ${ respondent_parent_order }
     show if: respondent_parent_help == "Yes"
+
+  - Edit: other_parties[0].sex
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s sex (public):**
+      ${ other_parties[0].sex }
+  - Edit: other_parties[0].sex_other
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s other sex (public):**
+      ${ other_parties[0].sex_other }
+    show if: other_parties[0].sex == 'other'
+  - Edit: respondent_sex_at_birth
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s sex assigned at birth:**
+      % if respondent_sex_at_birth == "None":
+      None entered
+      % else:
+      % if respondent_sex_at_birth == 'male':
+      Male
+      % else:
+      Female
+      % endif
+      % endif
+  - Edit: other_parties[0].gender
+    button: |
+      **What is ${other_parties[0].name.full(middle="full")}'s gender identity?**
       
+      % if other_parties[0].gender.all_false():
+      * None entered
+      % endif
+      % if other_parties[0].gender['male'] == True:
+      * Male
+      % endif
+      % if other_parties[0].gender['female'] == True:
+      * Female
+      % endif
+      % if other_parties[0].gender['transfem'] == True:
+      * Transgender woman / Transfeminine
+      % endif
+      % if other_parties[0].gender['transmasc'] == True:
+      * Transgender man / Transmasculine
+      % endif
+      % if other_parties[0].gender['nonbinary'] == True:
+      * Nonbinary / Gender non-conforming
+      % endif
+      % if other_parties[0].gender['other'] == True:
+      * Other
+      % endif
+  - Edit: other_parties[0].gender
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s other gender identity:**
+      ${ respondent_gender_other }
+    show if: other_parties[0].gender['other'] == True
+
   - Edit: other_parties[0].gender
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s gender?**
+      % if other_parties[0].gender == "":
+      None entered
+      % endif
       % if other_parties[0].gender == 'other':
       ${ respondent_gender_other }
       % else:
       ${ other_parties[0].gender }
       % endif
+    show if: trial_court_index != -1
+    
   - Edit: other_parties[0].race
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s race?**
@@ -1226,22 +1283,22 @@ review:
       **Other names ${other_parties[0].name.full(middle="full")} has used:**
       ${ alias_names }
     show if: trial_court_index == -1
-  - Edit: respondent_on_probation
-    button: |
-      **Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?**
-      % if respondent_on_probation == "Yes":
-      Yes
-      % elif respondent_on_probation == "No":
-      No
-      % else:
-      I don't know.
-      % endif
-    show if: trial_court_index == -1
-  - Edit: respondent_probation_county
-    button: |
-      **Probation county:**
-      ${ respondent_probation_county }
-    show if: respondent_on_probation == "Yes" and trial_court_index == -1
+#  - Edit: respondent_on_probation
+#    button: |
+#      **Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?**
+#      % if respondent_on_probation == "Yes":
+#      Yes
+#      % elif respondent_on_probation == "No":
+#      No
+#      % else:
+#      I don't know.
+#      % endif
+#    show if: trial_court_index == -1
+#  - Edit: respondent_probation_county
+#    button: |
+#      **Probation county:**
+#      ${ respondent_probation_county }
+#    show if: respondent_on_probation == "Yes" and trial_court_index == -1
   - Edit: caution_reasons
     button : |
       **Reasons sheriff should use caution when approaching ${other_parties[0].name.full(middle="full")}:**
@@ -1251,6 +1308,9 @@ review:
       % else:
       % if caution_reasons['illness']:
       * They have a history of mental illness.
+      % endif
+      % if caution_reasons['suicidal']:
+      * They are now or have been suicidal.
       % endif
       % if caution_reasons['alcohol']:
       * They are likely to be under the influence of alcohol.
@@ -1294,9 +1354,17 @@ review:
       % endif
   - Edit: other_parties[0].phone_number
     button: |
-      **${other_parties[0].name.full(middle="full")}'s phone number:**
+      **${other_parties[0].name.full(middle="full")}'s home phone number:**
       % if other_parties[0].phone_number != "":
       ${ phone_number_formatted(other_parties[0].phone_number) }      
+      % else:
+      ${ "do not know" }
+      % endif
+  - Edit: other_parties[0].mobile_number
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s cell number:**
+      % if other_parties[0].mobile_number != "":
+      ${ phone_number_formatted(other_parties[0].mobile_number) }      
       % else:
       ${ "do not know" }
       % endif
@@ -1308,7 +1376,15 @@ review:
       % else:
       ${ "do not know" }
       % endif
-      
+  - Edit: respondent_on_social_media
+    button: |
+      **Is ${other_parties[0].name.full(middle="full")} active on social media?**
+      ${ respondent_on_social_media }      
+  - Edit: respondent_social_media_accounts
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s social media accounts:**
+      ${ respondent_social_media_accounts }
+    show if: respondent_on_social_media == 'Yes'
   - Edit: knows_respondent_work
     button: |
       **Do you know ${other_parties[0].name.full(middle="full")}'s work info?**
@@ -3053,15 +3129,72 @@ review:
       **What should ${other_parties[0].name.full(middle="full")}'s parent or guardian be ordered to do?**
       ${ respondent_parent_order }
     show if: respondent_parent_help == "Yes"
+
+  - Edit: other_parties[0].sex
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s sex (public):**
+      ${ other_parties[0].sex }
+  - Edit: other_parties[0].sex_other
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s other sex (public):**
+      ${ other_parties[0].sex_other }
+    show if: other_parties[0].sex == 'other'
+  - Edit: respondent_sex_at_birth
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s sex assigned at birth:**
+      % if respondent_sex_at_birth == "None":
+      None entered
+      % else:
+      % if respondent_sex_at_birth == 'male':
+      Male
+      % else:
+      Female
+      % endif
+      % endif
+  - Edit: other_parties[0].gender
+    button: |
+      **What is ${other_parties[0].name.full(middle="full")}'s gender identity?**
       
+      % if other_parties[0].gender.all_false():
+      * None entered
+      % endif
+      % if other_parties[0].gender['male'] == True:
+      * Male
+      % endif
+      % if other_parties[0].gender['female'] == True:
+      * Female
+      % endif
+      % if other_parties[0].gender['transfem'] == True:
+      * Transgender woman / Transfeminine
+      % endif
+      % if other_parties[0].gender['transmasc'] == True:
+      * Transgender man / Transmasculine
+      % endif
+      % if other_parties[0].gender['nonbinary'] == True:
+      * Nonbinary / Gender non-conforming
+      % endif
+      % if other_parties[0].gender['other'] == True:
+      * Other
+      % endif
+  - Edit: other_parties[0].gender
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s other gender identity:**
+      ${ respondent_gender_other }
+    show if: other_parties[0].gender['other'] == True
+
   - Edit: other_parties[0].gender
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s gender?**
+      % if other_parties[0].gender == "":
+      None entered
+      % endif
       % if other_parties[0].gender == 'other':
       ${ respondent_gender_other }
       % else:
       ${ other_parties[0].gender }
       % endif
+    show if: trial_court_index != -1
+      
   - Edit: other_parties[0].race
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s race?**
@@ -3127,22 +3260,22 @@ review:
       **Other names ${other_parties[0].name.full(middle="full")} has used:**
       ${ alias_names }
     show if: trial_court_index == -1
-  - Edit: respondent_on_probation
-    button: |
-      **Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?**
-      % if respondent_on_probation == "Yes":
-      Yes
-      % elif respondent_on_probation == "No":
-      No
-      % else:
-      I don't know.
-      % endif
-    show if: trial_court_index == -1
-  - Edit: respondent_probation_county
-    button: |
-      **Probation county:**
-      ${ respondent_probation_county }
-    show if: respondent_on_probation == "Yes" and trial_court_index == -1
+#  - Edit: respondent_on_probation
+#    button: |
+#      **Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?**
+#      % if respondent_on_probation == "Yes":
+#      Yes
+#      % elif respondent_on_probation == "No":
+#      No
+#      % else:
+#      I don't know.
+#      % endif
+#    show if: trial_court_index == -1
+#  - Edit: respondent_probation_county
+#    button: |
+#      **Probation county:**
+#      ${ respondent_probation_county }
+#    show if: respondent_on_probation == "Yes" and trial_court_index == -1
   - Edit: caution_reasons
     button : |
       **Reasons sheriff should use caution when approaching ${other_parties[0].name.full(middle="full")}:**
@@ -3152,6 +3285,9 @@ review:
       % else:
       % if caution_reasons['illness']:
       * They have a history of mental illness.
+      % endif
+      % if caution_reasons['suicidal']:
+      * They are now or have been suicidal.
       % endif
       % if caution_reasons['alcohol']:
       * They are likely to be under the influence of alcohol.
@@ -3195,9 +3331,17 @@ review:
       % endif
   - Edit: other_parties[0].phone_number
     button: |
-      **${other_parties[0].name.full(middle="full")}'s phone number:**
+      **${other_parties[0].name.full(middle="full")}'s home phone number:**
       % if other_parties[0].phone_number != "":
       ${ phone_number_formatted(other_parties[0].phone_number) }      
+      % else:
+      ${ "do not know" }
+      % endif
+  - Edit: other_parties[0].mobile_number
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s cell number:**
+      % if other_parties[0].mobile_number != "":
+      ${ phone_number_formatted(other_parties[0].mobile_number) }      
       % else:
       ${ "do not know" }
       % endif
@@ -3209,7 +3353,15 @@ review:
       % else:
       ${ "do not know" }
       % endif
-      
+  - Edit: respondent_on_social_media
+    button: |
+      **Is ${other_parties[0].name.full(middle="full")} active on social media?**
+      ${ respondent_on_social_media }      
+  - Edit: respondent_social_media_accounts
+    button: |
+      **${other_parties[0].name.full(middle="full")}'s social media accounts:**
+      ${ respondent_social_media_accounts }
+    show if: respondent_on_social_media == 'Yes'
   - Edit: knows_respondent_work
     button: |
       **Do you know ${other_parties[0].name.full(middle="full")}'s work info?**
