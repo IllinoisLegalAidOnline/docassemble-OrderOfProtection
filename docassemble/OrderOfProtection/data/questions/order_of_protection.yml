@@ -1185,10 +1185,10 @@ fields:
       If you don't remember the exact time, enter "morning" or "afternoon" or "night." Use abbreviations if needed.
   - What happened: incidents[i].name.text
     input type: area
-    rows: 12
+    rows: 18
     maxlength: 800
     help: |
-      The petition has space for about 800 characters for each incident.
+      The petition has space for about 800 characters including spaces for each incident.
 ---
 id: first incident detail
 question: |
@@ -1218,10 +1218,10 @@ fields:
       If you don't remember the exact time, enter "morning" or "afternoon" or "night." Use abbreviations if needed.
   - What happened: incidents[0].name.text
     input type: area
-    rows: 12
+    rows: 18
     maxlength: 800
     help: |
-      The petition has space for about 800 characters for each incident.
+      The petition has space for about 800 characters including spaces for each incident.
 ---
 template: incidents_help
 subject: |
