@@ -3584,18 +3584,20 @@ fields:
     required: False
     help: |
       This could be a name from an earlier marriage or a nickname. If there is more than one, separate by commas.
-#  - Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?: respondent_on_probation
-#    datatype: radio
-#    choices:
-#      - Yes: Yes
-#      - No: No
-#      - I don't know.: idk
-#  - Probation in which county?: respondent_probation_county
-#    required: False
-#    maxlength: 25
-#    show if: 
-#      variable: respondent_on_probation
-#      is: "Yes"
+  - Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?: respondent_on_probation
+    datatype: radio
+    choices:
+      - Yes: Yes
+      - No: No
+      - I don't know.: idk
+  - Probation in which county?: respondent_probation_county
+    required: False
+    maxlength: 40
+    help: |
+      Enter the state if outside Illinois.
+    show if: 
+      variable: respondent_on_probation
+      is: "Yes"
 ---
 id: respondent caution
 question: |
@@ -5899,8 +5901,9 @@ attachment:
     - "respondent_weapons_in_home": ${ True if caution_reasons['home'] == True else "" }
     - "respondent_weapons_description": ${ weapons_description if caution_reasons['armed'] or caution_reasons['home'] == True else "" }        
     - "respondent_suicidal": ${ True if caution_reasons['suicidal'] == True else ''  }    
-#    - "respondent_on_probation":  ${ True if respondent_on_probation == "Yes" else ''  } 
-#    - "respondent_probation_county":  ${ respondent_probation_county if respondent_on_probation == "Yes" else ''  } 
+    - "respondent_probation_yes":  ${ True if respondent_on_probation == "Yes" else ''  } 
+    - "respondent_probation_no":  ${ True if respondent_on_probation == "No" else ''  } 
+    - "respondent_probation_county":  ${ respondent_probation_county if respondent_on_probation == "Yes" else ''  } 
     
     - "respondent_employer": |
         % if knows_respondent_work:
