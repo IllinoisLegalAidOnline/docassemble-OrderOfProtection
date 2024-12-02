@@ -4595,16 +4595,17 @@ attachment:
   editable: False
   pdf template file: efiling_exemption.pdf
   fields:
-    - "county": ${ trial_court.address.county.upper() }
+    - "county": ${ trial_court.address.county }
     - "petitioner__1": ${ users[0].name.full(middle="full") }
     - "respondent": ${other_parties[0].name.full(middle="full")}
     - "case_number__1": ${ case_number }
     - "reason_dv": ${ True }
+    - "e_signature": ${ users[0].name.full(middle="full") if e_signature else '' }
     - "petitioner__2": ${ users[0].name.full(middle="full") }
-    - "user_mail_address_line_one": ${ users[0].address.line_one(bare=True) }
-    - "user_mail_address_city_state_zip": ${ users[0].address.line_two() }
+    - "user_address_one_line": ${ users[0].address.on_one_line(bare=True) }
     - "user_phone_number": ${ phone_number_formatted(users[0].phone_number) }
     - "user_email": ${ users[0].email if users[0].email_notice else ""}
+
 ---
 attachment:
   variable name: op_summons[i]
