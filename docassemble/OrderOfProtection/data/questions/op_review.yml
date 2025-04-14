@@ -10,7 +10,7 @@ review:
 
   # section: Basic information
   - note: |
-      [**-------- Basic information --------**](${ url_action('section_basic') })
+      <h4>Basic information</h4>
   - Edit: users[0].name.first
     button: |
       **Your name:**
@@ -122,7 +122,7 @@ review:
 
   # section: People you want to protect
   - note: |
-      [**----------- People you want to protect -----------**](${ url_action('section_petitioner') })
+      <h4>People you want to protect</h4>
   - Edit: protect_petitioner
     button: |
       **People to protect with this Order of Protection:**
@@ -187,7 +187,7 @@ review:
 
   # section: What happened
   - note: |
-      [**----------- What happened -----------**](${ url_action('section_incidents') })
+      <h4>What happened</h4>
   - Edit: incidents.revisit
     button: |
       **Incidents: (Edit to review what happened or change details)**
@@ -198,7 +198,7 @@ review:
       
   # section: protections
   - note: |
-      [**----------- Protections -----------**](${ url_action('section_protections') })
+      <h4>Protections</h4>
   - Edit: no_harassment
     button: |
       **What you want the court to order ${other_parties[0].name.full(middle="full")} to not do:**
@@ -401,7 +401,7 @@ review:
 
   # section: children
   - note: |
-      [**----------- About your children (optional) -----------**](${ url_action('section_child') })
+      <h4>About your children (optional)</h4>
     show if: minor_kids_with_respondent  
   - Edit: parentage
     button: |
@@ -772,7 +772,7 @@ review:
     
   # section: property
   - note: |
-      [**----------- Property details -----------**](${ url_action('section_property') })
+      <h4>Property details</h4>
   - Edit: award_personal_property
     button: |
       **Is there personal property you want the court to give to you?**
@@ -976,7 +976,7 @@ review:
 
   # section: remedies
   - note: |
-      [**----------- Other remedies -----------**](${ url_action('section_remedies') })
+      <h4>Other remedies</h4>
   - Edit: temp_child_support
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary child support?**
@@ -1110,7 +1110,7 @@ review:
 
   # section: respondent
   - note: |
-      [**----------- About the person who caused abuse -----------**](${ url_action('section_respondent') })
+      <h4>About the person who caused abuse</h4>
   - Edit: knows_respondent_dob
     button: |
       **What you know about ${other_parties[0].name.full(middle="full")}'s birthdate:**
@@ -1483,8 +1483,7 @@ review:
 
   # section: filing info
   - note: |
-      [**----------- Filing and service details -----------**](${ url_action('section_filing_info') })
-
+      <h4>Filing and service details</h4>
   - Edit: service_method
     button: |
       **How do you want ${other_parties[0].name.full(middle="full")} to be served?**
