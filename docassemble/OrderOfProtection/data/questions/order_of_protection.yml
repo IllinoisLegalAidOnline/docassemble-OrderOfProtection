@@ -1,6 +1,6 @@
 metadata:
-  title: Order of protection
-  short title: Order of protection
+  title: Order of Protection
+  short title: Order of Protection
   comment: This program helps you ask the court to order someone to stop harming or threatening you or other household members.
   authors:
     - Matt Newsted
@@ -504,7 +504,7 @@ subquestion: |
   * Monday through Friday: 9:00 PM to 3:00 AM
   * Saturday and Sunday: 1:00 PM to 6:00 PM
   
-  If you want to schedule a remote hearing during these limited hours, use the [**Emergency Order of Protection - Cook County Easy Form**](https://www.illinoislegalaid.org/legal-information/emergency-order-protection-cook-county) instead. Otherwise, click **Next** to continue making your forms.
+  If you want to schedule a remote hearing during these limited hours, use the [**Emergency Order of Protection - Cook County Easy Form**](https://www.illinoislegalaid.org/node/176901) instead. Otherwise, click **Next** to continue making your forms.
 
 ---
 id: in illinois
@@ -674,7 +674,7 @@ question: |
 subquestion: |
   You can file for an Order of Protection only if the person you want protected has a qualifying relationship with the abuser.
   
-  A Stalking No Contact Order might work better in your situation. Read ILAO's article about [**Getting a no contact order for stalking**](https://www.illinoislegalaid.org/node/30216) to learn more.
+  A Stalking No Contact Order might work better in your situation. Read ILAO's article about [**Getting a Stalking No Contact Order**](https://www.illinoislegalaid.org/node/30216) to learn more.
   
 buttons:
   - Exit: exit
@@ -1031,11 +1031,11 @@ id: more ops
 question: |
   Are there any more Orders of Protection you would like to list?
 subquestion: |
-  You can enter up to 9 orders of protection in total.
+  You can enter up to 9 Orders of Protection in total.
   % if len(other_ops.elements) == 1:  
-  So far you told us about 1 other order of protection. 
+  So far you told us about 1 other Order of Protection. 
   % else:
-  So far you told us about ${ str(len(other_ops.elements)) } other orders of protection. 
+  So far you told us about ${ str(len(other_ops.elements)) } other Orders of Protection. 
   % endif
 field: other_ops.there_is_another
 choices:
@@ -3837,7 +3837,7 @@ objects:
   - op_petition_single_pdf_bundle: ALDocumentBundle.using(elements=[op_petition, additional_cases, additional_incidents], filename="petition.pdf", title="Petition for Order of Protection")
   - sheriff_info_bundle: ALDocumentBundle.using(elements=[sheriff_cover_sheet, cook_sheriff_info_sheet], filename="cook_sheriff_info_sheet.pdf", title="Confidential Sheriff Information Sheet")
   - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, cook_dv_cover_sheet, op_petition_single_pdf_bundle, op_schools, emergency_op, plenary_op, op_summons, sheriff_info_bundle, affidavit_pt_supervisor, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
-  - al_court_bundle: ALDocumentBundle.using(elements=[cook_dv_cover_sheet, op_petition_single_pdf_bundle, op_schools, emergency_op, plenary_op, op_summons, cook_sheriff_info_sheet, efiling_exemption], filename="order_of_protection.pdf", title="Order of protection")
+  - al_court_bundle: ALDocumentBundle.using(elements=[cook_dv_cover_sheet, op_petition_single_pdf_bundle, op_schools, emergency_op, plenary_op, op_summons, cook_sheriff_info_sheet, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
 
 ---
 attachment:
