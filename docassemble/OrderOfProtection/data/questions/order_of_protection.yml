@@ -372,6 +372,11 @@ code: |
   stuff_to_snapshot['zip'] = showifdef('users[0].address.zip')
 
   stuff_to_snapshot['downloaded_forms'] = showifdef('forms_assembling')
+
+  try:
+    stuff_to_snapshot['session_id'] = current_context().session
+  except:
+    pass
   
   store_variables_snapshot(
   	data=stuff_to_snapshot, persistent=True
