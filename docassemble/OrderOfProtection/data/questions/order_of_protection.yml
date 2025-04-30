@@ -98,9 +98,6 @@ code: |
   nav.set_section('section_intro')
   sees_nav_bar
   snapshot_start  
-  #testing new questions
-  #property_transfer_person
-  #end testing new questions
   instructions
   whats_next
   accept_terms
@@ -117,9 +114,13 @@ code: |
     other_jurisdiction_location
   if trial_court_index == -1:
     cook_after_hours
-    
-  if relationship_type.all_false():
+
+  relationship_bg
+  if not has_required_relationship:
     other_relief
+  
+  #  if relationship_type.all_false():
+  #    other_relief
   users.gather(number=1)
   other_parties.gather(number=1)
   if minor_kids_with_respondent:
@@ -128,11 +129,7 @@ code: |
   nav.set_section('section_petitioner')
   set_progress(20)
   
-  #minor_kids_with_respondent
-  #minor_kids_logic_check
   protect_petitioner
-  #if minor_kids_with_respondent:
-  #  shared_kids.gather()
   if protect_petitioner_kids:
     petitioner_kids.gather()
   if protect_dependent_adult:
@@ -272,8 +269,9 @@ code: |
   set_progress(70)
   if minor_kids_with_respondent:
     temp_child_support
-  if relationship_type['se'] == True or relationship_type['xs'] == True:
-    temp_maintenance    
+  if relationship_ma:
+    if relationship_se == True or relationship_xs == True:
+      temp_maintenance    
   expenses_none    
     
   if request_counseling:
@@ -627,41 +625,79 @@ subquestion: |
   
   You can check more than one.
 fields:
-  - no label: relationship_type
-    datatype: checkboxes
-    choices:
-      - I am their spouse.: se
-      - I am their ex-spouse.: xs
-      - I am their boyfriend, girlfriend, or romantic partner (including ex-).: bg
-      - We have a child in common (never married).: cc
-      - We share or shared a living space.: cs
-        help: |
-          Example: We share a common area like a kitchen. This would not apply if you just had apartments in the same building.
-      - I am their child.: ch
-      - I am their parent.: pa
-      - I am their brother, sister, or sibling.: sb
-      - They are another family member.: of
-        help: |
-          Examples: Uncle, aunt, or cousin.
-      - I am their step child.: sc
-      - I am their step brother, step sister, or step sibling.: ss
-      - I am their step parent.: sp
-      - I am their grandchild.: gc
-      - I am their grandparent.: gp
-      - I am their in-law.: il
-      - I have a disability and receive care from the abuser.: pd
-      - I am a high-risk adult with disabilities and the abuser is my personal caregiver.: pc
-        help: |
-          A **high risk adult with disabilities** is a person aged 18 or over whose physical or mental disability keeps them from protecting themself from abuse, neglect, or exploitation.
-      - I have a disability and the abuser is my personal assistant or caregiver.: pr
-      - The abuser is a family or household member of my foster child.: f
-      - The abuser is a family or household member of my adopted child, or of my prospective adopted child.: a
-      - The abuser is a family or household member of a child that I am the legally-appointed custodian of.: l
+  - I am their boyfriend, girlfriend, or romantic partner (including ex-).: relationship_bg
+    datatype: yesnowide
+  - We have children together and were never married.: relationship_cc
+    datatype: yesnowide
+  - We have or might have children together.: relationship_ac
+    datatype: yesnowide
+  - We are related through a current or past marriage.: relationship_ma
+    help: |
+      Select this if you are a spouse, ex-spouse, in-law, step-child, step-brother, step-sister, step-sibling, or other family member of the person who caused the abuse.
+    datatype: yesnowide
+  - I am their spouse.: relationship_se
+    datatype: yesno
+    show if: relationship_ma
+  - I am their ex-spouse.: relationship_xs
+    datatype: yesno
+    show if: relationship_ma
+  - I am their in-law.: relationship_il
+    datatype: yesno
+    show if: relationship_ma
+  - I am their step child.: relationship_sc
+    datatype: yesno
+    show if: relationship_ma
+  - I am their step brother, step sister, or step sibling.: relationship_ss
+    datatype: yesno
+    show if: relationship_ma
+  - They are another family member.: relationship_ofm
+    datatype: yesno
+    show if: relationship_ma
+  - We share or shared a living space.: relationship_cs
+    datatype: yesnowide
+    help: |
+      Example: We share a common area like a kitchen. This would not apply if you just had apartments in the same building.
+  - We are related through blood.: relationship_bl
+    datatype: yesnowide
+    help: |
+      Select this if you are a child, parent, brother, sister, sibling, grandchild, grandparent, or other family member of the person who caused the abuse.
+  - I am their child.: relationship_ch
+    datatype: yesno
+    show if: relationship_bl
+  - I am their parent.: relationship_pa
+    datatype: yesno
+    show if: relationship_bl
+  - I am their brother, sister, or sibling.: relationship_sb
+    datatype: yesno
+    show if: relationship_bl
+  - I am their grandchild.: relationship_gc
+    datatype: yesno
+    show if: relationship_bl
+  - I am their grandparent.: relationship_gp
+    datatype: yesno
+    show if: relationship_bl
+  - They are another family member.: relationship_ofb
+    datatype: yesno
+    help: |
+      Examples: Uncle, aunt, or cousin.
+    show if: relationship_bl
+  - We have a blood relationship through a child.: relationship_bk
+    datatype: yesnowide
+  - The abuser is a family or household member of my adopted, prospective adopted, or foster child.: relationship_a
+    datatype: yesnowide
+  - The abuser is a family or household member of a child that I am the legally-appointed guardian or custodian of.: relationship_l
+    datatype: yesnowide
+  - The abuser is my personal caregiver, and I am a high-risk adult with disabilities or otherwise need care.: relationship_pc
+    datatype: yesnowide
+    help: |
+      A **high risk adult with disabilities** is a person aged 18 or over whose physical or mental disability keeps them from protecting themself from abuse, neglect, or exploitation.
+
 validation code: |
-  if relationship_type['se'] == True and relationship_type['cc'] == True:
-    validation_error("You have both married (spouse) and never married options selected. Please adjust your answers.")
-  if relationship_type['xs'] == True and relationship_type['cc'] == True:
-    validation_error("You have both formerly married (ex-spouse) and never married options selected. Please adjust your answers.")
+  if relationship_ma:
+    if relationship_se == True and relationship_cc == True:
+      validation_error('You selected both "never married" and "related through marriage" (spouse). Please adjust your answers.', field="relationship_cc")
+    if relationship_xs == True and relationship_cc == True:
+      validation_error('You selected both "never married" and "related through marriage" (ex-spouse). Please adjust your answers.', field="relationship_cc")
 ---
 # removed after relationship answers reworded
 template: relationship_example
@@ -671,6 +707,59 @@ content: |
   If you want an Order of Protection against your mother, select **Child** because you are the child of that person.
   
   If you want an Order of Protection against the father of your foster child, select **Family or household member of my foster child**.
+---
+depends on:
+  - relationship_bg
+  - relationship_cc
+  - relationship_ac
+  - relationship_ma
+  - relationship_se
+  - relationship_xs
+  - relationship_il
+  - relationship_sc
+  - relationship_ss
+  - relationship_ofm
+  - relationship_cs
+  - relationship_bl
+  - relationship_ch
+  - relationship_pa
+  - relationship_sb
+  - relationship_gc
+  - relationship_gp
+  - relationship_ofb
+  - relationship_bk
+  - relationship_a
+  - relationship_l
+  - relationship_pc
+code: |
+  relationship_list = [
+      relationship_bg,
+      relationship_cc,
+      relationship_ac,
+      relationship_ma,
+      relationship_se,
+      relationship_xs,
+      relationship_il,
+      relationship_sc,
+      relationship_ss,
+      relationship_ofm,
+      relationship_cs,
+      relationship_bl,
+      relationship_ch,
+      relationship_pa,
+      relationship_sb,
+      relationship_gc,
+      relationship_gp,
+      relationship_ofb,
+      relationship_bk,
+      relationship_a,
+      relationship_l,
+      relationship_pc
+  ]
+  if any(relationship_list):
+    has_required_relationship = True
+  else:
+    has_required_relationship = False
 ---
 id: not proper relationship
 event: other_relief
@@ -4286,10 +4375,21 @@ attachment:
     - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == "Yes" else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }
     - "animals_list": ${ comma_and_list([item.name.text + " (" + indefinite_article(item.description) + ")" for item in pets]) if possession_of_animals else "" }
-    - "temp_support_cb": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) or (temp_maintenance == True and (relationship_type['se'] == True or relationship_type['xs'] == True)) else '' }
+    - "temp_support_cb": |
+        % if temp_child_support and minor_kids_with_respondent:
+        ${ True }
+        % elif relationship_ma:
+        % if temp_maintenance and (relationship_se or relationship_xs):
+        ${ True }
+        % endif        
+        % endif        
     - "temp_child_support": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) else '' }
-    - "temp_maintenance": ${ True if (temp_maintenance == True and (relationship_type['se'] == True or relationship_type['xs'] == True)) else '' }
-
+    - "temp_maintenance": |
+        % if relationship_ma:
+        % if temp_maintenance and (relationship_se or relationship_xs):
+        ${ True }
+        % endif        
+        % endif        
     - "payment_for_losses_cb":  |
         % if not expenses_none and (expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_housing or expenses_children or expenses_lawyer or expenses_other):
         ${ True }
@@ -5661,11 +5761,25 @@ attachment:
     - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == "Yes" else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }
     - "animals_list": ${ comma_and_list([item.name.text + " (" + indefinite_article(item.description) + ")" for item in pets]) if possession_of_animals else "" }
-    - "temp_support_cb": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) or (temp_maintenance == True and (relationship_type['se'] == True or relationship_type['xs'] == True)) else '' }
-    - "temp_child_support": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) else '' }    
+
+
+    - "temp_support_cb": |
+        % if temp_child_support and minor_kids_with_respondent:
+        ${ True }
+        % elif relationship_ma:
+        % if temp_maintenance and (relationship_se or relationship_xs):
+        ${ True }
+        % endif        
+        % endif        
+    - "temp_child_support": ${ True if (temp_child_support == True and minor_kids_with_respondent == True) else '' }
     
      # page 8
-    - "temp_maintenance": ${ True if (temp_maintenance == True and (relationship_type['se'] == True or relationship_type['xs'] == True)) else '' }
+    - "temp_maintenance": |
+        % if relationship_ma:
+        % if temp_maintenance and (relationship_se or relationship_xs):
+        ${ True }
+        % endif        
+        % endif        
     - "payment_for_losses_cb":  |
         % if not expenses_none and (expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_housing or expenses_children or expenses_lawyer or expenses_other):
         ${ True }
