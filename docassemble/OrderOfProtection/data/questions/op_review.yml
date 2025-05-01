@@ -257,18 +257,8 @@ review:
 
   - Edit: stay_away
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stay away at all times?**
+      **Do you want ${other_parties[0].name.full(middle="full")} to stay away and have no contact at all times?**
       ${ word(yesno(stay_away)) }
-#  - Edit: stay_away_distance
-#    button: |
-#      **How far do you want ${other_parties[0].name.full(middle="full")} to stay away, in feet? (optional)**
-#      ${ int(stay_away_distance) }
-#    show if: stay_away
-
-  - Edit: no_communication
-    button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stop communicating with you?**
-      ${ word(yesno(no_communication)) }
 
   - Edit: hide_address
     button: |
@@ -305,7 +295,7 @@ review:
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away from and not be at your residence while under the influence?**
       ${ word(yesno(no_stay_under_influence)) }
-    show if: not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing'))
+    show if: not (stay_away or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing'))
   - Edit: stay_away_jobs
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away from where you work?**
@@ -370,6 +360,49 @@ review:
       ${ "Type: " + schools[1].type + ", Children who attend: " + comma_and_list(schools[1].kids_who_attend.true_values()) }
     show if: stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
 
+  - Edit: stay_away_schools_3
+    button: |
+      **Do you have another school you want ${other_parties[0].name.full(middle="full")} to stay away from?**
+      ${ word(yesno(stay_away_schools_3)) }
+  - Edit: schools[2].address
+    button: |
+      **Second school name and address:**
+      ${ schools[2].name }, ${ schools[2].on_one_line(bare=True) }
+    show if: stay_away_schools_3
+  - Edit: schools[2].hide
+    button: |
+      **Do you want to hide information about ${ schools[2].name } from  ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(schools[2].hide)) }
+    show if: stay_away_schools_3 and (minor_kids_with_respondent or protect_petitioner_kids)
+  - Edit: schools[2].type
+    button: |
+      **Confidential school information about ${ schools[2].name }:**
+      ${ "Type: " + schools[2].type + ", Children who attend: " + comma_and_list(schools[2].kids_who_attend.true_values()) }
+    show if: stay_away_schools_3 and (minor_kids_with_respondent or protect_petitioner_kids)
+
+  - Edit: stay_away_schools_4
+    button: |
+      **Do you have another school you want ${other_parties[0].name.full(middle="full")} to stay away from?**
+      ${ word(yesno(stay_away_schools_4)) }
+  - Edit: schools[3].address
+    button: |
+      **Second school name and address:**
+      ${ schools[3].name }, ${ schools[3].on_one_line(bare=True) }
+    show if: stay_away_schools_4
+  - Edit: schools[3].hide
+    button: |
+      **Do you want to hide information about ${ schools[3].name } from  ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(schools[3].hide)) }
+    show if: stay_away_schools_4 and (minor_kids_with_respondent or protect_petitioner_kids)
+  - Edit: schools[3].type
+    button: |
+      **Confidential school information about ${ schools[3].name }:**
+      ${ "Type: " + schools[3].type + ", Children who attend: " + comma_and_list(schools[3].kids_who_attend.true_values()) }
+    show if: stay_away_schools_4 and (minor_kids_with_respondent or protect_petitioner_kids)
+
+
+  
+  
   - Edit: stay_away_other
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places?**
@@ -1789,11 +1822,14 @@ rows: other_ops
 columns:
   - People involved: |
       row_item.name.text if defined("row_item.name.text") else ""
-  - Details (including state, county, year): |
-      action_button_html(url_action(row_item.attr_name("review_other_op_details")), label="Edit", icon="pencil-alt")
+  - Year: |
+      row_item.year if defined("row_item.year") else ""
+  - Details (including state, county, case number): |
+      action_button_html(url_action(row_item.attr_name("name.text")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
 ---
+#### can probably delete 5/1
 id: edit other ops
 continue button field: x.review_other_op_details
 generic object: DAObject
@@ -1833,14 +1869,17 @@ subquestion: |
 table: other_cases.table
 rows: other_cases
 columns:
-  - Case type: |
+  - People involved: |
       row_item.name.text if defined("row_item.name.text") else ""
-  - Details (including state, county, year): |
-      action_button_html(url_action(row_item.attr_name("review_other_cases_details")), label="Edit", icon="pencil-alt")
+  - Year: |
+      row_item.year if defined("row_item.year") else ""
+  - Details (including state, county, case number): |
+      action_button_html(url_action(row_item.attr_name("name.text")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
 
 ---
+#### can probably delete 5/1
 id: other cases edit
 continue button field: x.review_other_cases_details
 generic object: DAObject
@@ -2266,18 +2305,8 @@ review:
 
   - Edit: stay_away
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stay away at all times?**
+      **Do you want ${other_parties[0].name.full(middle="full")} to stay away and have no contact at all times?**
       ${ word(yesno(stay_away)) }
-#  - Edit: stay_away_distance
-#    button: |
-#      **How far do you want ${other_parties[0].name.full(middle="full")} to stay away, in feet? (optional)**
-#      ${ int(stay_away_distance) }
-#    show if: stay_away
-
-  - Edit: no_communication
-    button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stop communicating with you?**
-      ${ word(yesno(no_communication)) }
 
   - Edit: hide_address
     button: |
@@ -2314,7 +2343,7 @@ review:
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away from and not be at your residence while under the influence?**
       ${ word(yesno(no_stay_under_influence)) }
-    show if: not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing'))
+    show if: not (stay_away or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing'))
   - Edit: stay_away_jobs
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away from where you work?**

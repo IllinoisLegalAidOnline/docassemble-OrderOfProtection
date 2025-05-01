@@ -152,7 +152,7 @@ code: |
   users[0].address.address
   if residence_remedies == 'exclusive possession':
     exclusive_possession_reason
-  if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')):
+  if not (stay_away or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')):
     no_stay_under_influence
   if stay_away_jobs:
     if hide_work_address == False:
@@ -169,16 +169,30 @@ code: |
       if minor_kids_with_respondent or protect_petitioner_kids:
         if schools[1].hide:
           schools[1].type
-  if stay_away_other:
-    if hide_other_address_1:
-      other_locations_hidden_description_1
-    else:  
-      other_locations[0].name
-    if stay_away_other_2:
-      if hide_other_address_2:
-        other_locations_hidden_description_2
-      else:
-        other_locations[1].name
+      if stay_away_schools_3:
+        schools[1].name
+        if minor_kids_with_respondent or protect_petitioner_kids:
+          if schools[2].hide:
+            schools[2].type
+        if stay_away_schools_4:
+          schools[3].name
+          if minor_kids_with_respondent or protect_petitioner_kids:
+            if schools[3].hide:
+              schools[3].type
+
+  if max_other_places > 0:
+    if stay_away_other:
+      if hide_other_address_1:
+        other_locations_hidden_description_1
+      else:  
+        other_locations[0].name
+      if max_other_places > 1:
+        if stay_away_other_2:
+          if hide_other_address_2:
+            other_locations_hidden_description_2
+          else:
+            other_locations[1].name
+  
   if same_school:
     if same_school_restrictions != "none":
       same_school_name
@@ -1102,10 +1116,22 @@ question: |
   Tell us about the ${ ordinal(i) } Order of Protection
 fields:
   - Names of people involved (separate by commas): other_ops[i].name.text
+    maxlength: 35
+    help: |
+      The form does not have much room. You may need to abbreviate or use initials.
   - State: other_ops[i].state
     code: |
       states_list()
   - County: other_ops[i].county
+    code: |
+      court_list._load_courts()["address_county"].unique()      
+    js show if: |
+      val('other_ops[i].state') === "IL"
+  - County: other_ops[i].county
+    maxlength: 25
+    js show if: |
+      val('other_ops[i].state') != "IL"
+  - Case number: other_ops[i].case_number
   - Year: other_ops[i].year
     input type: combobox
     datatype: integer
@@ -1114,6 +1140,9 @@ fields:
     max: ${ today().year }
     code: |
       reversed(range(today().year-120, today().year+1))
+  - Is the case still ongoing?: other_ops[i].is_pending
+    datatype: yesno
+      
 ---
 id: more ops
 question: |
@@ -1135,7 +1164,9 @@ code: |
   other_ops[i].name.text
   other_ops[i].state
   other_ops[i].county
+  other_ops[i].case_number
   other_ops[i].year
+  other_ops[i].is_pending
   other_ops[i].complete = True
 ---
 code: |
@@ -1159,8 +1190,6 @@ subquestion: |
   * Guardianship
   * Adoption
   * Abuse and neglect
-  * Domestic battery
-  * Violation of an Order of Protection.
   
   **Note:** do not include other Orders of Protection.
 fields:
@@ -1174,25 +1203,37 @@ fields:
 id: other cases detail
 question: |
   Tell us about the ${ ordinal(i) } court case
+subquestion: |
+  Examples include:
+  
+  * Divorce
+  * Custody
+  * Child support
+  * Paternity or parentage
+  * Parenting time
+  * Guardianship
+  * Adoption
+  * Abuse and neglect
+  
+  **Note:** do not include other Orders of Protection.
 fields:
-  - Type of court case: other_cases[i].name.text
+  - Names of people involved (separate by commas): other_cases[i].name.text
+    maxlength: 35
     help: |
-      Examples include:
-      
-      * Divorce
-      * Custody
-      * Child support
-      * Paternity or parentage
-      * Parenting time
-      * Guardianship
-      * Adoption
-      * Abuse and neglect
-      * Domestic battery
-      * Violation of an Order of Protection.
+      The form does not have much room. You may need to abbreviate or use initials.
   - State: other_cases[i].state
     code: |
       states_list()
   - County: other_cases[i].county
+    code: |
+      court_list._load_courts()["address_county"].unique()      
+    js show if: |
+      val('other_cases[i].state') === "IL"
+  - County: other_cases[i].county
+    maxlength: 25
+    js show if: |
+      val('other_cases[i].state') != "IL"
+  - Case number: other_cases[i].case_number
   - Year: other_cases[i].year
     input type: combobox
     datatype: integer
@@ -1201,6 +1242,8 @@ fields:
     max: ${ today().year }
     code: |
       reversed(range(today().year-120, today().year+1))
+  - Is the case still ongoing?: other_cases[i].is_pending
+    datatype: yesno    
 ---
 id: more cases
 question: |
@@ -1218,9 +1261,12 @@ choices:
   - No: False
 ---
 code: |
+  other_cases[i].name.text
   other_cases[i].state
   other_cases[i].county
+  other_cases[i].case_number
   other_cases[i].year
+  other_cases[i].is_pending
   other_cases[i].complete = True
 ---
 code: |
@@ -1323,7 +1369,7 @@ id: more incidents
 question: |
   Are there any more incidents of abuse you would like to list?
 subquestion: |
-  You can enter up to 9 incidents in total.
+  You can enter up to 12 incidents in total.
   % if len(incidents.elements) == 1:  
   So far you told us about 1 incident. 
   % else:
@@ -1341,7 +1387,7 @@ code: |
   incidents[i].complete = True
 ---
 code: |
-  if incidents.number_gathered() >= 9:
+  if incidents.number_gathered() >= 12:
     incidents.there_is_another = False
 ---
 id: no abuse
@@ -1435,24 +1481,22 @@ id: stay away
 question: |
   Do you want the court to order ${other_parties[0].name.full(middle="full")} to stay away and not communicate with people protected by this order?
 subquestion: |
-  * If ordered to **stay away** from people protected by the order, ${other_parties[0].name.full(middle="full")} must not have any physical, non-physical, direct or indirect contact with protected people.
-  * If ordered to **not communicate** with people protected by the order, communication includes oral communication, written communication, sign language, telephone and cell phone calls, faxes, texts, tweets, emails, posts, or communication by any other social media, and all other communication with protected people. This also includes contact or communication through others who may not know about the Order of Protection.
+  If ordered to stay away, ${other_parties[0].name.full(middle="full")} must not have any physical, non-physical, direct, or indirect contact with the people protected by this order. This includes:
   
-  Check all that apply.
+  * Oral communication,
+  * Written communication,
+  * Sign language,
+  * Telephone and cell phone calls,
+  * Faxes,
+  * Texts,
+  * Emails,
+  * Posts, tweets, or communication by any other social media, and
+  * All other communication
+  
+  with people protected by this order. This also includes contact or communication through others who may not know about the Order of Protection.
 fields:
-  - Stay away at all times: stay_away
-    datatype: yesnowide
-# removed stay away distance per SME feedback. leaving blank on form
-#  - How far do you want ${other_parties[0].name.full(middle="full")} to stay away, in feet? (optional): stay_away_distance
-#    datatype: integer
-#    required: False
-#    show if: 
-#      variable: stay_away
-#      is: True
-#    help: |
-#      A car is about 15 feet long, and a basketball court is about 90 feet long.
-  - No communication: no_communication
-    datatype: yesnowide
+  - ${other_parties[0].name.full(middle="full")} should stay away at all times and have no contact?: stay_away
+    datatype: yesnoradio
 ---
 id: no stay under influence
 question: |
@@ -1622,6 +1666,7 @@ question: |
 subquestion: |
 fields:
   - Employer or company: other_parties[0].employer
+    maxlength: 35
   - Occupation or type of work: respondent_work_type
     required: false
     help: |
@@ -1678,6 +1723,7 @@ subquestion: |
 
 fields:
   - Employer or company: jobs[i].employer
+    maxlength: 35
   - Street address: jobs[i].address
     address autocomplete: True
   - Address line 2: jobs[i].unit
@@ -1699,9 +1745,13 @@ id: stay away school question
 question: |
   Do you want ${other_parties[0].name.full(middle="full")} to stay away from any schools, kindergartens, or daycare centers?
 subquestion: |
-  The statewide Order of Protection forms have space for up to 2 schools or daycares.
+  % if minor_kids_with_respondent or protect_petitioner_kids:
+  The statewide Order of Protection forms have space for up to 4 schools or daycares.
   
   **Note:** You can keep the name and address of these schools confidential if your children attend them.
+  % else:
+  The statewide Order of Protection forms have space for up to 2 schools or daycares.
+  % endif
 fields:
   - no label: stay_away_schools
     datatype: yesnoradio
@@ -1711,7 +1761,7 @@ question: |
   % if i==0:
   Tell us about the school, kindergarten, or daycare
   % else:
-  Tell us about the other school, kindergarten, or daycare
+  Tell us about the ${ ordinal(i) } school, kindergarten, or daycare
   % endif
 subquestion: |  
   % if minor_kids_with_respondent or protect_petitioner_kids:
@@ -1719,6 +1769,7 @@ subquestion: |
   % endif
 fields:
   - School or daycare name: schools[i].name
+    maxlength: 35
   - Street address: schools[i].address
     address autocomplete: True
   - Address line 2: schools[i].unit
@@ -1736,15 +1787,49 @@ fields:
     help: |
       If you hide this information, it will not be listed on your Petition. You will get a confidential form that you will file with the court clerk.
 ---
-id: another stay away school
+id: second stay away school
 question: |
   Do you have another school or daycare you want ${other_parties[0].name.full(middle="full")} to stay away from?
 subquestion: |
   So far you entered: ${ schools[0].name }
 
-  **Note:** If you need to list more than 2 schools or daycares, you can add them as "other places" you want ${other_parties[0].name.full(middle="full")} to stay away from.
+  % if minor_kids_with_respondent or protect_petitioner_kids:
+  **Note:** You can enter up to 4 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
+  % else:
+  **Note:** You can enter up to 2 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
+  % endif
 fields:
   - no label: stay_away_schools_2
+    datatype: yesnoradio
+---
+id: third stay away school
+question: |
+  Do you have another school or daycare you want ${other_parties[0].name.full(middle="full")} to stay away from?
+subquestion: |
+  So far you entered: ${ comma_and_list([school.name for school in schools]) }
+
+  % if minor_kids_with_respondent or protect_petitioner_kids:
+  **Note:** You can enter up to 4 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
+  % else:
+  **Note:** You can enter up to 2 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
+  % endif
+fields:
+  - no label: stay_away_schools_3
+    datatype: yesnoradio
+---
+id: fourth stay away school
+question: |
+  Do you have another school or daycare you want ${other_parties[0].name.full(middle="full")} to stay away from?
+subquestion: |
+  So far you entered: ${ comma_and_list([school.name for school in schools]) }
+
+  % if minor_kids_with_respondent or protect_petitioner_kids:
+  **Note:** You can enter up to 4 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
+  % else:
+  **Note:** You can enter up to 2 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
+  % endif
+fields:
+  - no label: stay_away_schools_4
     datatype: yesnoradio
 ---
 # this depends on doesn't seem to be triggering on name change. hoping it would for kids_who_attend
@@ -1781,13 +1866,24 @@ fields:
     show if:
       code: |
         minor_kids_with_respondent == True or protect_petitioner_kids == True
-        #shared_kids.number() > 0 or protect_petitioner_kids == True
+---
+reconsider: True
+code: |
+  max_other_places = 2
+  
+  if minor_kids_with_respondent or protect_petitioner_kids:
+    if stay_away_schools:
+      if schools.number() == 3:
+        max_other_places = 1
+      elif schools.number() == 4:
+        max_other_places = 0
+  
 ---
 id: stay away other location question
 question: |
   Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places?
 subquestion: |
-  The statewide Order of Protection forms have space for up to 2 other places.
+  The statewide Order of Protection forms have space for up to ${ max_other_places } other places.
 fields:
   - no label: stay_away_other
     datatype: yesnoradio
@@ -1840,6 +1936,7 @@ subquestion: |
   **This address will appear on your court papers.** If you do not want this, click **Back** to keep this address hidden.
 fields:
   - Name: other_locations[i].name
+    maxlength: 35
   - Street address: other_locations[i].address
     address autocomplete: True
   - Address line 2: other_locations[i].unit
@@ -1853,6 +1950,14 @@ fields:
 id: another stay away location
 question: |
   Do you have another place you want ${other_parties[0].name.full(middle="full")} to stay away from?
+subquestion: |
+  % if hide_other_address_1:
+  So far you entered: ${ other_locations_hidden_description_1}
+  % else:
+  So far you entered: ${ other_locations[0].name }
+  % endif
+
+  The statewide Order of Protection forms have space for up to ${ max_other_places } other places in total.  
 fields:
   - no label: stay_away_other_2
     datatype: yesnoradio
@@ -3211,7 +3316,7 @@ fields:
 ---
 reconsider: True
 code: |
-  if (stay_away or no_communication) and trial_court_index != 71:
+  if (stay_away) and trial_court_index != 71:
     no_contact_text = "No contact by any means with protected parties. "
     add_no_contact_language = True
   else: 
@@ -3887,10 +3992,10 @@ code: |
     additional_incidents.enabled = True
 
   if has_other_ops == "Yes":
-    if other_ops.number() > 2:
+    if other_ops.number() > 3:
       additional_cases.enabled = True
   if has_other_cases == "Yes":
-    if other_cases.number() > 2:
+    if other_cases.number() > 3:
       additional_cases.enabled = True
 
   if stay_away_schools:
@@ -4045,7 +4150,7 @@ attachment:
     - "other_ops_people_2": ${ other_ops[1].name.text }
     - "other_ops_state_county_2": ${ other_ops[1].state + ", " + other_ops[1].county }
     - "other_ops_year_2": ${ other_ops[1].year }
-    - "other_ops_additional": ${ other_ops.number() > 2 } 
+    - "other_ops_additional": ${ other_ops.number() > 3 } 
     - "has_other_cases_yes": ${ has_other_cases == "Yes" }
     - "has_other_cases_no": ${ has_other_cases == "No" }
     - "has_other_cases_idk": ${ has_other_cases == "I don't know" }
@@ -4055,7 +4160,7 @@ attachment:
     - "other_cases_type_2": ${ other_cases[1].name.text }
     - "other_cases_state_county_2": ${ other_cases[1].state + ", " + other_cases[1].county }
     - "other_cases_year_2": ${ other_cases[1].year }
-    - "other_cases_additional": ${ other_cases.number() > 2 } 
+    - "other_cases_additional": ${ other_cases.number() > 3 } 
     - "jurisdiction_petitioner_lives_here": ${ jurisdiction_type['I live here'] }
     - "jurisdiction_respondent_lives_here": ${ jurisdiction_type['Respondent lives here'] }
     - "jurisdiction_abuse_here": ${ jurisdiction_type['Abuse was here'] }
@@ -4085,8 +4190,7 @@ attachment:
     - "no_exploitation": ${ no_exploitation }
     - "no_neglect": ${ no_neglect }
     - "no_interference": ${ no_interference}
-    - "stay_away_checkbox": ${ any((no_communication, stay_away)) }
-    - "no_communication": ${ no_communication }
+    - "stay_away_checkbox": ${ stay_away }
     - "stay_away": ${ stay_away }
 
       # page 4
@@ -4463,7 +4567,7 @@ attachment:
         ${ thousands(expenses_other_amount, show_decimals=True) }
         % endif      
         
-    - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
+    - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
     
     - "firearms_cb": ${ True if firearms_turnover else '' }
     - "firearms_turnover": ${ True if firearms_turnover else '' }
@@ -4594,6 +4698,15 @@ attachment:
     - "incident_date_5": ${ incidents[8].date }
     - "incident_time_5": ${ incidents[8].time }
     - "incident_reason_5": ${ incidents[8].name.text }
+    - "incident_date_6": ${ incidents[9].date }
+    - "incident_time_6": ${ incidents[9].time }
+    - "incident_reason_6": ${ incidents[9].name.text }
+    - "incident_date_7": ${ incidents[10].date }
+    - "incident_time_7": ${ incidents[10].time }
+    - "incident_reason_7": ${ incidents[10].name.text }
+    - "incident_date_8": ${ incidents[11].date }
+    - "incident_time_8": ${ incidents[11].time }
+    - "incident_reason_8": ${ incidents[11].name.text }
 ---
 attachment:
   variable name: additional_cases[i]
@@ -4909,8 +5022,7 @@ attachment:
     - "both_parties_right_to_stay": ${ exclusive_possession_reason == "both_parties_right_to_stay" }
       
       # page 3
-    - "stay_away_checkbox": ${ any((no_communication, stay_away)) }
-    - "no_communication": ${ no_communication }
+    - "stay_away_checkbox": ${ stay_away }
     - "stay_away": ${ stay_away }
     #- "stay_away_feet_cb": ${ True if (stay_away and stay_away_distance != None) else "" }
     #- "stay_away_feet": ${ stay_away_distance if stay_away else "" }
@@ -5229,7 +5341,7 @@ attachment:
     - "restrict_property_elderly_petitioner": ${ True if restrict_elderly_petitioner_resources == "Yes" else '' }
     - "possession_of_animals": ${ True if possession_of_animals else "" }
     - "animals_list": ${ comma_and_list([item.name.text + " (" + indefinite_article(item.description) + ")" for item in pets]) if possession_of_animals else "" }
-    - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
+    - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
     - "firearms_cb": ${ True if firearms_turnover else '' }
     - "firearms_turnover": ${ True if firearms_turnover else '' }
     - "firearms_not_intimate_partner": ${ "*Respondent is not an intimate partner of Petitioner.*" if firearms_turnover == True and intimate_partner != "Yes" else "" }    
@@ -5423,8 +5535,7 @@ attachment:
     - "alt_housing_requirements_text": ${ "" }
 
       # page 3
-    - "stay_away_checkbox": ${ any((no_communication, stay_away)) }
-    - "no_communication": ${ no_communication }
+    - "stay_away_checkbox": ${ stay_away }
     - "stay_away": ${ stay_away }
     #- "stay_away_feet_cb": ${ True if (stay_away and stay_away_distance != None) else "" }
     #- "stay_away_feet": ${ stay_away_distance if stay_away else "" }
@@ -5851,7 +5962,7 @@ attachment:
         ${ thousands(expenses_other_amount, show_decimals=True) }
         % endif      
 
-    - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or no_communication or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
+    - "no_stay_under_influence": ${ no_stay_under_influence if not (stay_away or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing')) else ''}
     - "firearms_cb": ${ True if firearms_turnover else '' }
     - "firearms_turnover": ${ True if firearms_turnover else '' }
     - "firearms_not_intimate_partner": ${ "*Respondent is not an intimate partner of Petitioner.*" if firearms_turnover == True and intimate_partner != "Yes" else "" }    
