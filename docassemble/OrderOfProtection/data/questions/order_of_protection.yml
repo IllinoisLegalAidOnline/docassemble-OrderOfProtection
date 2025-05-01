@@ -698,6 +698,12 @@ validation code: |
       validation_error('You selected both "never married" and "related through marriage" (spouse). Please adjust your answers.', field="relationship_cc")
     if relationship_xs == True and relationship_cc == True:
       validation_error('You selected both "never married" and "related through marriage" (ex-spouse). Please adjust your answers.', field="relationship_cc")
+    if not relationship_se and not relationship_xs and not relationship_il and not relationship_sc and not relationship_ss and not relationship_ofm:
+      validation_error('Select a relationship through marriage.', field="relationship_ma")
+  if relationship_bl:
+    if not relationship_ch and not relationship_pa and not relationship_sb and not relationship_gc and not relationship_gp and not relationship_ofb:
+      validation_error('Select a relationship through blood.', field="relationship_bl")
+
 ---
 # removed after relationship answers reworded
 template: relationship_example
@@ -737,20 +743,8 @@ code: |
       relationship_cc,
       relationship_ac,
       relationship_ma,
-      relationship_se,
-      relationship_xs,
-      relationship_il,
-      relationship_sc,
-      relationship_ss,
-      relationship_ofm,
       relationship_cs,
       relationship_bl,
-      relationship_ch,
-      relationship_pa,
-      relationship_sb,
-      relationship_gc,
-      relationship_gp,
-      relationship_ofb,
       relationship_bk,
       relationship_a,
       relationship_l,

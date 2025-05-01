@@ -42,72 +42,99 @@ review:
       % if jurisdiction_type['Abuse was elsewhere']:
       * Abuse was elsewhere
       % endif
-  - Edit: relationship_type
+  - Edit: relationship_bg
     button: |
       **Protected party's relationship to person who caused abuse:**
       
-      % if relationship_type['se'] == True:
-      * Spouse
-      % endif
-      % if relationship_type['xs'] == True:
-      * Ex-spouse
-      % endif
-      % if relationship_type['bg'] == True:
+      % if relationship_bg == True:
       * Boyfriend, girlfriend, or romantic partner (including ex-)
       % endif
-      % if relationship_type['cc'] == True:
-      * We have a child in common (never married)
+      % if relationship_cc == True:
+      * We have children together (never married)
       % endif
-      % if relationship_type['cs'] == True:
-      * We share or shared a living space
+      % if relationship_ac == True:
+      * We have or might have children together
       % endif
-      % if relationship_type['ch'] == True:
-      * Child
+      % if relationship_ma == True:
+      * We are related through a current or past marriage
       % endif
-      % if relationship_type['pa'] == True:
-      * Parent
+      % if relationship_ma == True:
+      % if relationship_se == True:
+      * Spouse
       % endif
-      % if relationship_type['sb'] == True:
-      * Brother, sister, or sibling
       % endif
-      % if relationship_type['of'] == True:
-      * Other family member
+      % if relationship_ma == True:
+      % if relationship_xs == True:
+      * Ex-spouse
       % endif
-      % if relationship_type['sc'] == True:
-      * Step child
       % endif
-      % if relationship_type['ss'] == True:
-      * Step brother, step sister, or step sibling
-      % endif
-      % if relationship_type['sp'] == True:
-      * Step parent
-      % endif
-      % if relationship_type['gc'] == True:
-      * Grandchild
-      % endif
-      % if relationship_type['gp'] == True:
-      * Grandparent
-      % endif
-      % if relationship_type['il'] == True:
+      % if relationship_ma == True:
+      % if relationship_il == True:
       * In-law
       % endif
-      % if relationship_type['pd'] == True:
-      * Protected person has a disability and receives care from the abuser
       % endif
-      % if relationship_type['pc'] == True:
-      * Person responsible for a high risk adult
+      % if relationship_ma == True:
+      % if relationship_sc == True:
+      * Step child
       % endif
-      % if relationship_type['pr'] == True:
-      * Personal assistant or caregiver to a person with a disability
       % endif
-      % if relationship_type['f'] == True:
-      * Family or household member of my foster child
+      % if relationship_ma == True:
+      % if relationship_ss == True:
+      * Step brother, step sister, or step sibling
       % endif
-      % if relationship_type['a'] == True:
-      * Family or household member of my adopted child, or of my prospective adopted child
       % endif
-      % if relationship_type['l'] == True:
-      * Family or household member of a child that I am the legally-appointed custodian of
+      % if relationship_ma == True:
+      % if relationship_ofm == True:
+      * Other family member
+      % endif
+      % endif
+      % if relationship_cs == True:
+      * We share or shared a living space
+      % endif
+      % if relationship_bl == True:
+      * We are related through blood
+      % endif
+      % if relationship_bl == True:
+      % if relationship_ch == True:
+      * Child
+      % endif
+      % endif
+      % if relationship_bl == True:
+      % if relationship_pa == True:
+      * Parent
+      % endif
+      % endif
+      % if relationship_bl == True:
+      % if relationship_sb == True:
+      * Brother, sister, or sibling
+      % endif
+      % endif
+      % if relationship_bl == True:
+      % if relationship_gc == True:
+      * Grandchild
+      % endif
+      % endif
+      % if relationship_bl == True:
+      % if relationship_gp == True:
+      * Grandparent
+      % endif
+      % endif
+      % if relationship_bl == True:
+      % if relationship_ofb == True:
+      * Other family member
+      % endif
+      % endif
+      % if relationship_bk == True:
+      * We have a blood relationship through a child
+      % endif
+      % if relationship_a == True:
+      * Family or household member of my adopted, prospective adopted, or foster child
+      % endif
+      % if relationship_l == True:
+      * Family or household member of a child that I am the legally-appointed guardian or custodian of
+      % endif
+      % if relationship_pc == True:
+      * Person responsible for a high risk adult or otherwise needing care
       % endif
       
   - Edit: other_parties[0].name.first
@@ -986,7 +1013,7 @@ review:
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary maintenance?**
       ${ word(yesno(temp_maintenance)) }
-    show if: (relationship_type['se'] == True or relationship_type['xs'] == True)
+    show if: relationship_se == True or relationship_xs == True
   - Edit: expenses_none
     button: |
       **Losses you want ${other_parties[0].name.full(middle="full")} to pay for:**
@@ -1999,72 +2026,99 @@ review:
       % if jurisdiction_type['Abuse was elsewhere']:
       * Abuse was elsewhere
       % endif
-  - Edit: relationship_type
+  - Edit: relationship_bg
     button: |
       **Protected party's relationship to person who caused abuse:**
       
-      % if relationship_type['se'] == True:
-      * Spouse
-      % endif
-      % if relationship_type['xs'] == True:
-      * Ex-spouse
-      % endif
-      % if relationship_type['bg'] == True:
+      % if relationship_bg == True:
       * Boyfriend, girlfriend, or romantic partner (including ex-)
       % endif
-      % if relationship_type['cc'] == True:
-      * We have a child in common (never married)
+      % if relationship_cc == True:
+      * We have children together (never married)
       % endif
-      % if relationship_type['cs'] == True:
-      * We share or shared a living space
+      % if relationship_ac == True:
+      * We have or might have children together
       % endif
-      % if relationship_type['ch'] == True:
-      * Child
+      % if relationship_ma == True:
+      * We are related through a current or past marriage
       % endif
-      % if relationship_type['pa'] == True:
-      * Parent
+      % if relationship_ma == True:
+      % if relationship_se == True:
+      * Spouse
       % endif
-      % if relationship_type['sb'] == True:
-      * Brother, sister, or sibling
       % endif
-      % if relationship_type['of'] == True:
-      * Other family member
+      % if relationship_ma == True:
+      % if relationship_xs == True:
+      * Ex-spouse
       % endif
-      % if relationship_type['sc'] == True:
-      * Step child
       % endif
-      % if relationship_type['ss'] == True:
-      * Step brother, step sister, or step sibling
-      % endif
-      % if relationship_type['sp'] == True:
-      * Step parent
-      % endif
-      % if relationship_type['gc'] == True:
-      * Grandchild
-      % endif
-      % if relationship_type['gp'] == True:
-      * Grandparent
-      % endif
-      % if relationship_type['il'] == True:
+      % if relationship_ma == True:
+      % if relationship_il == True:
       * In-law
       % endif
-      % if relationship_type['pd'] == True:
-      * Protected person has a disability and receives care from the abuser
       % endif
-      % if relationship_type['pc'] == True:
-      * Person responsible for a high risk adult
+      % if relationship_ma == True:
+      % if relationship_sc == True:
+      * Step child
       % endif
-      % if relationship_type['pr'] == True:
-      * Personal assistant or caregiver to a person with a disability
       % endif
-      % if relationship_type['f'] == True:
-      * Family or household member of my foster child
+      % if relationship_ma == True:
+      % if relationship_ss == True:
+      * Step brother, step sister, or step sibling
       % endif
-      % if relationship_type['a'] == True:
-      * Family or household member of my adopted child, or of my prospective adopted child
       % endif
-      % if relationship_type['l'] == True:
-      * Family or household member of a child that I am the legally-appointed custodian of
+      % if relationship_ma == True:
+      % if relationship_ofm == True:
+      * Other family member
+      % endif
+      % endif
+      % if relationship_cs == True:
+      * We share or shared a living space
+      % endif
+      % if relationship_bl == True:
+      * We are related through blood
+      % endif
+      % if relationship_bl == True:
+      % if relationship_ch == True:
+      * Child
+      % endif
+      % endif
+      % if relationship_bl == True:
+      % if relationship_pa == True:
+      * Parent
+      % endif
+      % endif
+      % if relationship_bl == True:
+      % if relationship_sb == True:
+      * Brother, sister, or sibling
+      % endif
+      % endif
+      % if relationship_bl == True:
+      % if relationship_gc == True:
+      * Grandchild
+      % endif
+      % endif
+      % if relationship_bl == True:
+      % if relationship_gp == True:
+      * Grandparent
+      % endif
+      % endif
+      % if relationship_bl == True:
+      % if relationship_ofb == True:
+      * Other family member
+      % endif
+      % endif
+      % if relationship_bk == True:
+      * We have a blood relationship through a child
+      % endif
+      % if relationship_a == True:
+      * Family or household member of my adopted, prospective adopted, or foster child
+      % endif
+      % if relationship_l == True:
+      * Family or household member of a child that I am the legally-appointed guardian or custodian of
+      % endif
+      % if relationship_pc == True:
+      * Person responsible for a high risk adult or otherwise needing care
       % endif
       
   - Edit: other_parties[0].name.first
@@ -2957,7 +3011,7 @@ review:
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary maintenance?**
       ${ word(yesno(temp_maintenance)) }
-    show if: (relationship_type['se'] == True or relationship_type['xs'] == True)
+    show if: relationship_se == True or relationship_xs == True
   - Edit: expenses_none
     button: |
       **Losses you want ${other_parties[0].name.full(middle="full")} to pay for:**
