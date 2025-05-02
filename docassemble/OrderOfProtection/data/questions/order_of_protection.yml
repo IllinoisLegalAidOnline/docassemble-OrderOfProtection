@@ -169,29 +169,31 @@ code: |
       if minor_kids_with_respondent or protect_petitioner_kids:
         if schools[1].hide:
           schools[1].type
-      if stay_away_schools_3:
-        schools[1].name
-        if minor_kids_with_respondent or protect_petitioner_kids:
-          if schools[2].hide:
-            schools[2].type
-        if stay_away_schools_4:
-          schools[3].name
-          if minor_kids_with_respondent or protect_petitioner_kids:
-            if schools[3].hide:
-              schools[3].type
 
-  if max_other_places > 0:
-    if stay_away_other:
+  if stay_away_other:
+    if other_location_1_is_school:
+      schools[2].name
+      if minor_kids_with_respondent or protect_petitioner_kids:
+        if schools[2].hide:
+          schools[2].type
+    else:  
       if hide_other_address_1:
         other_locations_hidden_description_1
       else:  
         other_locations[0].name
-      if max_other_places > 1:
-        if stay_away_other_2:
-          if hide_other_address_2:
-            other_locations_hidden_description_2
-          else:
-            other_locations[1].name
+  
+  if stay_away_other:
+    if stay_away_other_2:
+      if other_location_2_is_school:
+        schools[3].name
+        if minor_kids_with_respondent or protect_petitioner_kids:
+          if schools[3].hide:
+            schools[3].type
+      else:
+        if hide_other_address_2:
+          other_locations_hidden_description_2
+        else:
+          other_locations[1].name
   
   if same_school:
     if same_school_restrictions != "none":
@@ -200,8 +202,9 @@ code: |
   nav.set_section('section_child')
   set_progress(50)
   if minor_kids_with_respondent:
-    if parentage == "parentage_established_other":
-      parentage_other
+    #if parentage == "parentage_established_other":
+    #  parentage_other
+    children_live_in_il
     if primary_caretaker == "other":
       other_caretaker.name.first
       other_caretaker.address.address
@@ -230,7 +233,7 @@ code: |
           if pt_weekdays:
             pt_weekday_days
           if pt_weekends:
-            pt_weekend_days
+            pt_weekend_cadence
           if pt_holidays:
             pt_holiday_list
           pt_start_date
@@ -410,7 +413,7 @@ terms:
 # thought 1.4.64 Docassemble update made "mandatory: True" not required but oh well
 mandatory: True
 code: |
-  dow_full = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  dow_full = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
   dow_abb = ['Sun.', 'Mon.', 'Tues.', 'Wed.', 'Thur.', 'Fri.', 'Sat.']
   set_days_of_week = True
 ---
@@ -904,7 +907,7 @@ id: name of first child with respondent
 question: |
   Who is your minor child with ${other_parties[0].name.full(middle="full")}?
 subquestion: |
-  The statewide Order of Protection forms have space for up to 4 minor children with the Respondent.
+  The statewide Order of Protection forms have space for up to 6 minor children with the Respondent.
 fields:
   - code: |
       shared_kids[0].name_fields()
@@ -925,7 +928,7 @@ id: any other children with respondent
 question: |
   Do you have another minor child with ${other_parties[0].name.full(middle="full")}?
 subquestion: |
-  The statewide Order of Protection forms have space for up to 4 minor children with the Respondent.
+  The statewide Order of Protection forms have space for up to 6 minor children with the Respondent.
   % if len(shared_kids.elements) >= 1:  
   So far you have told us about ${comma_and_list(shared_kids.complete_elements().full_names())}.
   % endif
@@ -1022,6 +1025,12 @@ fields:
     help: |
       This is where the child currently lives.
     code: states_list()
+  - note: |
+      ${ collapse_template(legal_parentage_help) }
+  - Your legal parentage has already been established.: x.pet_parentage
+    datatype: yesnomaybe
+  - ${other_parties[0].name.full(middle="full")}'s legal parentage has already been established.: x.res_parentage
+    datatype: yesnomaybe
   - Include as a protected person?: x.protect
     datatype: yesnoradio
     help: |
@@ -1035,13 +1044,25 @@ content: |
   
   Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate. You can also use [**Get Legal Help**](https://www.illinoislegalaid.org/get-legal-help) to find free or low-cost legal services in your area.
 ---
+template: legal_parentage_help
+subject: |
+  **How do I know if legal parentage has been established?**
+content: |  
+  **Legal parentage** of a child may be established in the following ways:
+  
+  1. A child who was born before, during, or within 300 days after the marriage or civil union, is considered a legal child of the couple. Both parents' names must have been added to the child's birth certificate.
+  2. Both parents have signed a Voluntary Acknowledgement of Paternity (VAP).
+  3. There is a court order or administrative order establishing parentage.
+  4. By giving birth to the child.
+  
+---
 code: |
   shared_kids[i].name.first
   shared_kids[i].birthdate
   shared_kids[i].complete = True
 ---
 code: |
-  if shared_kids.number_gathered() >= 4:
+  if shared_kids.number_gathered() >= 6:
     shared_kids.there_is_another = False
 ---
 sets:
@@ -1746,7 +1767,7 @@ question: |
   Do you want ${other_parties[0].name.full(middle="full")} to stay away from any schools, kindergartens, or daycare centers?
 subquestion: |
   % if minor_kids_with_respondent or protect_petitioner_kids:
-  The statewide Order of Protection forms have space for up to 4 schools or daycares.
+  The statewide Order of Protection forms have space for up to 2 schools or daycares. If you need to list more than 2 schools or daycares, you can add them as "other places" you want ${other_parties[0].name.full(middle="full")} to stay away from.
   
   **Note:** You can keep the name and address of these schools confidential if your children attend them.
   % else:
@@ -1794,42 +1815,12 @@ subquestion: |
   So far you entered: ${ schools[0].name }
 
   % if minor_kids_with_respondent or protect_petitioner_kids:
-  **Note:** You can enter up to 4 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
+  **Note:** You can enter up to 2 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from. If you need to list more than 2 schools or daycares, you can add them as "other places" you want ${other_parties[0].name.full(middle="full")} to stay away from.
   % else:
   **Note:** You can enter up to 2 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
   % endif
 fields:
   - no label: stay_away_schools_2
-    datatype: yesnoradio
----
-id: third stay away school
-question: |
-  Do you have another school or daycare you want ${other_parties[0].name.full(middle="full")} to stay away from?
-subquestion: |
-  So far you entered: ${ comma_and_list([school.name for school in schools]) }
-
-  % if minor_kids_with_respondent or protect_petitioner_kids:
-  **Note:** You can enter up to 4 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
-  % else:
-  **Note:** You can enter up to 2 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
-  % endif
-fields:
-  - no label: stay_away_schools_3
-    datatype: yesnoradio
----
-id: fourth stay away school
-question: |
-  Do you have another school or daycare you want ${other_parties[0].name.full(middle="full")} to stay away from?
-subquestion: |
-  So far you entered: ${ comma_and_list([school.name for school in schools]) }
-
-  % if minor_kids_with_respondent or protect_petitioner_kids:
-  **Note:** You can enter up to 4 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
-  % else:
-  **Note:** You can enter up to 2 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
-  % endif
-fields:
-  - no label: stay_away_schools_4
     datatype: yesnoradio
 ---
 # this depends on doesn't seem to be triggering on name change. hoping it would for kids_who_attend
@@ -1883,10 +1874,13 @@ id: stay away other location question
 question: |
   Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places?
 subquestion: |
-  The statewide Order of Protection forms have space for up to ${ max_other_places } other places.
+  The statewide Order of Protection forms have space for up to 2 other places.
 fields:
   - no label: stay_away_other
     datatype: yesnoradio
+  - Is this place a school?: other_location_1_is_school
+    datatype: yesnoradio
+    show if: stay_away_other
 ---
 id: hide other location 1
 question: |
@@ -1908,7 +1902,7 @@ choices:
   - Yes: True
   - No: False
 ---
-id: stay away other location 1 name
+id: stay away other location name
 question: |
   Tell us about the place you want ${other_parties[0].name.full(middle="full")} to stay away from
 subquestion: |
@@ -1951,16 +1945,19 @@ id: another stay away location
 question: |
   Do you have another place you want ${other_parties[0].name.full(middle="full")} to stay away from?
 subquestion: |
-  % if hide_other_address_1:
-  So far you entered: ${ other_locations_hidden_description_1}
+  % if other_location_1_is_school:
+  So far you entered: ${ schools[2].name }
   % else:
   So far you entered: ${ other_locations[0].name }
   % endif
 
-  The statewide Order of Protection forms have space for up to ${ max_other_places } other places in total.  
+  The statewide Order of Protection forms have space for up to 2 other places in total.  
 fields:
   - no label: stay_away_other_2
     datatype: yesnoradio
+  - Is this place a school?: other_location_2_is_school
+    datatype: yesnoradio
+    show if: stay_away_other_2
 ---
 id: attend same school
 question: |
@@ -2071,6 +2068,22 @@ fields:
     rows: 3
     maxlength: 150
     show if: other_counseling
+---
+id: children jurisdiction
+question: |
+  Why are you asking the court to make decisions about your minor children?
+subquestion: |
+  Check all that apply.
+
+  **Note:** If you do not select at least one, the court might not be able to include your minor children in the Order of Protection.
+fields:
+  - The children have lived in Illinois for the past 6 months or if the children are younger than 6 months old, they have lived in Illinois since they were born.: children_live_in_il
+    datatype: yesnowide
+  - I live in Illinois but someone else took the children out of Illinois within the past 6 months. Before they were taken out of Illinois, the children lived here for at least 6 months.: children_removed_from_il
+    datatype: yesnowide
+  - The children are in Illinois because we fled here to avoid abuse of me or the children in another state.: children_fled
+    datatype: yesnowide
+
 
 ---
 id: parentage established question
@@ -2459,6 +2472,9 @@ fields:
     datatype: time
   - End time: pt_weekday_end
     datatype: time
+validation code: |
+  if pt_weekday_start > pt_weekday_end:
+    validation_error("The start time must be before the end time.", field="pt_weekday_end")
 ---
 id: parenting time weekends
 question: |
@@ -2478,18 +2494,36 @@ fields:
     choices:
       - Every weekend: every
       - Every other weekend: other
-  - Which days?: pt_weekend_days
+  - Weekend parenting time start day: pt_weekend_start_day
     datatype: radio
     choices:
-      - Friday to Saturday: frisat
-      - Friday to Sunday: frisun
-      - Saturday only, no overnight: sat
-      - Saturday to Sunday: satsun
-      - Sunday only, no overnight: sun
-  - Start time: pt_weekend_start
+      - Friday: "5"
+      - Saturday: "6"
+      - Sunday: "7"
+    minlength: 1
+    validation messages:
+      minlength: "Please select at least one day."
+  - Weekend parenting time start time: pt_weekend_start_time
     datatype: time
-  - End time: pt_weekend_end
+  - Weekend parenting time end day: pt_weekend_end_day
+    datatype: radio
+    choices:
+      - Friday: "5"
+      - Saturday: "6"
+      - Sunday: "7"
+    minlength: 1
+    validation messages:
+      minlength: "Please select at least one day."
+  - Weekend parenting time end time: pt_weekend_end_time
     datatype: time
+validation code: |
+  if pt_weekend_start_day > pt_weekend_end_day:
+    validation_error("The start day must be before the end day.", field="pt_weekend_start_day")
+  elif pt_weekend_start_time > pt_weekend_end_time:
+    validation_error("The end time must be after the start time.", field="pt_weekend_end_time")
+
+
+  
 ---
 id: parenting time holidays
 question: |

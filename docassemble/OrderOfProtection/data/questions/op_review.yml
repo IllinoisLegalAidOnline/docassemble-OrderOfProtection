@@ -359,86 +359,85 @@ review:
       **Confidential school information about ${ schools[1].name }:**
       ${ "Type: " + schools[1].type + ", Children who attend: " + comma_and_list(schools[1].kids_who_attend.true_values()) }
     show if: stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
-
-  - Edit: stay_away_schools_3
-    button: |
-      **Do you have another school you want ${other_parties[0].name.full(middle="full")} to stay away from?**
-      ${ word(yesno(stay_away_schools_3)) }
-  - Edit: schools[2].address
-    button: |
-      **Second school name and address:**
-      ${ schools[2].name }, ${ schools[2].on_one_line(bare=True) }
-    show if: stay_away_schools_3
-  - Edit: schools[2].hide
-    button: |
-      **Do you want to hide information about ${ schools[2].name } from  ${other_parties[0].name.full(middle="full")}?**
-      ${ word(yesno(schools[2].hide)) }
-    show if: stay_away_schools_3 and (minor_kids_with_respondent or protect_petitioner_kids)
-  - Edit: schools[2].type
-    button: |
-      **Confidential school information about ${ schools[2].name }:**
-      ${ "Type: " + schools[2].type + ", Children who attend: " + comma_and_list(schools[2].kids_who_attend.true_values()) }
-    show if: stay_away_schools_3 and (minor_kids_with_respondent or protect_petitioner_kids)
-
-  - Edit: stay_away_schools_4
-    button: |
-      **Do you have another school you want ${other_parties[0].name.full(middle="full")} to stay away from?**
-      ${ word(yesno(stay_away_schools_4)) }
-  - Edit: schools[3].address
-    button: |
-      **Second school name and address:**
-      ${ schools[3].name }, ${ schools[3].on_one_line(bare=True) }
-    show if: stay_away_schools_4
-  - Edit: schools[3].hide
-    button: |
-      **Do you want to hide information about ${ schools[3].name } from  ${other_parties[0].name.full(middle="full")}?**
-      ${ word(yesno(schools[3].hide)) }
-    show if: stay_away_schools_4 and (minor_kids_with_respondent or protect_petitioner_kids)
-  - Edit: schools[3].type
-    button: |
-      **Confidential school information about ${ schools[3].name }:**
-      ${ "Type: " + schools[3].type + ", Children who attend: " + comma_and_list(schools[3].kids_who_attend.true_values()) }
-    show if: stay_away_schools_4 and (minor_kids_with_respondent or protect_petitioner_kids)
-
-
-  
   
   - Edit: stay_away_other
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places?**
       ${ word(yesno(stay_away_other)) }
+
+      **Is this place a school?**
+      ${ word(yesno(other_location_1_is_school)) }
   - Edit: hide_other_address_1
     button: |
       **Do you want to hide the details of the place you want ${other_parties[0].name.full(middle="full") } to stay away from?**
       ${ word(yesno(hide_other_address_1)) }
+    show if: stay_away_other and not other_location_1_is_school
   - Edit: other_locations_hidden_description_1
     button: |
       **Other location description:**
       ${ other_locations_hidden_description_1 }
-    show if: stay_away_other and hide_other_address_1
+    show if: stay_away_other and hide_other_address_1 and not other_location_1_is_school
   - Edit: other_locations[0].address
     button: |
       **Other location name and address:**
       ${ other_locations[0].name + ", " + other_locations[0].on_one_line(bare=True) }
-    show if: stay_away_other and hide_other_address_1 == False
+    show if: stay_away_other and hide_other_address_1 == False and not other_location_1_is_school
+
+  - Edit: schools[2].address
+    button: |
+      **Other school name and address:**
+      ${ schools[2].name }, ${ schools[2].on_one_line(bare=True) }
+    show if: stay_away_other and other_location_1_is_school
+  - Edit: schools[2].hide
+    button: |
+      **Do you want to hide information about ${ schools[2].name } from  ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(schools[2].hide)) }
+    show if: stay_away_other and other_location_1_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
+  - Edit: schools[2].type
+    button: |
+      **Confidential school information about ${ schools[2].name }:**
+      ${ "Type: " + schools[2].type + ", Children who attend: " + comma_and_list(schools[2].kids_who_attend.true_values()) }
+    show if: stay_away_other and other_location_1_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
+  
   - Edit: stay_away_other_2
     button: |
       **Do you have another place you want ${other_parties[0].name.full(middle="full")} to stay away from?**
       ${ word(yesno(stay_away_other_2)) }
+
+      **Is this place a school?**
+      ${ word(yesno(other_location_2_is_school)) }
   - Edit: hide_other_address_2
     button: |
       **Do you want to hide the details of the second place you want ${other_parties[0].name.full(middle="full") } to stay away from?**
       ${ word(yesno(hide_other_address_2)) }
+    show if: stay_away_other_2 and not other_location_2_is_school
   - Edit: other_locations_hidden_description_2
     button: |
       **Second other location description:**
       ${ other_locations_hidden_description_2 }
-    show if: stay_away_other and hide_other_address_2
+    show if: stay_away_other_2 and hide_other_address_2  and not other_location_2_is_school
   - Edit: other_locations[1].address
     button: |
       **Second location name and address:**
       ${ other_locations[1].name }, ${ other_locations[1].on_one_line(bare=True) }
-    show if: stay_away_other_2 and hide_other_address_2 == False
+    show if: stay_away_other_2 and hide_other_address_2 == False and not other_location_2_is_school
+
+  - Edit: schools[3].address
+    button: |
+      **Second other school name and address:**
+      ${ schools[3].name }, ${ schools[3].on_one_line(bare=True) }
+    show if: stay_away_other_2 and other_location_2_is_school
+  - Edit: schools[3].hide
+    button: |
+      **Do you want to hide information about ${ schools[3].name } from  ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(schools[3].hide)) }
+    show if: stay_away_other_2 and other_location_2_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
+  - Edit: schools[3].type
+    button: |
+      **Confidential school information about ${ schools[3].name }:**
+      ${ "Type: " + schools[3].type + ", Children who attend: " + comma_and_list(schools[3].kids_who_attend.true_values()) }
+    show if: stay_away_other_2 and other_location_2_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
+  
   - Edit: same_school
     button: |
       **Does ${other_parties[0].name.full(middle="full")} attend the same school as you or other protected people?**
@@ -463,35 +462,19 @@ review:
   - note: |
       <h4>About your children (optional)</h4>
     show if: minor_kids_with_respondent  
-  - Edit: parentage
+  - Edit: children_live_in_il
     button: |
-      **Has parentage of the minor children been established?**
-      % if parentage == "parentage_established_by_marriage":
-      Yes, the children were born before, during, or within 300 days after the marriage.
-      % elif parentage == "parentage_established_other":
-      Yes, we are not married, but parentage was established.
-      % else:
-      No, parentage has not been established.
-      % endif
-  - Edit: parentage_other
-    button: |
-      **Legal parentage of the children has been established by:**
+      **Why are you asking the court to make decisions about your minor children?**
       
-      % if parentage_vap:
-      * We signed and filed a Voluntary Acknowledgement of Paternity, also called a VAP.
+      % if children_live_in_il:
+      * The children have lived in Illinois for the past 6 months.
       % endif
-      % if parentage_order:
-      * A court or administrative order established us as the legal parents of the children.
+      % if children_removed_from_il:
+      * I live in Illinois, but the children who lived in Illinois were taken out of state.
       % endif
-      % if parentage_other:
-      * Legal parentage was established another way.
+      % if children_fled:
+      * The children are in Illinois because we fled to avoid abuse elsewhere.
       % endif
-    show if: parentage == "parentage_established_other"
-  - Edit: other_parentage_method
-    button: |
-      **Other parentage method:**
-      ${ other_parentage_method }
-    show if: parentage == "parentage_established_other" and parentage_other
   - Edit: primary_caretaker
     button: |
       **Primary caretaker of the children with ${ other_parties[0].name.full(middle="full") }:**
@@ -672,7 +655,7 @@ review:
       **Do you want ${other_parties[0].name.full(middle="full")} to have parenting time on weekends?**
       ${ word(yesno(pt_weekends)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
-  - Edit: pt_weekend_days
+  - Edit: pt_weekend_cadence
     button: |
       **Weekend parenting time schedule:**
       % if pt_weekend_cadence == "every":
@@ -680,28 +663,14 @@ review:
       % else:
       Every other weekend 
       % endif
-      % if pt_weekend_days == "frisat":
-      from Friday at ${ format_time(pt_weekend_start) } to Saturday at ${ format_time(pt_weekend_end) }.
-      % endif
-      % if pt_weekend_days == "frisun":
-      from Friday at ${ format_time(pt_weekend_start) } to Sunday at ${ format_time(pt_weekend_end) }.
-      % endif
-      % if pt_weekend_days == "sat":
-      from Saturday at ${ format_time(pt_weekend_start) } to Saturday at ${ format_time(pt_weekend_end) }.
-      % endif
-      % if pt_weekend_days == "satsun":
-      from Saturday at ${ format_time(pt_weekend_start) } to Sunday at ${ format_time(pt_weekend_end) }.
-      % endif
-      % if pt_weekend_days == "sun":
-      from Sunday at ${ format_time(pt_weekend_start) } to Sunday at ${ format_time(pt_weekend_end) }.
-      % endif
+      from ${ dow_full[int(pt_weekend_start_day)] } at ${ format_time(pt_weekend_start_time) } to ${ dow_full[int(pt_weekend_end_day)] } at ${ format_time(pt_weekend_end_time) }.
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_weekends == True
   - Edit: pt_holidays
     button: |
       **Do you want parenting time to be different on holidays?**
       ${ word(yesno(pt_holidays)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
-  - Edit: pt_weekend_days
+  - Edit: pt_holiday_list
     button: |
       **Holday parenting time schedule:**
       From ${ format_time(pt_holiday_start) } to ${ format_time(pt_holiday_end) } on: 
@@ -1691,7 +1660,9 @@ rows: shared_kids
 columns:
   - Name: |
       row_item.name.full(middle="full") if defined("row_item.name.first") else ""
-  - Details (including birthdate, residence, protected by order): |
+  - Birthdate: |
+      row_item.birthdate if defined("row_item.birthdate") else ""
+  - Details (including residence, parentage, protected by order): |
       action_button_html(url_action(row_item.attr_name("review_shared_child_details")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
@@ -1715,6 +1686,26 @@ review:
     button: |
       **State of residence:**
       ${ x.address.state }
+  - Edit: x.pet_parentage
+    button: |
+      **Has your legal parentage been established?**
+      % if x.pet_parentage == True:
+      Yes
+      % elif x.pet_parentage == False:
+      No
+      % else:
+      I don't know.
+      % endif
+  - Edit: x.res_parentage
+    button: |
+      **Has ${other_parties[0].name.full(middle="full")}'s legal parentage been established?**
+      % if x.res_parentage == True:
+      Yes
+      % elif x.res_parentage == False:
+      No
+      % else:
+      I don't know.
+      % endif
   - Edit: x.protect
     button: |
       **Include as a protected person?**
@@ -2368,6 +2359,8 @@ review:
       ${ jobs[1].employer }, ${ jobs[1].on_one_line(bare=True) }
     show if: stay_away_jobs_2 and hide_work_address == False
 
+
+  
   - Edit: stay_away_schools
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away from schools or daycares?**
@@ -2407,43 +2400,86 @@ review:
       **Confidential school information about ${ schools[1].name }:**
       ${ "Type: " + schools[1].type + ", Children who attend: " + comma_and_list(schools[1].kids_who_attend.true_values()) }
     show if: stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
-
+  
   - Edit: stay_away_other
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places?**
       ${ word(yesno(stay_away_other)) }
+
+      **Is this place a school?**
+      ${ word(yesno(other_location_1_is_school)) }
   - Edit: hide_other_address_1
     button: |
       **Do you want to hide the details of the place you want ${other_parties[0].name.full(middle="full") } to stay away from?**
       ${ word(yesno(hide_other_address_1)) }
+    show if: stay_away_other and not other_location_1_is_school
   - Edit: other_locations_hidden_description_1
     button: |
       **Other location description:**
       ${ other_locations_hidden_description_1 }
-    show if: stay_away_other and hide_other_address_1
+    show if: stay_away_other and hide_other_address_1 and not other_location_1_is_school
   - Edit: other_locations[0].address
     button: |
       **Other location name and address:**
       ${ other_locations[0].name + ", " + other_locations[0].on_one_line(bare=True) }
-    show if: stay_away_other and hide_other_address_1 == False
+    show if: stay_away_other and hide_other_address_1 == False and not other_location_1_is_school
+
+  - Edit: schools[2].address
+    button: |
+      **Other school name and address:**
+      ${ schools[2].name }, ${ schools[2].on_one_line(bare=True) }
+    show if: stay_away_other and other_location_1_is_school
+  - Edit: schools[2].hide
+    button: |
+      **Do you want to hide information about ${ schools[2].name } from  ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(schools[2].hide)) }
+    show if: stay_away_other and other_location_1_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
+  - Edit: schools[2].type
+    button: |
+      **Confidential school information about ${ schools[2].name }:**
+      ${ "Type: " + schools[2].type + ", Children who attend: " + comma_and_list(schools[2].kids_who_attend.true_values()) }
+    show if: stay_away_other and other_location_1_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
+  
   - Edit: stay_away_other_2
     button: |
       **Do you have another place you want ${other_parties[0].name.full(middle="full")} to stay away from?**
       ${ word(yesno(stay_away_other_2)) }
+
+      **Is this place a school?**
+      ${ word(yesno(other_location_2_is_school)) }
   - Edit: hide_other_address_2
     button: |
       **Do you want to hide the details of the second place you want ${other_parties[0].name.full(middle="full") } to stay away from?**
       ${ word(yesno(hide_other_address_2)) }
+    show if: stay_away_other_2 and not other_location_2_is_school
   - Edit: other_locations_hidden_description_2
     button: |
       **Second other location description:**
       ${ other_locations_hidden_description_2 }
-    show if: stay_away_other and hide_other_address_2
+    show if: stay_away_other_2 and hide_other_address_2  and not other_location_2_is_school
   - Edit: other_locations[1].address
     button: |
       **Second location name and address:**
       ${ other_locations[1].name }, ${ other_locations[1].on_one_line(bare=True) }
-    show if: stay_away_other_2 and hide_other_address_2 == False
+    show if: stay_away_other_2 and hide_other_address_2 == False and not other_location_2_is_school
+
+  - Edit: schools[3].address
+    button: |
+      **Second other school name and address:**
+      ${ schools[3].name }, ${ schools[3].on_one_line(bare=True) }
+    show if: stay_away_other_2 and other_location_2_is_school
+  - Edit: schools[3].hide
+    button: |
+      **Do you want to hide information about ${ schools[3].name } from  ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(schools[3].hide)) }
+    show if: stay_away_other_2 and other_location_2_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
+  - Edit: schools[3].type
+    button: |
+      **Confidential school information about ${ schools[3].name }:**
+      ${ "Type: " + schools[3].type + ", Children who attend: " + comma_and_list(schools[3].kids_who_attend.true_values()) }
+    show if: stay_away_other_2 and other_location_2_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
+
+  
   - Edit: same_school
     button: |
       **Does ${other_parties[0].name.full(middle="full")} attend the same school as you or other protected people?**
@@ -2473,35 +2509,19 @@ question: |
 subquestion: |
   Edit your answers below.
 review: 
-  - Edit: parentage
+  - Edit: children_live_in_il
     button: |
-      **Has parentage of the minor children been established?**
-      % if parentage == "parentage_established_by_marriage":
-      Yes, the children were born before, during, or within 300 days after the marriage.
-      % elif parentage == "parentage_established_other":
-      Yes, we are not married, but parentage was established.
-      % else:
-      No, parentage has not been established.
-      % endif
-  - Edit: parentage_other
-    button: |
-      **Legal parentage of the children has been established by:**
+      **Why are you asking the court to make decisions about your minor children?**
       
-      % if parentage_vap:
-      * We signed and filed a Voluntary Acknowledgement of Paternity, also called a VAP.
+      % if children_live_in_il:
+      * The children have lived in Illinois for the past 6 months.
       % endif
-      % if parentage_order:
-      * A court or administrative order established us as the legal parents of the children.
+      % if children_removed_from_il:
+      * I live in Illinois, but the children who lived in Illinois were taken out of state.
       % endif
-      % if parentage_other:
-      * Legal parentage was established another way.
+      % if children_fled:
+      * The children are in Illinois because we fled to avoid abuse elsewhere.
       % endif
-    show if: parentage == "parentage_established_other"
-  - Edit: other_parentage_method
-    button: |
-      **Other parentage method:**
-      ${ other_parentage_method }
-    show if: parentage == "parentage_established_other" and parentage_other
   - Edit: primary_caretaker
     button: |
       **Primary caretaker of the children with ${ other_parties[0].name.full(middle="full") }:**
@@ -2682,7 +2702,7 @@ review:
       **Do you want ${other_parties[0].name.full(middle="full")} to have parenting time on weekends?**
       ${ word(yesno(pt_weekends)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
-  - Edit: pt_weekend_days
+  - Edit: pt_weekend_cadence
     button: |
       **Weekend parenting time schedule:**
       % if pt_weekend_cadence == "every":
@@ -2690,28 +2710,14 @@ review:
       % else:
       Every other weekend 
       % endif
-      % if pt_weekend_days == "frisat":
-      from Friday at ${ format_time(pt_weekend_start) } to Saturday at ${ format_time(pt_weekend_end) }.
-      % endif
-      % if pt_weekend_days == "frisun":
-      from Friday at ${ format_time(pt_weekend_start) } to Sunday at ${ format_time(pt_weekend_end) }.
-      % endif
-      % if pt_weekend_days == "sat":
-      from Saturday at ${ format_time(pt_weekend_start) } to Saturday at ${ format_time(pt_weekend_end) }.
-      % endif
-      % if pt_weekend_days == "satsun":
-      from Saturday at ${ format_time(pt_weekend_start) } to Sunday at ${ format_time(pt_weekend_end) }.
-      % endif
-      % if pt_weekend_days == "sun":
-      from Sunday at ${ format_time(pt_weekend_start) } to Sunday at ${ format_time(pt_weekend_end) }.
-      % endif
+      from ${ dow_full[int(pt_weekend_start_day)] } at ${ format_time(pt_weekend_start_time) } to ${ dow_full[int(pt_weekend_end_day)] } at ${ format_time(pt_weekend_end_time) }.
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_weekends == True
   - Edit: pt_holidays
     button: |
       **Do you want parenting time to be different on holidays?**
       ${ word(yesno(pt_holidays)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
-  - Edit: pt_weekend_days
+  - Edit: pt_holiday_list
     button: |
       **Holday parenting time schedule:**
       From ${ format_time(pt_holiday_start) } to ${ format_time(pt_holiday_end) } on: 
