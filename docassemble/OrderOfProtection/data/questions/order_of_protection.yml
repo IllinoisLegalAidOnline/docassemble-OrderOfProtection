@@ -55,6 +55,7 @@ objects:
   - pt_pickup_location: ALAddress
   - pt_transportation_person: ALIndividual
   - pt_return_location: ALAddress
+  - pt_return_person: ALIndividual
   - petitioner_personal_property: DAList.using(object_type=Thing, there_are_any=True)
   - one_time_transfer_person: ALIndividual
   - other_return_property_person: ALIndividual
@@ -2521,9 +2522,6 @@ validation code: |
     validation_error("The start day must be before the end day.", field="pt_weekend_start_day")
   elif pt_weekend_start_time > pt_weekend_end_time:
     validation_error("The end time must be after the start time.", field="pt_weekend_end_time")
-
-
-  
 ---
 id: parenting time holidays
 question: |
@@ -2538,16 +2536,12 @@ id: parenting time holiday schedule
 question: |
   What holiday parenting time schedule do you want ${other_parties[0].name.full(middle="full")} to have?
 fields:
-  - List holidays (separate by commas): pt_holiday_list
+  - List holidays by name or date and include times: pt_holiday_list
     input type: area
-    rows: 3
-    maxlength: 150
+    rows: 5
+    maxlength: 200
     help: |
-      For example: New Years Day, Fourth of July, and Thanksgiving
-  - Start time: pt_holiday_start
-    datatype: time
-  - End time: pt_holiday_end
-    datatype: time
+      For example: New Years Day 10:00 AM to 3:00 PM, Fourth of July noon - 5:00PM, and Thanksgiving 9AM-4PM
 ---
 id: parenting time start date
 question: |
@@ -2614,6 +2608,7 @@ subquestion: |
   **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
 fields:
   - Name of location (if any): pt_location.name
+    maxlength: 35
     required: False
   - Street address: pt_location.address
     address autocomplete: True
@@ -2682,6 +2677,7 @@ subquestion: |
   **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
 fields:
   - Name of location (if any): pt_pickup_location.name
+    maxlength: 35
     required: False
   - Street address: pt_pickup_location.address
     address autocomplete: True
@@ -2708,6 +2704,7 @@ subquestion: |
   **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
 fields:
   - Name of location (if any): pt_return_location.name
+    maxlength: 35
     required: False
   - Street address: pt_return_location.address
     address autocomplete: True
@@ -2726,6 +2723,39 @@ subquestion: |
 fields:
   - no label: pt_immediate_return
     datatype: yesnoradio
+  - Who should ${other_parties[0].name.full(middle="full")} return the children to at the end of parenting time?: pt_return_person_choice
+    datatype: radio
+    choices:
+      - Me: Me
+      - Someone else: other
+      - I will figure this out later.: later
+    show if: pt_immediate_return
+  - note: |
+      Enter the person's name. 
+    show if:
+      variable: pt_return_person_choice
+      is: "other"
+  - First: pt_return_person.name.first
+    show if:
+      variable: pt_return_person_choice
+      is: "other"
+  - Middle: pt_return_person.name.middle
+    required: False
+    show if:
+      variable: pt_return_person_choice
+      is: "other"
+  - Last: pt_return_person.name.last
+    show if:
+      variable: pt_return_person_choice
+      is: "other"
+  - Suffix: pt_return_person.name.suffix
+    required: False
+    code: |
+      name_suffix()
+    show if:
+      variable: pt_return_person_choice
+      is: "other"
+      
 ---
 id: any personal property to petitioner
 question: |

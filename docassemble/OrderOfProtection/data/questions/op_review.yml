@@ -673,7 +673,6 @@ review:
   - Edit: pt_holiday_list
     button: |
       **Holday parenting time schedule:**
-      From ${ format_time(pt_holiday_start) } to ${ format_time(pt_holiday_end) } on: 
       ${ pt_holiday_list }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_holidays == True
   - Edit: pt_start_date
@@ -797,6 +796,18 @@ review:
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to return the children immediately after parenting time?**
       ${ word(yesno(pt_immediate_return)) }
+      % if pt_immediate_return:
+      % if pt_return_person_choice == "Me":
+      
+      They should be returned to me.
+      % elif pt_return_person_choice == "other":
+      
+      They should be returned to ${ pt_return_person.name.full(middle="full")}.
+      % else:
+      
+      I will identify a return person later.
+      % endif
+      % endif
     show if: (parenting_time == "restrict" or parenting_time == "grant")
     
   # section: property
@@ -2720,7 +2731,6 @@ review:
   - Edit: pt_holiday_list
     button: |
       **Holday parenting time schedule:**
-      From ${ format_time(pt_holiday_start) } to ${ format_time(pt_holiday_end) } on: 
       ${ pt_holiday_list }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_holidays == True
   - Edit: pt_start_date
@@ -2816,6 +2826,18 @@ review:
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to return the children immediately after parenting time?**
       ${ word(yesno(pt_immediate_return)) }
+      % if pt_immediate_return:
+      % if pt_return_person_choice == "Me":
+      
+      They should be returned to me.
+      % elif pt_return_person_choice == "other":
+      
+      They should be returned to ${ pt_return_person.name.full(middle="full")}.
+      % else:
+      
+      I will identify a return person later.
+      % endif
+      % endif
     show if: (parenting_time == "restrict" or parenting_time == "grant")
  
 ---
