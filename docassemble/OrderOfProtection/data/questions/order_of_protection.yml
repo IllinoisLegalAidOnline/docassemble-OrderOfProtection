@@ -58,10 +58,11 @@ objects:
   - pt_return_person: ALIndividual
   - petitioner_personal_property: DAList.using(object_type=Thing, there_are_any=True)
   - one_time_transfer_person: ALIndividual
-  - other_return_property_person: ALIndividual
   - other_transfer_property_person: ALIndividual
+  - res_other_transfer_property_person: ALIndividual
   - property_transfer_location: ALAddress
   - pets: DAList.using(object_type=Thing, there_are_any=True)
+  - restricted_property_address: ALAddress
   - other_phone_account_holder: ALIndividual
   - cell_numbers: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
   - service_address: ALAddress
@@ -258,20 +259,17 @@ code: |
   if award_personal_property:
     petitioner_personal_property.gather()
     if return_property:
-      if return_property_person == "other":
-        other_return_property_person.name.first
       return_property_reason
+      if property_transfer_location_cb:
+        property_transfer_location.address
+        property_transfer_present_cb
+        property_transfer_know_date
   if return_respo_property:
     respo_property
-  respondent_one_time_entry
+    respondent_one_time_entry
+
+  # add prop restrictions here
   
-  if return_property == True or return_respo_property == True or respondent_one_time_entry: 
-    if property_transfer_location_cb:
-      property_transfer_location.address
-    if property_transfer_present_cb:
-      property_transfer_person
-    if property_transfer_know_date:
-      property_transfer_date
   if possession_of_animals:
     pets.gather()
   if separate_phone_service:
@@ -279,7 +277,7 @@ code: |
     phone_provider
     cell_numbers.gather()
   if restrict_other_property:
-    restricted_property
+    restrict_cars
     restrict_property_reason
   restrict_elderly_petitioner_resources 
  
@@ -471,7 +469,7 @@ continue button field: whats_next
 question: |
   After you finish this program
 subquestion: |
-  After you download your ${ form_name } forms, you must file them with the court clerk's office. This program does not file your ${ form_name } forms for you.
+  After you download your ${ form_name } forms, you must file them with the court clerk's office. This program **does not file** your ${ form_name } forms for you.
   
   You can also download "How to ask for an Order of Protection" instructions at the end of this program. The instructions can guide you through filing your forms and going to court. 
 ---
@@ -505,7 +503,7 @@ continue button field: important_op_info
 question: |
   Things you should know
 subquestion: |
-  The person who caused the abuse is called **the Respondent**. In court, the judge will use this word to refer to the abuser. This program and the forms will do the same.
+  The person who caused the abuse is called the **Respondent**. In court, the judge will use this word to refer to the abuser. This program and the forms will do the same.
 
   **You will need to include an address where the Respondent can be found.** This is so the sheriff can deliver the court papers. Delivery of the court papers is called **service.** This might be where the Respondent lives, works, or a place where they stay. **Note: the Respondent will get a copy of all the court forms, except for the ones that are confidential like school or daycare location.**
 
@@ -2763,7 +2761,7 @@ question: |
 subquestion: |
   The court can order that you will get control of personal property. This is called getting possession of the property.
   
-  For example: your car, clothing, or phone.
+  These can be things that you have or things you want ${other_parties[0].name.full(middle="full")} to return to you. For example: your car, clothing, or phone.
 fields:
   - no label: award_personal_property
     datatype: yesnoradio
@@ -2793,6 +2791,9 @@ fields:
   - "Any other items?": petitioner_personal_property.there_is_another
     datatype: yesnoradio
 ---
+#sets:
+#  - return_property
+#reconsider: True
 
 depends on: 
   - petitioner_personal_property[i].respo_has
@@ -2808,7 +2809,10 @@ code: |
       return_property = True
     else:
       return_property = False
+
+#  return_property_recompute = True
 ---
+#THIS can probably be deleted
 id: return petitioner property to whom
 question: |
   Who should ${other_parties[0].name.full(middle="full")} return your property to?
@@ -2850,13 +2854,8 @@ fields:
     datatype: radio
     choices:
       - I own the property.: petitioner owns
-      - We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.: both own
-      - I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.: divorce
-  - Has a divorce been filed yet?: divorce_filed
-    datatype: yesnoradio
-    show if:
-      variable: return_property_reason
-      is: "divorce"
+      - We both own the property, but not having it would be harder on me. It would put me at risk for abuse or sharing is not practical.: both own
+      - I am married to ${other_parties[0].name.full(middle="full")}, and we have filed for divorce.: divorce
 ---
 id: any property to return to respondent
 question: |
@@ -2894,13 +2893,40 @@ subquestion: |
 fields:
   - no label: respondent_one_time_entry
     datatype: yesnoradio
-
+  - Who should be present when ${other_parties[0].name.full(middle="full")} gets their property?: res_property_transfer_person
+    datatype: radio
+    choices:
+      - Law enforcement: police
+      - Another person: other
+    show if: respondent_one_time_entry
+  - Law enforcement agency (optional): res_property_transfer_police
+    help: |
+      Example: Chicago Police Department
+    js show if: |
+      val("res_property_transfer_person") === "police" && val("respondent_one_time_entry") === true
+    required: False
+  - First: res_other_transfer_property_person.name.first
+    js show if: |
+      val("res_property_transfer_person") === "other" && val("respondent_one_time_entry") === true
+  - Middle: res_other_transfer_property_person.name.middle
+    required: False
+    js show if: |
+      val("res_property_transfer_person") === "other" && val("respondent_one_time_entry") === true
+  - Last: res_other_transfer_property_person.name.last
+    js show if: |
+      val("res_property_transfer_person") === "other" && val("respondent_one_time_entry") === true
+  - Suffix: res_other_transfer_property_person.name.suffix
+    required: False
+    code: |
+      name_suffix()
+    js show if: |
+      val("res_property_transfer_person") === "other" && val("respondent_one_time_entry") === true
 ---
 id: know property transfer address
 question: |
   Do you know where you want the personal property transfer to happen?
 subquestion: |
-  This is where you will get your property back from ${other_parties[0].name.full(middle="full")}, and where they will get their property back. 
+  This is where you will get your property back from ${other_parties[0].name.full(middle="full")}. 
   
   You may want this to happen at a police department or sheriff's office. You can enter the address on the next screen.
 fields:
@@ -2931,56 +2957,39 @@ question: |
   Do you want anyone else present at the property transfer?
 subquestion: |
   It may be safer if a law enforcement officer or another person is present when the property is transferred.
+  
+  **Note:** If you select **Law enforcement**, you will need to arrange when this happens.
 fields:
   - no label: property_transfer_present_cb
     datatype: yesnoradio
----
-id: property transfer person name
-question: |
-  Who should be present at the property transfer?
-subquestion: |
-  It may be safer if a law enforcement officer is present when the property is transferred.
-fields:
-  - no label: property_transfer_person
+  - Who should be present at the property transfer?: property_transfer_person
     datatype: radio
     choices:
       - Law enforcement: police
       - Another person: other
-  - Law enforcement agency: property_transfer_police
+    show if: property_transfer_present_cb
+  - Law enforcement agency (optional): property_transfer_police
     help: |
       Example: Chicago Police Department
-    show if:
-      variable: property_transfer_person
-      is: "police"
-  - Who will request that law enforcement is at the transfer?: request_police_person
-    datatype: radio
-    choices:
-      - Me: petitioner
-      - ${other_parties[0].name.full(middle="full")}: respondent
-      - I don't know. I'll figure this out later.: idk
-    show if:
-      variable: property_transfer_person
-      is: "police"
+    required: False
+    js show if: |
+      val("property_transfer_person") === "police" && val("property_transfer_present_cb") === true
   - First: other_transfer_property_person.name.first
-    show if:
-      variable: property_transfer_person
-      is: "other"
+    js show if: |
+      val("property_transfer_person") === "other" && val("property_transfer_present_cb") === true
   - Middle: other_transfer_property_person.name.middle
     required: False
-    show if:
-      variable: property_transfer_person
-      is: "other"
+    js show if: |
+      val("property_transfer_person") === "other" && val("property_transfer_present_cb") === true
   - Last: other_transfer_property_person.name.last
-    show if:
-      variable: property_transfer_person
-      is: "other"
+    js show if: |
+      val("property_transfer_person") === "other" && val("property_transfer_present_cb") === true
   - Suffix: other_transfer_property_person.name.suffix
     required: False
     code: |
       name_suffix()
-    show if:
-      variable: property_transfer_person
-      is: "other"
+    js show if: |
+      val("property_transfer_person") === "other" && val("property_transfer_present_cb") === true
 ---
 id: know property transfer date
 question: |
@@ -2990,18 +2999,16 @@ subquestion: |
 fields:
   - no label: property_transfer_know_date
     datatype: yesnoradio
----
-id: property transfer date
-question: |
-  When do you want the property transfer to happen?
-subquestion: |
-  If you do not know the exact date and time, take your best guess.
-fields:
+  - note: |
+      If you do not know the exact date and time, take your best guess.
+    show if: property_transfer_know_date
   - Date: property_transfer_date
     datatype: date
     min: ${ today().format("yyyy-MM-dd") }
+    show if: property_transfer_know_date
   - Time: property_transfer_time
     datatype: time
+    show if: property_transfer_know_date
 ---
 id: any pets to protect
 question: |
@@ -3085,7 +3092,7 @@ fields:
     maxlength: 25
     help: |
       Examples: Verizon or T-Mobile
-  - Phone number of account holder (billing phone number): billing_phone_number
+  - ${other_parties[0].name.full(middle="full")}'s phone number: billing_phone_number
     datatype: al_international_phone
 ---
 id: cell phone number to separate
@@ -3127,44 +3134,92 @@ code: |
 
 id: restrict other property
 question: |
-  Is there other property you want the court to protect?
+  Additional property protections
 subquestion: |
-  The court can order ${other_parties[0].name.full(middle="full")} not to take, hide, damage, or dispose of property. This can include personal property or real estate. 
+  We already asked about property that the court should order that you can keep or be returned to you.
+  
+  The court can also order ${other_parties[0].name.full(middle="full")} not to take, hide, damage, or dispose of property. This can include personal property like your car or real estate like your apartment or house. It can include the spaces inside and outside the property as well as things that are inside the property.
+
+  **Note:** If you want these protections, you will need to describe the items, including property address, on your court papers.
   
 fields:
-  - no label: restrict_other_property
+  - Is there property you want to protect from ${other_parties[0].name.full(middle="full")}?: restrict_other_property
     datatype: yesnoradio
 ---
 id: restricted property
 question: |
-  What property should ${other_parties[0].name.full(middle="full")} be protected?
+  What property should be protected from ${other_parties[0].name.full(middle="full")}?
 subquestion: |
   The court can order ${other_parties[0].name.full(middle="full")} not to take, hide, damage, or dispose of property. This can include personal property or real estate. 
-  
-  If you are listing a car, include the year, make, and model, and year. For example: 2019 Chevy Malibu.
 fields:
-  - Other property to protect (separate by commas): restricted_property
+  - Cars or other motor vehicles: restrict_cars
+    datatype: yesnowide
+  - List the year, make, and model of the vehicles: restricted_car_details
     input type: area
     rows: 2
+    maxlength: 60
+    show if: restrict_cars
+    help: |
+      For example: 2019 Chevy Malibu.
+  - Your home or other place you are staying [NEWLINE]**This address will be listed on court papers.**: restrict_home
+    datatype: yesnowide
+  - Street address: restricted_property_address.address
+    address autocomplete: True
+    show if: restrict_home
+  - Address line 2: restricted_property_address.unit
+    required: False
+    show if: restrict_home
+  - City: restricted_property_address.city
+    show if: restrict_home
+  - State: restricted_property_address.state
+    code: |
+      states_list()
+    show if: restrict_home
+  - ZIP code: restricted_property_address.zip
+    required: False
+    show if: restrict_home
+  - Protect the inside and outside of the property: restrict_property_space
+    datatype: yesnoradio
+    show if: restrict_home
+  - Protect items located inside the property: restrict_property_items
+    datatype: yesnoradio
+    show if: restrict_home
+  - Other important property (explain below): restrict_other_property
+    datatype: yesnowide
+  - Other property to protect (separate by commas): restricted_property
+    input type: area
+    rows: 4
     maxlength: 160
+    show if: restrict_other_property
 ---
 id: why property should be restricted
 question: |
   Why should the property be protected from ${other_parties[0].name.full(middle="full")}?
 subquestion: | 
-  You said this property should be protected: ${ restricted_property.rstrip('.') }.
+  You said this property should be protected:
+
+  % if restrict_cars:
+  * ${ restricted_car_details }
+  % endif
+  % if restrict_home:
+  * ${ restricted_property_address.on_one_line(bare=True) } 
+  % if restrict_property_space:
+  [NEWLINE][TAB]Including the inside and outside the property
+  % endif
+  % if restrict_property_items:
+  [NEWLINE][TAB]Including items inside the property
+  % endif
+  % endif
+  % if restrict_other_property:
+  * ${ restricted_property }
+  % endif
 fields:
   - no label: restrict_property_reason
     datatype: radio
     choices:
       - I own the property.: petitioner
-      - We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.: both
-      - I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.: divorce
-  - Has a divorce been filed yet?: restrict_divorce_filed
-    datatype: yesnoradio
-    show if:
-      variable: restrict_property_reason
-      is: "divorce"
+      - We both own the property, but not having it would be harder on me. It would put me at risk for abuse or sharing is not practical.: both
+      - I am married to ${other_parties[0].name.full(middle="full")}, and we have filed for divorce.: divorce
 ---
 id: restrict resources of elderly petitioner
 question: |

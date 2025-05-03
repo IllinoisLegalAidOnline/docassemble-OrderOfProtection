@@ -825,7 +825,8 @@ review:
       % for my_var in petitioner_personal_property:
         * ${ my_var.name.text }
       % endfor
-    show if: (award_personal_property == True)
+    show if: award_personal_property == True
+   
   - Edit: petitioner_personal_property.revisit
     button: |
       **Personal property ${other_parties[0].name.full(middle="full")} should return to you:**
@@ -835,22 +836,7 @@ review:
         * ${ my_var.name.text }
       % endif  
       % endfor
-    show if: (award_personal_property == True)
-
-  - Edit: return_property_person
-    button: |
-      **Who should ${other_parties[0].name.full(middle="full")} return your property to?**
-      % if return_property_person == "petitioner":
-      Me
-      % else:
-      Someone else
-      % endif
-    show if: (award_personal_property == True and return_property == True)
-  - Edit: other_return_property_person.name.first
-    button: |
-      **Other person who ${other_parties[0].name.full(middle="full")} will return property to:**
-      ${ other_return_property_person.name.full(middle="full") }
-    show if: (award_personal_property == True and return_property == True) and return_property_person == "other"
+    show if: award_personal_property == True and return_property == True
   - Edit: return_property_reason
     button: |
       **Why should ${other_parties[0].name.full(middle="full")} return the property?**
@@ -859,14 +845,47 @@ review:
       % elif return_property_reason == "both own":      
       We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.
       % else:
-      I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.      
+      I am married to ${other_parties[0].name.full(middle="full")}, and we filed a divorce.
       % endif
-    show if: (award_personal_property == True and return_property == True)
-  - Edit: return_property_reason
+    show if: award_personal_property == True and return_property == True
+  - Edit: property_transfer_location_cb
     button: |
-      **Has a divorce been filed yet?**
-      ${ word(yesno(divorce_filed)) }
-    show if: (award_personal_property == True and return_property == True) and return_property_reason == "divorce"
+      **Do you know where you want the personal property transfer to happen?**
+      ${ word(yesno(property_transfer_location_cb)) }
+    show if: award_personal_property == True and return_property == True
+  - Edit: property_transfer_location.address
+    button: |
+      **Property transfer location:**
+      ${ property_transfer_location.on_one_line(bare=True) }
+    show if: award_personal_property == True and return_property == True and property_transfer_location_cb == True
+  - Edit: property_transfer_present_cb
+    button: |
+      **Do you want anyone else present at the property transfer?**
+      ${ word(yesno(property_transfer_present_cb)) }
+    show if: award_personal_property == True and return_property == True and property_transfer_location_cb == True
+  - Edit: property_transfer_person
+    button: |
+      **Who should be present at the property transfer?**
+      % if property_transfer_person == 'police':
+      % if property_transfer_police == "":
+      Law enforcement, no department entered
+      % else:
+      Law enforcement, ${ property_transfer_police }
+      % endif
+      % else:
+      ${ other_transfer_property_person.name.full(middle="full") }
+      % endif
+    show if: award_personal_property == True and return_property == True and property_transfer_location_cb == True and property_transfer_present_cb == True
+  - Edit: property_transfer_know_date
+    button: |
+      **Do you know when you want the property transfer to happen?**
+      ${ word(yesno(property_transfer_know_date)) }
+    show if: award_personal_property == True and return_property == True and property_transfer_location_cb
+  - Edit: property_transfer_date
+    button: |
+      **Property transfer should happen on:**
+      ${ property_transfer_date } at ${ format_time(property_transfer_time) }
+    show if: award_personal_property == True and return_property == True and property_transfer_location_cb and property_transfer_know_date == True
   - Edit: return_respo_property
     button: |
       **Any personal property ${other_parties[0].name.full(middle="full")} will need returned to them right away?**
@@ -894,49 +913,20 @@ review:
     button: |
       **Should ${other_parties[0].name.full(middle="full")} be allowed to enter the home only one time to get their personal property?**
       ${ word(yesno(respondent_one_time_entry)) }
-  - Edit: property_transfer_present_cb
-    button: |
-      **Do you want anyone else present at the property transfer?**
-      ${ word(yesno(property_transfer_present_cb)) }
-  - Edit: property_transfer_person
+  - Edit: res_property_transfer_person
     button: |
       **Who should be present at the property transfer?**
-      % if property_transfer_person == 'police':
-      ${ property_transfer_police }
+      % if res_property_transfer_person == 'police':
+      % if res_property_transfer_police == "":
+      Law enforcement, no department entered
       % else:
-      ${ other_transfer_property_person.name.full(middle="full") }
+      Law enforcement, ${ res_property_transfer_police }
       % endif
-    show if: property_transfer_present_cb == True
-  - Edit: request_police_person
-    button: |
-      **Who will request that law enforcement is at the property transfer?**
-      % if request_police_person == 'petitioner':
-      Me
-      % elif request_police_person == 'respondent':
-      ${ other_transfer_property_person.name.full(middle="full") }
       % else:
-      I don't know.
+      ${ res_other_transfer_property_person.name.full(middle="full") }
       % endif
-    show if: property_transfer_present_cb == True and property_transfer_person == 'police'
-  - Edit: property_transfer_location_cb
-    button: |
-      **Do you know where you want the personal property transfer to happen?**
-      ${ word(yesno(property_transfer_location_cb)) }
-    show if: return_property == True or return_respo_property == True
-  - Edit: property_transfer_location.address
-    button: |
-      **Property transfer location:**
-      ${ property_transfer_location.on_one_line(bare=True) }
-    show if: (return_property == True or return_respo_property == True) and property_transfer_location_cb == True
-  - Edit: property_transfer_know_date
-    button: |
-      **Do you know when you want the property transfer to happen?**
-      ${ word(yesno(property_transfer_know_date)) }
-  - Edit: property_transfer_date
-    button: |
-      **Property transfer should happen on:**
-      ${ property_transfer_date } at ${ format_time(property_transfer_time) }
-    show if: property_transfer_know_date == True
+    show if: respondent_one_time_entry == True
+      
   - Edit: possession_of_animals
     button: |
       **Do you want court to give you possession of family pets or other animals?**
@@ -967,7 +957,7 @@ review:
       **Cell phone account details:**
       
       * Provider: ${ phone_provider }
-      * Billing phone number: ${ phone_number_formatted(billing_phone_number) }
+      * ${other_parties[0].name.full(middle="full")}'s phone number: ${ phone_number_formatted(billing_phone_number) }
     show if: separate_phone_service == True
   - Edit: cell_numbers.revisit
     button: |
@@ -1925,7 +1915,7 @@ columns:
   - ${other_parties[0].name.full(middle="full")} should return: |
       word(yesno(row_item.respo_has)) if defined("row_item.respo_has") else ""
   - Edit: |
-      action_button_html(url_action(row_item.attr_name("review_personal_property_details")), label="Edit", icon="pencil-alt")
+      action_button_html(url_action(row_item.attr_name("name.text")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
 ---
@@ -2861,7 +2851,8 @@ review:
       % for my_var in petitioner_personal_property:
         * ${ my_var.name.text }
       % endfor
-    show if: (award_personal_property == True)
+    show if: award_personal_property == True
+   
   - Edit: petitioner_personal_property.revisit
     button: |
       **Personal property ${other_parties[0].name.full(middle="full")} should return to you:**
@@ -2871,22 +2862,7 @@ review:
         * ${ my_var.name.text }
       % endif  
       % endfor
-    show if: (award_personal_property == True)
-
-  - Edit: return_property_person
-    button: |
-      **Who should ${other_parties[0].name.full(middle="full")} return your property to?**
-      % if return_property_person == "petitioner":
-      Me
-      % else:
-      Someone else
-      % endif
-    show if: (award_personal_property == True and return_property == True)
-  - Edit: other_return_property_person.name.first
-    button: |
-      **Other person who ${other_parties[0].name.full(middle="full")} will return property to:**
-      ${ other_return_property_person.name.full(middle="full") }
-    show if: (award_personal_property == True and return_property == True) and return_property_person == "other"
+    show if: award_personal_property == True and return_property == True
   - Edit: return_property_reason
     button: |
       **Why should ${other_parties[0].name.full(middle="full")} return the property?**
@@ -2895,14 +2871,48 @@ review:
       % elif return_property_reason == "both own":      
       We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.
       % else:
-      I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.      
+      I am married to ${other_parties[0].name.full(middle="full")}, and we filed a divorce.
       % endif
-    show if: (award_personal_property == True and return_property == True)
-  - Edit: return_property_reason
+    show if: award_personal_property == True and return_property == True
+  - Edit: property_transfer_location_cb
     button: |
-      **Has a divorce been filed yet?**
-      ${ word(yesno(divorce_filed)) }
-    show if: (award_personal_property == True and return_property == True) and return_property_reason == "divorce"
+      **Do you know where you want the personal property transfer to happen?**
+      ${ word(yesno(property_transfer_location_cb)) }
+    show if: award_personal_property == True and return_property == True
+  - Edit: property_transfer_location.address
+    button: |
+      **Property transfer location:**
+      ${ property_transfer_location.on_one_line(bare=True) }
+    show if: award_personal_property == True and return_property == True and property_transfer_location_cb == True
+  - Edit: property_transfer_present_cb
+    button: |
+      **Do you want anyone else present at the property transfer?**
+      ${ word(yesno(property_transfer_present_cb)) }
+    show if: award_personal_property == True and return_property == True and property_transfer_location_cb == True
+  - Edit: property_transfer_person
+    button: |
+      **Who should be present at the property transfer?**
+      % if property_transfer_person == 'police':
+      % if property_transfer_police == "":
+      Law enforcement, no department entered
+      % else:
+      Law enforcement, ${ property_transfer_police }
+      % endif
+      % else:
+      ${ other_transfer_property_person.name.full(middle="full") }
+      % endif
+    show if: award_personal_property == True and return_property == True and property_transfer_location_cb == True and property_transfer_present_cb == True
+  - Edit: property_transfer_know_date
+    button: |
+      **Do you know when you want the property transfer to happen?**
+      ${ word(yesno(property_transfer_know_date)) }
+    show if: award_personal_property == True and return_property == True and property_transfer_location_cb
+  - Edit: property_transfer_date
+    button: |
+      **Property transfer should happen on:**
+      ${ property_transfer_date } at ${ format_time(property_transfer_time) }
+    show if: award_personal_property == True and return_property == True and property_transfer_location_cb and property_transfer_know_date == True
+
   - Edit: return_respo_property
     button: |
       **Any personal property ${other_parties[0].name.full(middle="full")} will need returned to them right away?**
@@ -2930,49 +2940,20 @@ review:
     button: |
       **Should ${other_parties[0].name.full(middle="full")} be allowed to enter the home only one time to get their personal property?**
       ${ word(yesno(respondent_one_time_entry)) }
-  - Edit: property_transfer_present_cb
-    button: |
-      **Do you want anyone else present at the property transfer?**
-      ${ word(yesno(property_transfer_present_cb)) }
-  - Edit: property_transfer_person
+  - Edit: res_property_transfer_person
     button: |
       **Who should be present at the property transfer?**
-      % if property_transfer_person == 'police':
-      ${ property_transfer_police }
+      % if res_property_transfer_person == 'police':
+      % if res_property_transfer_police == "":
+      Law enforcement, no department entered
       % else:
-      ${ other_transfer_property_person.name.full(middle="full") }
+      Law enforcement, ${ res_property_transfer_police }
       % endif
-    show if: property_transfer_present_cb == True
-  - Edit: request_police_person
-    button: |
-      **Who will request that law enforcement is at the property transfer?**
-      % if request_police_person == 'petitioner':
-      Me
-      % elif request_police_person == 'respondent':
-      ${ other_transfer_property_person.name.full(middle="full") }
       % else:
-      I don't know.
+      ${ res_other_transfer_property_person.name.full(middle="full") }
       % endif
-    show if: property_transfer_present_cb == True and property_transfer_person == 'police'
-  - Edit: property_transfer_location_cb
-    button: |
-      **Do you know where you want the personal property transfer to happen?**
-      ${ word(yesno(property_transfer_location_cb)) }
-    show if: return_property == True or return_respo_property == True
-  - Edit: property_transfer_location.address
-    button: |
-      **Property transfer location:**
-      ${ property_transfer_location.on_one_line(bare=True) }
-    show if: (return_property == True or return_respo_property == True) and property_transfer_location_cb == True
-  - Edit: property_transfer_know_date
-    button: |
-      **Do you know when you want the property transfer to happen?**
-      ${ word(yesno(property_transfer_know_date)) }
-  - Edit: property_transfer_date
-    button: |
-      **Property transfer should happen on:**
-      ${ property_transfer_date } at ${ format_time(property_transfer_time) }
-    show if: property_transfer_know_date == True
+    show if: respondent_one_time_entry == True
+    
   - Edit: possession_of_animals
     button: |
       **Do you want court to give you possession of family pets or other animals?**
@@ -3003,7 +2984,7 @@ review:
       **Cell phone account details:**
       
       * Provider: ${ phone_provider }
-      * Billing phone number: ${ phone_number_formatted(billing_phone_number) }
+      * ${other_parties[0].name.full(middle="full")}'s phone number: ${ phone_number_formatted(billing_phone_number) }
     show if: separate_phone_service == True
   - Edit: cell_numbers.revisit
     button: |
