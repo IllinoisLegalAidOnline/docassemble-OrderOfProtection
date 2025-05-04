@@ -295,6 +295,10 @@ review:
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away from and not be at your residence while under the influence?**
       ${ word(yesno(no_stay_under_influence)) }
+      % if no_stay_under_influence:
+      [NEWLINE][NEWLINE]
+      **Residence at:** ${ no_stay_residence.on_one_line(bare=True) }
+      % endif
     show if: not (stay_away or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing'))
   - Edit: stay_away_jobs
     button: |
@@ -939,6 +943,68 @@ review:
         * ${ my_var.name.text } (${ indefinite_article(my_var.description) })
       % endfor
     show if: (possession_of_animals == True)
+
+  - Edit: restrict_other_property
+    button: |
+      **Is there property you want the court to protect?**
+      ${ word(yesno(restrict_other_property)) }
+  - Edit: restrict_cars
+    button: |
+      **Property you want to protect:**
+      
+      % if restrict_cars:
+      * ${ restricted_car_details }
+      % endif
+      % if restrict_home:
+      * ${ restricted_property_address.on_one_line(bare=True) } 
+      % if restrict_property_space:
+      [NEWLINE][TAB]Including the inside and outside the property
+      % endif
+      % if restrict_property_items:
+      [NEWLINE][TAB]Including items inside the property
+      % endif
+      % endif
+      % if restrict_other_property:
+      * ${ restricted_property }
+      % endif
+    show if: restrict_other_property == True
+    
+  - Edit: restrict_property_reason
+    button: |
+      **Why should the property be protected?**
+      % if restrict_property_reason == "petitioner":
+      I own the property.
+      % elif restrict_property_reason == "both":      
+      We both own the property, but not having it would be harder on me. It would put me at risk for abuse or sharing is not practical.
+      % else:
+      I am married to ${other_parties[0].name.full(middle="full")}, and we have filed for divorce.
+      % endif
+    show if: restrict_other_property == True
+    
+  - Edit: restrict_elderly_petitioner_resources
+    button: |
+      **Should the court protect an elderly person's resources from  ${other_parties[0].name.full(middle="full")}?**
+      % if restrict_elderly_petitioner_resources == "Yes":
+      Yes
+      % elif restrict_elderly_petitioner_resources == "No":
+      No
+      % else:
+      Does not apply
+      % endif
+
+  # section: remedies
+  - note: |
+      <h4>Other remedies</h4>
+  - Edit: temp_child_support
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary child support?**
+      ${ word(yesno(temp_child_support)) }
+    show if: minor_kids_with_respondent == True
+  - Edit: temp_maintenance
+    button: |
+      **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary maintenance?**
+      ${ word(yesno(temp_maintenance)) }
+    show if: relationship_se == True or relationship_xs == True
   - Edit: separate_phone_service
     button: |
       **Do you want the court to order that your cell phone accounts be separated?**
@@ -967,56 +1033,7 @@ review:
         * ${ phone_number_formatted(my_var.name.text) }
       % endfor
     show if: separate_phone_service == True
-
-  - Edit: restrict_other_property
-    button: |
-      **Is there other property you want the court to protect?**
-      ${ word(yesno(restrict_other_property)) }
-  - Edit: restricted_property
-    button: |
-      **Other property you want to protect:**
-      ${ restricted_property.rstrip('.') }
-    show if: (restrict_other_property == True and respo_property['other'] == True)
-  - Edit: restrict_property_reason
-    button: |
-      **Why should the other property be protected?**
-      % if restrict_property_reason == "petitioner":
-      I own the property.
-      % elif restrict_property_reason == "both":      
-      We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.
-      % else:
-      I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.      
-      % endif
-    show if: restrict_other_property == True
-  - Edit: restrict_property_reason
-    button: |
-      **Has a divorce been filed yet?**
-      ${ word(yesno(restrict_divorce_filed)) }
-    show if: (restrict_other_property == True and restrict_property_reason == "divorce")
-  - Edit: restrict_elderly_petitioner_resources
-    button: |
-      **Should the court protect an elderly person's resources from  ${other_parties[0].name.full(middle="full")}?**
-      % if restrict_elderly_petitioner_resources == "Yes":
-      Yes
-      % elif restrict_elderly_petitioner_resources == "No":
-      No
-      % else:
-      Does not apply
-      % endif
-
-  # section: remedies
-  - note: |
-      <h4>Other remedies</h4>
-  - Edit: temp_child_support
-    button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary child support?**
-      ${ word(yesno(temp_child_support)) }
-    show if: minor_kids_with_respondent == True
-  - Edit: temp_maintenance
-    button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary maintenance?**
-      ${ word(yesno(temp_maintenance)) }
-    show if: relationship_se == True or relationship_xs == True
+    
   - Edit: expenses_none
     button: |
       **Losses you want ${other_parties[0].name.full(middle="full")} to pay for:**
@@ -1035,9 +1052,6 @@ review:
       % endif
       % if expenses_moving:
       * Moving and other travel expenses - ${ currency(expenses_moving_amount) }
-      % endif
-      % if expenses_shelter:
-      * Temporary housing or counseling at a domestic violence shelter - ${ currency(expenses_shelter_amount) }
       % endif
       % if expenses_housing:
       * Expenses for housing and meals, other than a domestic violence shelter - ${ currency(expenses_housing_amount) }
@@ -1956,31 +1970,13 @@ rows: pets
 columns:
   - Pet name: |
       row_item.name.text if defined("row_item.name.text") else ""
-  - Description: |
-      row_item.description if defined("row_item.name.text") else ""
+  - Description (type and breed): |
+      row_item.description if defined("row_item.description") else ""
   - Edit: |
-      action_button_html(url_action(row_item.attr_name("review_pet_details")), label="Edit", icon="pencil-alt")
+      action_button_html(url_action(row_item.attr_name("name.text")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
 ---
-id: pet edit
-continue button field: x.review_pet_details
-generic object: DAObject
-question: |
-  Edit pet details
-review: 
-  - Edit: x.name.text
-    button: |
-      **Name:**
-      ${ x.name.text  }
-  - Edit: x.description
-    button: |
-      **Description:**
-      ${ x.description } 
-continue button label: Next
-
-
-
 
 ---
 id: cell phone numbers revisit
@@ -2000,21 +1996,9 @@ columns:
   - Phone number: |
       phone_number_formatted(row_item.name.text) if defined("row_item.name.text") else ""
   - Edit: |
-      action_button_html(url_action(row_item.attr_name("review_cell_number_details")), label="Edit", icon="pencil-alt")
+      action_button_html(url_action(row_item.attr_name("name.text")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
----
-id: cell number edit
-continue button field: x.review_cell_number_details
-generic object: DAObject
-question: |
-  Edit cell phone numbers
-review: 
-  - Edit: x.name.text
-    button: |
-      **Cell phone number:**
-      ${ phone_number_formatted(x.name.text)  }
-continue button label: Next
 
 
 ---
@@ -2335,6 +2319,10 @@ review:
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away from and not be at your residence while under the influence?**
       ${ word(yesno(no_stay_under_influence)) }
+      % if no_stay_under_influence:
+      [NEWLINE][NEWLINE]
+      **Residence at:** ${ no_stay_residence.on_one_line(bare=True) }
+      % endif
     show if: not (stay_away or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing'))
   - Edit: stay_away_jobs
     button: |
@@ -2966,60 +2954,44 @@ review:
         * ${ my_var.name.text } (${ indefinite_article(my_var.description) })
       % endfor
     show if: (possession_of_animals == True)
-  - Edit: separate_phone_service
-    button: |
-      **Do you want the court to order that your cell phone accounts be separated?**
-      ${ word(yesno(separate_phone_service)) }
-  - Edit: phone_account_holder
-    button: |
-      **Who is the cell phone account holder?**
-      % if phone_account_holder == 'respondent':
-      ${other_parties[0].name.full(middle="full")}
-      % else:
-      ${ other_phone_account_holder.name.full(middle="full") }
-      % endif
-    show if: separate_phone_service == True
-  - Edit: phone_provider
-    button: |
-      **Cell phone account details:**
-      
-      * Provider: ${ phone_provider }
-      * ${other_parties[0].name.full(middle="full")}'s phone number: ${ phone_number_formatted(billing_phone_number) }
-    show if: separate_phone_service == True
-  - Edit: cell_numbers.revisit
-    button: |
-      **Phone numbers you want to separate:**
-
-      % for my_var in cell_numbers:
-        * ${ phone_number_formatted(my_var.name.text) }
-      % endfor
-    show if: separate_phone_service == True
 
   - Edit: restrict_other_property
     button: |
-      **Is there other property you want the court to protect?**
+      **Is there property you want the court to protect?**
       ${ word(yesno(restrict_other_property)) }
-  - Edit: restricted_property
+  - Edit: restrict_cars
     button: |
-      **Other property you want to protect:**
-      ${ restricted_property.rstrip('.') }
-    show if: (restrict_other_property == True and respo_property['other'] == True)
+      **Property you want to protect:**
+      
+      % if restrict_cars:
+      * ${ restricted_car_details }
+      % endif
+      % if restrict_home:
+      * ${ restricted_property_address.on_one_line(bare=True) } 
+      % if restrict_property_space:
+      [NEWLINE][TAB]Including the inside and outside the property
+      % endif
+      % if restrict_property_items:
+      [NEWLINE][TAB]Including items inside the property
+      % endif
+      % endif
+      % if restrict_other_property:
+      * ${ restricted_property }
+      % endif
+    show if: restrict_other_property == True
+    
   - Edit: restrict_property_reason
     button: |
-      **Why should the other property be protected?**
+      **Why should the property be protected?**
       % if restrict_property_reason == "petitioner":
       I own the property.
       % elif restrict_property_reason == "both":      
-      We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.
+      We both own the property, but not having it would be harder on me. It would put me at risk for abuse or sharing is not practical.
       % else:
-      I am married to ${other_parties[0].name.full(middle="full")} and the property should be divided in a divorce.      
+      I am married to ${other_parties[0].name.full(middle="full")}, and we have filed for divorce.
       % endif
     show if: restrict_other_property == True
-  - Edit: restrict_property_reason
-    button: |
-      **Has a divorce been filed yet?**
-      ${ word(yesno(restrict_divorce_filed)) }
-    show if: (restrict_other_property == True and restrict_property_reason == "divorce")
+    
   - Edit: restrict_elderly_petitioner_resources
     button: |
       **Should the court protect an elderly person's resources from  ${other_parties[0].name.full(middle="full")}?**
@@ -3050,6 +3022,34 @@ review:
       **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary maintenance?**
       ${ word(yesno(temp_maintenance)) }
     show if: relationship_se == True or relationship_xs == True
+  - Edit: separate_phone_service
+    button: |
+      **Do you want the court to order that your cell phone accounts be separated?**
+      ${ word(yesno(separate_phone_service)) }
+  - Edit: phone_account_holder
+    button: |
+      **Who is the cell phone account holder?**
+      % if phone_account_holder == 'respondent':
+      ${other_parties[0].name.full(middle="full")}
+      % else:
+      ${ other_phone_account_holder.name.full(middle="full") }
+      % endif
+    show if: separate_phone_service == True
+  - Edit: phone_provider
+    button: |
+      **Cell phone account details:**
+      
+      * Provider: ${ phone_provider }
+      * ${other_parties[0].name.full(middle="full")}'s phone number: ${ phone_number_formatted(billing_phone_number) }
+    show if: separate_phone_service == True
+  - Edit: cell_numbers.revisit
+    button: |
+      **Phone numbers you want to separate:**
+
+      % for my_var in cell_numbers:
+        * ${ phone_number_formatted(my_var.name.text) }
+      % endfor
+    show if: separate_phone_service == True
   - Edit: expenses_none
     button: |
       **Losses you want ${other_parties[0].name.full(middle="full")} to pay for:**
@@ -3068,9 +3068,6 @@ review:
       % endif
       % if expenses_moving:
       * Moving and other travel expenses - ${ currency(expenses_moving_amount) }
-      % endif
-      % if expenses_shelter:
-      * Temporary housing or counseling at a domestic violence shelter - ${ currency(expenses_shelter_amount) }
       % endif
       % if expenses_housing:
       * Expenses for housing and meals, other than a domestic violence shelter - ${ currency(expenses_housing_amount) }

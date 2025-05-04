@@ -44,6 +44,7 @@ objects:
   - other_ops: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
   - other_cases: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
   - incidents: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
+  - no_stay_residence: ALAddress
   - jobs: ALAddressList.using(there_are_any=True)
   - schools: ALAddressList.using(there_are_any=True)
   - other_locations: ALAddressList.using(there_are_any=True)
@@ -268,14 +269,8 @@ code: |
     respo_property
     respondent_one_time_entry
 
-  # add prop restrictions here
-  
   if possession_of_animals:
     pets.gather()
-  if separate_phone_service:
-    phone_account_holder
-    phone_provider
-    cell_numbers.gather()
   if restrict_other_property:
     restrict_cars
     restrict_property_reason
@@ -288,6 +283,10 @@ code: |
   if relationship_ma:
     if relationship_se == True or relationship_xs == True:
       temp_maintenance    
+  if separate_phone_service:
+    phone_account_holder
+    phone_provider
+    cell_numbers.gather()
   expenses_none    
     
   if request_counseling:
@@ -1524,8 +1523,28 @@ question: |
 subquestion: |
   Select **Yes** if when ${other_parties[0].name.full(middle="full")} is under the influence of drugs or alcohol, they are a threat to you or your children.
 fields:
-  - No entry or presence while under the influence: no_stay_under_influence
+  - No entry or presence while under the influence?: no_stay_under_influence
     datatype: yesnoradio
+  - note: |
+      Enter the residence address below. **Note:** This address will appear on your court papers.
+    show if: no_stay_under_influence
+  - Street address: no_stay_residence.address
+    address autocomplete: True
+    show if: no_stay_under_influence
+  - Address line 2: no_stay_residence.unit
+    required: False
+    show if: no_stay_under_influence
+  - City: no_stay_residence.city
+    show if: no_stay_under_influence
+  - State: no_stay_residence.state
+    code: |
+      states_list()
+    show if: no_stay_under_influence
+  - ZIP code: no_stay_residence.zip
+    required: False
+    show if: no_stay_under_influence
+
+
 
 ---
 id: hide address
@@ -2028,7 +2047,7 @@ id: request counseling for respondent
 question: |
   Do you want ${other_parties[0].name.full(middle="full")} to get counseling?
 subquestion: |
-  The court can order evaluation and treatment only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
+  **Note:** The court can order evaluation and treatment only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
 
   ${ collapse_template(counseling_help) }  
 fields:
@@ -3028,8 +3047,8 @@ question: |
   % endif
 fields:
   - Pet name: pets[i].name.text
-    maxlength: 20
-  - Description: pets[i].description
+    maxlength: 25
+  - Description (type and breed): pets[i].description
     maxlength: 25
 ---
 id: any other pets
@@ -3223,7 +3242,7 @@ fields:
 ---
 id: restrict resources of elderly petitioner
 question: |
-  Should ${other_parties[0].name.full(middle="full")} be ordered not to improperly use an elderly person's money or property for themselves?
+  Should ${other_parties[0].name.full(middle="full")} be ordered not to improperly use an elderly person's money or property for themselves or any other person?
 subquestion: |
   If the Order of Protection will include any elderly people, this can protect their financial resources and property.
 fields:
@@ -3240,7 +3259,7 @@ id: request temporary support
 question: |
   Do you want ${other_parties[0].name.full(middle="full")} to pay temporary child support?
 subquestion: |
-  The court can order temporary child support only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
+  **Note:** The court can order temporary child support only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
   
   **Important:** Even if the judge can't award temporary support at the first hearing, it is easier to ask for it now. Otherwise, you will have to amend your Petition later.
 fields:
@@ -3253,7 +3272,7 @@ question: |
 subquestion: |
   Maintenance used to be called "spousal support" or "alimony."
   
-  The court can order temporary maintenance only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
+  **Note:** The court can order temporary maintenance only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
 
 fields:
   - no label: temp_maintenance
@@ -3263,9 +3282,9 @@ id: expenses
 question: |
   Do you want ${other_parties[0].name.full(middle="full")} to pay for losses caused by abuse, neglect, or exploitation?
 subquestion: |
-  The court can order ${other_parties[0].name.full(middle="full")} to pay only after they have received written notice or attended the court hearing where this is decided.
+  **Note:** The court can order ${other_parties[0].name.full(middle="full")} to pay only after they have received written notice or attended the court hearing where this is decided.
 
-  If you do not know the exact amount you can estimate. Bring receipts and proof of ownership and payment to court if you have them.
+  If you do not know the exact amount you can estimate. Bring receipts, proof of payment, and repair estimates to court if you have them.
 fields:
   - No. I do not want to request any repayment.: expenses_none
     datatype: yesnowide
@@ -3297,12 +3316,6 @@ fields:
     datatype: currency
     min: 0.01
     show if: expenses_moving
-  - "Temporary housing or counseling at a domestic violence shelter": expenses_shelter
-    datatype: yesnowide
-  - "Amount": expenses_shelter_amount
-    datatype: currency
-    min: 0.01
-    show if: expenses_shelter
   - "Expenses for housing and meals, other than a domestic violence shelter": expenses_housing
     datatype: yesnowide
   - "Amount": expenses_housing_amount
@@ -3331,7 +3344,7 @@ fields:
     min: 0.01
     show if: expenses_other
 validation code: |
-  if not (expenses_none or expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_shelter or expenses_housing or expenses_children or expenses_other):
+  if not (expenses_none or expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_housing or expenses_children or expenses_other):
     validation_error("Please check at least one option.", field="expenses_other")
 ---
 id: firearms threat
