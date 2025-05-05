@@ -66,6 +66,7 @@ objects:
   - restricted_property_address: ALAddress
   - other_phone_account_holder: ALIndividual
   - cell_numbers: DAList.using(object_type=Thing, complete_attribute='complete', there_are_any=True)
+  - warrant_location_list: ALAddressList.using(there_are_any=True)
   - service_address: ALAddress
   - second_service_address: ALAddress
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
@@ -256,7 +257,6 @@ code: |
 
   nav.set_section('section_property')
   set_progress(60)
-  #appear_alone_for_exam
   if award_personal_property:
     petitioner_personal_property.gather()
     if return_property:
@@ -293,10 +293,13 @@ code: |
     dv_counseling
 
   if firearms_threat:
-    firearms_turnover
-    intimate_partner
-  firearms_reasons
-
+    if firearms_relief['search']:
+      intimate_partner
+    if firearms_relief['warrant']:
+      warrant_reasons
+      warrant_location_list.gather()
+    if firearms_relief['search'] or firearms_relief['warrant']:
+      firearms_eop_notice  
   misc_remedies_text
 
   nav.set_section('section_respondent')
@@ -312,9 +315,9 @@ code: |
   
   other_parties[0].gender
   other_parties[0].race
+  other_parties[0].height_feet
   if trial_court_index == -1:
-    other_parties[0].height_feet
-    other_parties[0].tattoos
+    other_parties[0].alias_names
     caution_reasons
 
   if knows_respondent_home:
@@ -819,9 +822,7 @@ fields:
     datatype: radio
     choices:
       - Yes, I will enter the date.: exact
-      - I know some of it.: some
-        help: |
-          For example, "June 3rd" or "Summer of 1990."
+      - I can enter how old I think they are.: some
       - I don't know it.: idk
         help: |
           % if trial_court_index == -1:
@@ -835,8 +836,8 @@ fields:
     show if: 
       variable: knows_respondent_dob
       is: exact
-  - What you know about ${other_parties[0].name.full(middle="full")}'s date of birth: other_parties[0].birthdate_info
-    maxlength: 25
+  - How old do you think ${other_parties[0].name.full(middle="full")} is?: other_parties[0].approx_age
+    maxlength: 20
     show if:
       variable: knows_respondent_dob
       is: some
@@ -2039,7 +2040,7 @@ fields:
     required: False
   - What should ${other_parties[0].name.full(middle="full")}'s parent or guardian be ordered to do?: respondent_parent_order
     input type: area
-    rows: 3
+    rows: 4
     maxlength: 150
 
 ---
@@ -3316,6 +3317,12 @@ fields:
     datatype: currency
     min: 0.01
     show if: expenses_moving
+  - "Temporary housing or counseling at a domestic violence shelter": expenses_shelter
+    datatype: yesnowide
+  - "Amount": expenses_shelter_amount
+    datatype: currency
+    min: 0.01
+    show if: expenses_shelter
   - "Expenses for housing and meals, other than a domestic violence shelter": expenses_housing
     datatype: yesnowide
   - "Amount": expenses_housing_amount
@@ -3386,18 +3393,34 @@ content: |
 ---
 id: remove firearms
 question: |
-  Do you want the court to order ${other_parties[0].name.full(middle="full")} to turn over their guns?
+  Protection from firearms
 subquestion: |
-  The court can order ${other_parties[0].name.full(middle="full")} to turn over firearms.
+  Firearms can include:
+  
+  * Guns,
+  * Parts that can be assembled to make a gun,
+  * A Firearm Identification Owner (FOID) card, and
+  * A Concealed Carry License.
+  
+  The court can:
+  
+  * Order ${other_parties[0].name.full(middle="full")} to **surrender firearms** to law enforcement, and
+  * Issue a **Search warrant** be issued so law enforcement can search ${other_parties[0].name.full(middle="full")}'s property to seize firearms.
 
   % if minor_kids_with_respondent or protect_petitioner_kids:
   Reminder: If ${other_parties[0].name.full(middle="full")} threatened you or your children with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
   % else:
   Reminder: If ${other_parties[0].name.full(middle="full")} threatened you with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
-  % endif  
+  % endif 
 fields:
-  - no label: firearms_turnover
-    datatype: yesnoradio
+  - note: |
+      Check all that apply.
+  - Do you want the court to order any firearms relief?: firearms_relief
+    datatype: checkboxes
+    choices:
+      - Yes, I want ${other_parties[0].name.full(middle="full")} to **surrender firearms** to law enforcement.: surrender
+      - Yes, I want a **search warrant** to be issued so law enforcement can search ${other_parties[0].name.full(middle="full")}'s property and seize fierarms.: warrant
+    none of the above: No, I do not want to ask for either of these.
 ---
 id: intimate partner
 question: |
@@ -3414,36 +3437,77 @@ fields:
 ---
 id: remove firearms additional reasons
 question: |
-  Are there other things the court should know about ${other_parties[0].name.full(middle="full")}?
+  Reasons why you want the court to issue a search warrant 
 subquestion: |
-  Answers to these questions will help the court understand if ${other_parties[0].name.full(middle="full")} could be a physical threat to themselves or others. Check all that apply.
+  Explain why a search warrant should be issued so that law enforcement can search ${other_parties[0].name.full(middle="full")}'s property and may seize firearms or firearm parts from them.
+  
+  Check all that apply.
 fields:
-  - ${other_parties[0].name.full(middle="full")}:: firearms_reasons
+  - no label: warrant_reasons
     datatype: checkboxes
-    none of the above: False
-    required: False
     choices:
-      - Has a history of violence.: violence
-      - Has a history of possession or use of firearms.: use
-      - May be a threat to the safety of the public or police officers.: safety
-      - Is now or has been suicidal.: suicidal
-      - Carries a firearm on their person or in a vehicle. (Enter car details below, if known.): vehicle
-  - Car make: respondent_car_make
-    help: |
-      Examples: Chevrolet, Honda, and Ford
+      - ${other_parties[0].name.full(middle="full")} is an immediate threat to the physical safety of the people I want to protect.: threat
+      - ${other_parties[0].name.full(middle="full")} has a firearm or firearm parts that could be used to make a firearm.: has_guns
+      - The firearm or firearm parts are in the residence, vehicle, or other property of ${other_parties[0].name.full(middle="full")}.: location
+      - I made a report of domestic violence to law enforcement within the last 90 days.: report
+
+---
+id: warrant location details
+question: |
+  Details about the ${ ordinal(i) } location you want to be included in the search warrant
+fields:
+  - Street address: warrant_location_list[i].address
+    address autocomplete: True
+  - Address line 2: warrant_location_list[i].unit
     required: False
-    maxlength: 25
-    show if:
-      variable: firearms_reasons['vehicle']
-      is: True
-  - Car model: respondent_car_model
+  - City: warrant_location_list[i].city
+  - State: warrant_location_list[i].state
+    code: |
+      states_list()
+    default: IL      
+  - ZIP code: warrant_location_list[i].zip
+  - Description of location: warrant_location_list[i].description
     help: |
-      Examples: Malibu, Civic, and Mustang
-    required: False
-    maxlength: 25
-    show if:
-      variable: firearms_reasons['vehicle']
-      is: True
+  	  Include the building type, fences, entrances, etc., if you know them.
+  - Days and times ${other_parties[0].name.full(middle="full")} will likely be at this location: warrant_location_list[i].days_times
+    maxlength: 40
+  - Is anyone else likely to be at this location?: warrant_location_list[i].others_present
+    datatype: yesno
+  - Information about other people or pets at location: warrant_location_list[i].others_present_details
+    help: |
+      Include the names and ages of people, and the days and times they are likely to be there.
+    show if: warrant_location_list[i].others_present  
+---
+id: more ops
+question: |
+  Is there another location you want law enforcement to include in the search warrant?
+subquestion: |
+  You can enter up to 2 locations in total.
+
+  So far you told us about: 
+  
+  ${ warrant_location_list[0].on_one_line(bare=True) }, with the description of: ${ warrant_location_list[0].description }
+field: warrant_location_list.there_is_another
+choices:
+  - Yes: True
+  - No: False
+---
+code: |
+  warrant_location_list[i].address
+  warrant_location_list[i].complete = True
+---
+code: |
+  if warrant_location_list.number_gathered() >= 2:
+    warrant_location_list.there_is_another = False
+---
+id: firearms eop prior notice question
+question: |
+  Are you worried that ${other_parties[0].name.full(middle="full")} might hurt you or the people you want to protect when they learn about the Order of Protection?
+subquestion: |
+  If you are asking for an Emergency Order of Protection, select **Yes** if you think that ${other_parties[0].name.full(middle="full")} might cause physical injury to you or the people you want to protect when they learn about it.
+fields:
+  - no label: firearms_eop_notice
+    datatype: yesnowide
 
 ---
 reconsider: True
@@ -3829,7 +3893,7 @@ fields:
       variable: other_parties[0].race
       is: 'other'
 ---
-id: respondent physical characteristics Cook
+id: respondent physical characteristics
 question: |
   Tell us about ${other_parties[0].name.full(middle="full")}'s appearance
 subquestion: |
@@ -3869,11 +3933,16 @@ fields:
       - Brown: Brown
       - Dark brown: Dark brown
       - Other: other
+    show if: 
+      code: |
+        trial_court_index == -1
   - ${other_parties[0].name.full(middle="full")}'s skin color: respondent_skin_other
     maxlength: 30
-    show if:
-      variable: other_parties[0].skin
-      is: 'other'
+    show if: 
+      code: |
+        trial_court_index == -1
+    js show if:
+      val("other_parties[0].skin") === "other"
   - Hair color: other_parties[0].hair
     maxlength: 30
     required: False
@@ -3884,12 +3953,22 @@ fields:
     required: False
     help: |
       Examples: brown, blue, hazel, green
+  - Does ${other_parties[0].name.full(middle="full")} have any distinguishing features like scars, marks or tattoos?: other_parties[0].tattoos
+    input type: area
+    rows: 3
+    maxlength: 120
+    required: False
+    help: |
+      Try to be descritive. Examples: tattoos on hands, facial scars, birthmarks, mustache, beard
   - Does ${other_parties[0].name.full(middle="full")} wear glasses?: other_parties[0].glasses
     datatype: radio
     choices: 
       - Yes: Yes
       - Sometimes: Sometimes
       - No: No
+    show if: 
+      code: |
+        trial_court_index == -1
 ---
 id: respondent more identifying info Cook
 question: |
@@ -3899,13 +3978,6 @@ subquestion: |
   
   If you do not know, leave blank.
 fields:
-  - Any other things about their appearance?: other_parties[0].tattoos
-    input type: area
-    rows: 3
-    maxlength: 120
-    required: False
-    help: |
-      Examples: tattoos, scars, birthmarks, mustache, beard
   - Other names used by ${other_parties[0].name.full(middle="full")}:: alias_names
     input type: area
     rows: 3

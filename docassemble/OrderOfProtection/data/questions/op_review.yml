@@ -1053,6 +1053,9 @@ review:
       % if expenses_moving:
       * Moving and other travel expenses - ${ currency(expenses_moving_amount) }
       % endif
+      % if expenses_shelter:
+      * Temporary housing or counseling at a domestic violence shelter - ${ currency(expenses_shelter_amount) }
+      % endif
       % if expenses_housing:
       * Expenses for housing and meals, other than a domestic violence shelter - ${ currency(expenses_housing_amount) }
       % endif
@@ -1157,25 +1160,15 @@ review:
       <h4>About the person who caused abuse</h4>
   - Edit: knows_respondent_dob
     button: |
-      **What you know about ${other_parties[0].name.full(middle="full")}'s birthdate:**
-      % if knows_respondent_dob == "exact":
-      The exact date
+      **What you know about ${other_parties[0].name.full(middle="full")}'s birthdate?**[NEWLINE]
+      % if knows_respondent_dob == "exact" and other_parties[0].birthdate != "":
+      The exact date: ${ other_parties[0].birthdate }
       % elif knows_respondent_dob == "some":
-      Something about it
+      Their approximate age: ${ other_parties[0].approx_age }
       % else:
       Nothing
       % endif
 
-  - Edit: knows_respondent_dob
-    button: |
-      **${other_parties[0].name.full(middle="full")}'s birthdate:**
-      % if knows_respondent_dob == "exact" and other_parties[0].birthdate != "":
-      ${ other_parties[0].birthdate }
-      % elif knows_respondent_dob == "some":
-      ${ other_parties[0].birthdate_info }
-      % else:
-      ${ "Unknown" }
-      % endif
   - Edit: respondent_parent_help
     button: |
       **Do you want ${other_parties[0].name.full(middle="full")}'s parent or guardian help them follow the Order of Protection?**
@@ -1201,11 +1194,12 @@ review:
     button: |
       **${other_parties[0].name.full(middle="full")}'s sex (public):**
       ${ other_parties[0].sex }
+    show if: trial_court_index == -1
   - Edit: other_parties[0].sex_other
     button: |
       **${other_parties[0].name.full(middle="full")}'s other sex (public):**
       ${ other_parties[0].sex_other }
-    show if: other_parties[0].sex == 'other'
+    show if: trial_court_index == -1 and other_parties[0].sex == 'other'
   - Edit: respondent_sex_at_birth
     button: |
       **${other_parties[0].name.full(middle="full")}'s sex assigned at birth:**
@@ -1218,6 +1212,7 @@ review:
       Female
       % endif
       % endif
+    show if: trial_court_index == -1
   - Edit: other_parties[0].gender
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s gender identity?**
@@ -1243,11 +1238,12 @@ review:
       % if other_parties[0].gender['other'] == True:
       * Other
       % endif
+    show if: trial_court_index == -1
   - Edit: other_parties[0].gender
     button: |
       **${other_parties[0].name.full(middle="full")}'s other gender identity:**
       ${ respondent_gender_other }
-    show if: other_parties[0].gender['other'] == True
+    show if: trial_court_index == -1 and other_parties[0].gender['other'] == True
 
   - Edit: other_parties[0].gender
     button: |
@@ -1282,7 +1278,6 @@ review:
       % else:
       Height in feet not entered
       % endif
-    show if: trial_court_index == -1
   - Edit: other_parties[0].weight
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s weight?**
@@ -1291,7 +1286,6 @@ review:
       % else:
       Not entered
       % endif
-    show if: trial_court_index == -1
 
   - Edit: other_parties[0].skin
     button: |
@@ -1321,7 +1315,7 @@ review:
     button: |
       **Other things about ${other_parties[0].name.full(middle="full")}'s appearance:**
       ${ other_parties[0].tattoos }
-    show if: trial_court_index == -1
+      
   - Edit: alias_names
     button: |
       **Other names ${other_parties[0].name.full(middle="full")} has used:**
@@ -3069,6 +3063,9 @@ review:
       % if expenses_moving:
       * Moving and other travel expenses - ${ currency(expenses_moving_amount) }
       % endif
+      % if expenses_shelter:
+      * Temporary housing or counseling at a domestic violence shelter - ${ currency(expenses_shelter_amount) }
+      % endif      
       % if expenses_housing:
       * Expenses for housing and meals, other than a domestic violence shelter - ${ currency(expenses_housing_amount) }
       % endif
@@ -3178,24 +3175,13 @@ subquestion: |
 review:
   - Edit: knows_respondent_dob
     button: |
-      **What you know about ${other_parties[0].name.full(middle="full")}'s birthdate:**
-      % if knows_respondent_dob == "exact":
-      The exact date
+      **What you know about ${other_parties[0].name.full(middle="full")}'s birthdate?**[NEWLINE]
+      % if knows_respondent_dob == "exact" and other_parties[0].birthdate != "":
+      The exact date: ${ other_parties[0].birthdate }
       % elif knows_respondent_dob == "some":
-      Something about it
+      Their approximate age: ${ other_parties[0].approx_age }
       % else:
       Nothing
-      % endif
-
-  - Edit: knows_respondent_dob
-    button: |
-      **${other_parties[0].name.full(middle="full")}'s birthdate:**
-      % if knows_respondent_dob == "exact" and other_parties[0].birthdate != "":
-      ${ other_parties[0].birthdate }
-      % elif knows_respondent_dob == "some":
-      ${ other_parties[0].birthdate_info }
-      % else:
-      ${ "Unknown" }
       % endif
   - Edit: respondent_parent_help
     button: |
@@ -3222,11 +3208,12 @@ review:
     button: |
       **${other_parties[0].name.full(middle="full")}'s sex (public):**
       ${ other_parties[0].sex }
+    show if: trial_court_index == -1
   - Edit: other_parties[0].sex_other
     button: |
       **${other_parties[0].name.full(middle="full")}'s other sex (public):**
       ${ other_parties[0].sex_other }
-    show if: other_parties[0].sex == 'other'
+    show if: trial_court_index == -1 and other_parties[0].sex == 'other'
   - Edit: respondent_sex_at_birth
     button: |
       **${other_parties[0].name.full(middle="full")}'s sex assigned at birth:**
@@ -3239,6 +3226,7 @@ review:
       Female
       % endif
       % endif
+    show if: trial_court_index == -1
   - Edit: other_parties[0].gender
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s gender identity?**
@@ -3264,11 +3252,12 @@ review:
       % if other_parties[0].gender['other'] == True:
       * Other
       % endif
+    show if: trial_court_index == -1
   - Edit: other_parties[0].gender
     button: |
       **${other_parties[0].name.full(middle="full")}'s other gender identity:**
       ${ respondent_gender_other }
-    show if: other_parties[0].gender['other'] == True
+    show if: trial_court_index == -1 and other_parties[0].gender['other'] == True
 
   - Edit: other_parties[0].gender
     button: |
@@ -3282,7 +3271,7 @@ review:
       ${ other_parties[0].gender }
       % endif
     show if: trial_court_index != -1
-      
+    
   - Edit: other_parties[0].race
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s race?**
@@ -3303,7 +3292,6 @@ review:
       % else:
       Height in feet not entered
       % endif
-    show if: trial_court_index == -1
   - Edit: other_parties[0].weight
     button: |
       **What is ${other_parties[0].name.full(middle="full")}'s weight?**
@@ -3312,7 +3300,6 @@ review:
       % else:
       Not entered
       % endif
-    show if: trial_court_index == -1
 
   - Edit: other_parties[0].skin
     button: |
@@ -3342,7 +3329,7 @@ review:
     button: |
       **Other things about ${other_parties[0].name.full(middle="full")}'s appearance:**
       ${ other_parties[0].tattoos }
-    show if: trial_court_index == -1
+      
   - Edit: alias_names
     button: |
       **Other names ${other_parties[0].name.full(middle="full")} has used:**
