@@ -123,8 +123,6 @@ code: |
   if not has_required_relationship:
     other_relief
   
-  #  if relationship_type.all_false():
-  #    other_relief
   users.gather(number=1)
   other_parties.gather(number=1)
   if minor_kids_with_respondent:
@@ -206,8 +204,6 @@ code: |
   nav.set_section('section_child')
   set_progress(50)
   if minor_kids_with_respondent:
-    #if parentage == "parentage_established_other":
-    #  parentage_other
     children_live_in_il
     if primary_caretaker == "other":
       other_caretaker.name.first
@@ -217,17 +213,13 @@ code: |
     no_conceal_children
     no_removal_school
     
-    #if no_removal_school:
-      #keep_schools_confidential
     no_records_no_contact
     if current_possession_of_children == False:
-      return_children_to
       if return_children_to == "court":
         appear_with_children_prevent
-      else:
+      elif return_children_to == "other":
         if knows_return_children_details:
-          return_children_location.address
-          on_or_by
+          return_children_other_person.name.first
     if parenting_time != "reserve":
       if parenting_time == "restrict" or parenting_time == "deny":
         restrict_or_deny_pt_reasons
@@ -293,12 +285,12 @@ code: |
     dv_counseling
 
   if firearms_threat:
-    if firearms_relief['search']:
+    if firearms_relief['surrender']:
       intimate_partner
     if firearms_relief['warrant']:
       warrant_reasons
       warrant_location_list.gather()
-    if firearms_relief['search'] or firearms_relief['warrant']:
+    if firearms_relief['surrender'] or firearms_relief['warrant']:
       firearms_eop_notice  
   misc_remedies_text
 
@@ -2270,18 +2262,6 @@ fields:
   - no label: current_possession_of_children
     datatype: yesnoradio
 ---
-id: know children return details
-question: |
-  Do you know where and when you want ${other_parties[0].name.full(middle="full")} to return the children to
-  % if return_children_to == "petitioner":
-   you?
-  % else:
-   ${ return_children_other_person.name.full(middle="full") }?
-  % endif
-fields:
-  - no label: knows_return_children_details
-    datatype: yesnoradio
----
 id: children returned to whom
 question: |
   Who should ${other_parties[0].name.full(middle="full")} return the children to?
@@ -2318,6 +2298,13 @@ fields:
       variable: return_children_to
       is: "other"
 ---
+id: know children return details
+question: |
+  Do you know where you want ${other_parties[0].name.full(middle="full")} to return the children to ${ return_children_other_person.name.full(middle="full") }?
+fields:
+  - no label: knows_return_children_details
+    datatype: yesnoradio
+---
 id: children return location
 question: |
   Where should ${other_parties[0].name.full(middle="full")} return the children to?
@@ -2336,36 +2323,6 @@ fields:
       states_list()
   - ZIP code: return_children_location.zip
     required: False
----
-id: children return details
-question: |
-  Details about return of children
-subquestion: |
-  Enter additional information about when you want ${other_parties[0].name.full(middle="full")} to return the children to
-  % if return_children_to == "petitioner":
-   you.
-  % else:
-   ${ return_children_other_person.name.full(middle="full") }.
-  % endif
-fields:
-  - ${other_parties[0].name.full(middle="full")} should return the children to ${return_children_location.on_one_line(bare=True)}: on_or_by
-    datatype: radio
-    choices:
-      - On (exact date and time): on
-      - By (any time before): by
-  - Date: return_children_date
-    datatype: date
-    min: ${ today().format("yyyy-MM-dd") }
-  - Time: return_children_time
-    datatype: time
-  - Should someone else be present?: return_children_present
-    datatype: yesnoradio
-  - Name of person or law enforcement agency: return_children_present_name
-    maxlength: 60
-    show if:
-      variable: return_children_present
-      is: True
-
 ---
 id: reason respondent should bring childrent to court
 question: |
@@ -2777,11 +2734,11 @@ fields:
 ---
 id: any personal property to petitioner
 question: |
-  Is there personal property you want to protect from ${other_parties[0].name.full(middle="full")}?
+  Do you want the court to order that you get or keep control of your belongings?
 subquestion: |
-  The court can order that you will get control of personal property. This is called getting possession of the property.
+  The court can order that you will get control of personal property. This is called having **possession** of the property.
   
-  These can be things that you have or things you want ${other_parties[0].name.full(middle="full")} to return to you. For example: your car, clothing, or phone.
+  These can be things that you currently have with you or things you want ${other_parties[0].name.full(middle="full")} to return to you. For example: your car, clothing, or phone.
 fields:
   - no label: award_personal_property
     datatype: yesnoradio
@@ -2802,7 +2759,7 @@ fields:
 ---
 id: any other petitioner personal property
 question: |
-  Do you have another item you want protected by this order?
+  Are there other items you want the court to give you?
 subquestion: |
   % if len(petitioner_personal_property.elements) >= 1:  
   So far you have told us about your ${comma_and_list([item.name.text for item in petitioner_personal_property])}.
@@ -3395,6 +3352,11 @@ id: remove firearms
 question: |
   Protection from firearms
 subquestion: |
+  As part of an Order of Protection, the court can:
+  
+  * Order ${other_parties[0].name.full(middle="full")} to **surrender firearms** to law enforcement, and
+  * Issue a **Search warrant** be issued so law enforcement can search ${other_parties[0].name.full(middle="full")}'s property to seize firearms.
+  
   Firearms can include:
   
   * Guns,
@@ -3402,10 +3364,6 @@ subquestion: |
   * A Firearm Identification Owner (FOID) card, and
   * A Concealed Carry License.
   
-  The court can:
-  
-  * Order ${other_parties[0].name.full(middle="full")} to **surrender firearms** to law enforcement, and
-  * Issue a **Search warrant** be issued so law enforcement can search ${other_parties[0].name.full(middle="full")}'s property to seize firearms.
 
   % if minor_kids_with_respondent or protect_petitioner_kids:
   Reminder: If ${other_parties[0].name.full(middle="full")} threatened you or your children with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
@@ -3413,9 +3371,7 @@ subquestion: |
   Reminder: If ${other_parties[0].name.full(middle="full")} threatened you with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
   % endif 
 fields:
-  - note: |
-      Check all that apply.
-  - Do you want the court to order any firearms relief?: firearms_relief
+  - Do you want the court to order any firearms relief? (Check all that apply.): firearms_relief
     datatype: checkboxes
     choices:
       - Yes, I want ${other_parties[0].name.full(middle="full")} to **surrender firearms** to law enforcement.: surrender
@@ -3472,13 +3428,13 @@ fields:
   - Days and times ${other_parties[0].name.full(middle="full")} will likely be at this location: warrant_location_list[i].days_times
     maxlength: 40
   - Is anyone else likely to be at this location?: warrant_location_list[i].others_present
-    datatype: yesno
-  - Information about other people or pets at location: warrant_location_list[i].others_present_details
+    datatype: yesnoradio
+  - Information about other people or pets at this location: warrant_location_list[i].others_present_details
     help: |
       Include the names and ages of people, and the days and times they are likely to be there.
     show if: warrant_location_list[i].others_present  
 ---
-id: more ops
+id: more warrant locations
 question: |
   Is there another location you want law enforcement to include in the search warrant?
 subquestion: |
@@ -3486,7 +3442,8 @@ subquestion: |
 
   So far you told us about: 
   
-  ${ warrant_location_list[0].on_one_line(bare=True) }, with the description of: ${ warrant_location_list[0].description }
+  * Address: ${ warrant_location_list[0].on_one_line(bare=True) }
+  * Description: ${ warrant_location_list[0].description }
 field: warrant_location_list.there_is_another
 choices:
   - Yes: True
@@ -3504,10 +3461,10 @@ id: firearms eop prior notice question
 question: |
   Are you worried that ${other_parties[0].name.full(middle="full")} might hurt you or the people you want to protect when they learn about the Order of Protection?
 subquestion: |
-  If you are asking for an Emergency Order of Protection, select **Yes** if you think that ${other_parties[0].name.full(middle="full")} might cause physical injury to you or the people you want to protect when they learn about it.
+  **Note:** If you are asking for an Emergency Order of Protection, select **Yes** if you think that ${other_parties[0].name.full(middle="full")} might cause physical injury to you or the people you want to protect when they learn about it.
 fields:
   - no label: firearms_eop_notice
-    datatype: yesnowide
+    datatype: yesnoradio
 
 ---
 reconsider: True

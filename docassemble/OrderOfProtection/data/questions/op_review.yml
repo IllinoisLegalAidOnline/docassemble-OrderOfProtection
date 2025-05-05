@@ -550,20 +550,6 @@ review:
       **Where should ${other_parties[0].name.full(middle="full")} return the children to?**
       ${ return_children_location.on_one_line(bare=True) }
     show if: knows_return_children_details == True
-  - Edit: on_or_by
-    button: |
-      **Return children details:**
-      Children should be returned ${ on_or_by } ${ return_children_date } at ${ format_time(return_children_time) }. 
-    show if: knows_return_children_details == True
-  - Edit: return_children_present
-    button: |
-      **Who else should be present when children are returned?**
-      % if return_children_present:
-      ${ return_children_present_name }
-      % else:
-      No one else
-      % endif
-    show if: knows_return_children_details == True    
   - Edit: appear_with_children_prevent
     button: |
       **${other_parties[0].name.full(middle="full")} should be ordered to bring the children to court:**
@@ -706,39 +692,11 @@ review:
   - Edit: pt_visitation_center_name
     button: |
       **Official supervised visitation center:**
-  - Edit: firearms_reasons
-    button: |
-      **Other things the court should know about ${other_parties[0].name.full(middle="full")}:**
-
-      % if firearms_reasons['violence']:
-      * ${other_parties[0].name.full(middle="full")} has a history of violence.
-      % endif
-      % if firearms_reasons['use']:
-      * ${other_parties[0].name.full(middle="full")} has a history of possession or use of firearms.
-      % endif
-      % if firearms_reasons['safety']:
-      * ${other_parties[0].name.full(middle="full")} may be a threat to the safety of the public or police officers.
-      % endif
-      % if firearms_reasons['suicidal']:
-      * ${other_parties[0].name.full(middle="full")} is now or has been suicidal.
-      % endif
-      % if firearms_reasons['vehicle']:
-      * ${other_parties[0].name.full(middle="full")} carries a firearm on their person or in a vehicle.
-      % if firearms_reasons['vehicle'] and respondent_car_make == "":
-      Car make: None entered
+      % if pt_visitation_center_name != "":
+      ${ pt_visitation_center_name }
       % else:
-      Car make: ${respondent_car_make }
-      % endif
-      % if firearms_reasons['vehicle'] and respondent_car_model == "":
-      Car model: None entered
-      % else:
-      Car model: ${respondent_car_model }
-      % endif
-      % endif
-      % if firearms_reasons.all_false():
       None entered
       % endif
-
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervised == True and pt_supervisor_type == "agency"
   - Edit: pt_location_identified
     button: |
@@ -819,7 +777,7 @@ review:
       <h4>Property details</h4>
   - Edit: award_personal_property
     button: |
-      **Is there personal property you want the court to give to you?**
+      **Do you want the court to order that you get or keep control of your belongings?**
       ${ word(yesno(award_personal_property)) }
 
   - Edit: petitioner_personal_property.revisit
@@ -1099,10 +1057,16 @@ review:
     button: |
       **Is ${other_parties[0].name.full(middle="full")} a threat to the physical safety of you or your children?**
       ${ word(yesno(firearms_threat)) }
-  - Edit: firearms_turnover
+  - Edit: firearms_relief
     button: |
-      **Do you want the court to order ${other_parties[0].name.full(middle="full")} to turn over their guns?**
-      ${ word(yesno(firearms_turnover)) }
+      **Do you want the court to order any firearms relief?**
+
+      % if firearms_relief['surrender']:
+      * I want ${other_parties[0].name.full(middle="full")} to **surrender firearms** to law enforcement.
+      % endif
+      % if firearms_relief['warrant']:
+      * I want a **search warrant** to be issued so law enforcement can search ${other_parties[0].name.full(middle="full")}'s property and seize fierarms.
+      % endif
   - Edit: intimate_partner
     button: |
       **Is ${other_parties[0].name.full(middle="full")} a current or former intimate partner?**
@@ -1113,39 +1077,38 @@ review:
       % else:
       Does not apply
       % endif
-
-  - Edit: firearms_reasons
+    show if: firearms_relief['surrender']
+  - Edit: warrant_reasons
     button: |
-      **Other things the court should know about ${other_parties[0].name.full(middle="full")}:**
+      **Why do you want the court to order a search warrant?**
 
-      % if firearms_reasons['violence']:
-      * ${other_parties[0].name.full(middle="full")} has a history of violence.
+      % if warrant_reasons['threat']:
+      * ${other_parties[0].name.full(middle="full")} is an immediate threat to the physical safety of the people I want to protect.
       % endif
-      % if firearms_reasons['use']:
-      * ${other_parties[0].name.full(middle="full")} has a history of possession or use of firearms.
+      % if warrant_reasons['has_guns']:
+      * ${other_parties[0].name.full(middle="full")} has a firearm or firearm parts that could be used to make a firearm.
       % endif
-      % if firearms_reasons['safety']:
-      * ${other_parties[0].name.full(middle="full")} may be a threat to the safety of the public or police officers.
+      % if warrant_reasons['location']:
+      * The firearm or firearm parts are in the residence, vehicle, or other property of ${other_parties[0].name.full(middle="full")}.
       % endif
-      % if firearms_reasons['suicidal']:
-      * ${other_parties[0].name.full(middle="full")} is now or has been suicidal.
+      % if warrant_reasons['report']:
+      * I made a report of domestic violence to law enforcement within the last 90 days.
       % endif
-      % if firearms_reasons['vehicle']:
-      * ${other_parties[0].name.full(middle="full")} carries a firearm on their person or in a vehicle.
-      % if firearms_reasons['vehicle'] and respondent_car_make == "":
-      Car make: None entered
-      % else:
-      Car make: ${respondent_car_make }
-      % endif
-      % if firearms_reasons['vehicle'] and respondent_car_model == "":
-      Car model: None entered
-      % else:
-      Car model: ${respondent_car_model }
-      % endif
-      % endif
-      % if firearms_reasons.all_false():
-      None entered
-      % endif
+    show if: firearms_relief['warrant']
+  - Edit: warrant_location_list.revisit
+    button: |
+      **Locations you want to include in a search warrant:**
+
+      % for my_var in warrant_location_list:
+        * ${ my_var.on_one_line(bare=True) }
+      % endfor
+    show if: firearms_relief['warrant']
+  - Edit: firearms_eop_notice
+    button: |
+      **Are you worried that ${other_parties[0].name.full(middle="full")} might hurt you or the people you want to protect when they learn about the Order of Protection?**
+      ${ word(yesno(firearms_eop_notice))}
+    show if: firearms_relief['surrender'] or firearms_relief['warrant']
+    
   - Edit: misc_remedies_text
     button: |
       **What else do you want the court to order ${other_parties[0].name.full(middle="full")} to do or to stop doing?**
@@ -1661,8 +1624,10 @@ question: |
   Edit the minor children you have with ${other_parties[0].name.full(middle="full")}
 subquestion: |
   ${ shared_kids.table }
-
+  
+  % if shared_kids.number_gathered() < 6:
   ${ shared_kids.add_action() }
+  % endif
 ---
 table: shared_kids.table
 rows: shared_kids
@@ -1770,7 +1735,7 @@ subquestion: |
 
   ${ incidents.table }
 
-  % if incidents.number_gathered() < 9:
+  % if incidents.number_gathered() < 12:
   ${ incidents.add_action() }
   % endif
 ---
@@ -1993,8 +1958,30 @@ columns:
       action_button_html(url_action(row_item.attr_name("name.text")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
+---
+---
+id: warrant locations revisit
+continue button field: warrant_location_list.revisit
+question: |
+  Edit the locations you want to include in the search warrant
+subquestion: |
+  ${ warrant_location_list.table }
 
-
+  % if warrant_location_list.number_gathered() < 2:
+  ${ warrant_location_list.add_action() }
+  % endif
+---
+table: warrant_location_list.table
+rows: warrant_location_list
+columns:
+  - Address: |
+      row_item.on_one_line(bare=True) if defined("row_item.address") else ""
+  - Description: |
+      row_item.description if defined("row_item.description") else ""
+  - Details (including when ${other_parties[0].name.full(middle="full")} is there, others at the location): |
+      action_button_html(url_action(row_item.attr_name("address")), label="Edit", icon="pencil-alt")
+delete buttons: True
+confirm: True
 ---
 id: basic info review screen
 section: Basic information
@@ -2341,8 +2328,6 @@ review:
       **Second employer name and address:**
       ${ jobs[1].employer }, ${ jobs[1].on_one_line(bare=True) }
     show if: stay_away_jobs_2 and hide_work_address == False
-
-
   
   - Edit: stay_away_schools
     button: |
@@ -2461,7 +2446,6 @@ review:
       **Confidential school information about ${ schools[3].name }:**
       ${ "Type: " + schools[3].type + ", Children who attend: " + comma_and_list(schools[3].kids_who_attend.true_values()) }
     show if: stay_away_other_2 and other_location_2_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
-
   
   - Edit: same_school
     button: |
@@ -2531,7 +2515,6 @@ review:
       **Do you want the court to grant you temporary decisionmaking responsibility (custody) of the children you have with ${other_parties[0].name.full(middle="full")}?**
       ${ word(yesno(temp_custody_of_children)) }
 
-
   - Edit: physical_care_of_children
     button: |
       **Do you want the court to give you possession of the children you have with ${ other_parties[0].name.full(middle="full") }?**
@@ -2576,20 +2559,6 @@ review:
       **Where should ${other_parties[0].name.full(middle="full")} return the children to?**
       ${ return_children_location.on_one_line(bare=True) }
     show if: knows_return_children_details == True
-  - Edit: on_or_by
-    button: |
-      **Return children details:**
-      Children should be returned ${ on_or_by } ${ return_children_date } at ${ format_time(return_children_time) }. 
-    show if: knows_return_children_details == True
-  - Edit: return_children_present
-    button: |
-      **Who else should be present when children are returned?**
-      % if return_children_present:
-      ${ return_children_present_name }
-      % else:
-      No one else
-      % endif
-    show if: knows_return_children_details == True    
   - Edit: appear_with_children_prevent
     button: |
       **${other_parties[0].name.full(middle="full")} should be ordered to bring the children to court:**
@@ -2823,7 +2792,7 @@ subquestion: |
 review:
   - Edit: award_personal_property
     button: |
-      **Is there personal property you want the court to give to you?**
+      **Do you want the court to order that you get or keep control of your belongings?**
       ${ word(yesno(award_personal_property)) }
 
   - Edit: petitioner_personal_property.revisit
@@ -3109,10 +3078,16 @@ review:
     button: |
       **Is ${other_parties[0].name.full(middle="full")} a threat to the physical safety of you or your children?**
       ${ word(yesno(firearms_threat)) }
-  - Edit: firearms_turnover
+  - Edit: firearms_relief
     button: |
-      **Do you want the court to order ${other_parties[0].name.full(middle="full")} to turn over their guns?**
-      ${ word(yesno(firearms_turnover)) }
+      **Do you want the court to order any firearms relief?**
+
+      % if firearms_relief['surrender']:
+      * I want ${other_parties[0].name.full(middle="full")} to **surrender firearms** to law enforcement.
+      % endif
+      % if firearms_relief['warrant']:
+      * I want a **search warrant** to be issued so law enforcement can search ${other_parties[0].name.full(middle="full")}'s property and seize fierarms.
+      % endif
   - Edit: intimate_partner
     button: |
       **Is ${other_parties[0].name.full(middle="full")} a current or former intimate partner?**
@@ -3123,38 +3098,38 @@ review:
       % else:
       Does not apply
       % endif
-  - Edit: firearms_reasons
+    show if: firearms_relief['surrender']
+  - Edit: warrant_reasons
     button: |
-      **Other things the court should know about ${other_parties[0].name.full(middle="full")}:**
+      **Why do you want the court to order a search warrant?**
 
-      % if firearms_reasons['violence']:
-      * ${other_parties[0].name.full(middle="full")} has a history of violence.
+      % if warrant_reasons['threat']:
+      * ${other_parties[0].name.full(middle="full")} is an immediate threat to the physical safety of the people I want to protect.
       % endif
-      % if firearms_reasons['use']:
-      * ${other_parties[0].name.full(middle="full")} has a history of possession or use of firearms.
+      % if warrant_reasons['has_guns']:
+      * ${other_parties[0].name.full(middle="full")} has a firearm or firearm parts that could be used to make a firearm.
       % endif
-      % if firearms_reasons['safety']:
-      * ${other_parties[0].name.full(middle="full")} may be a threat to the safety of the public or police officers.
+      % if warrant_reasons['location']:
+      * The firearm or firearm parts are in the residence, vehicle, or other property of ${other_parties[0].name.full(middle="full")}.
       % endif
-      % if firearms_reasons['suicidal']:
-      * ${other_parties[0].name.full(middle="full")} is now or has been suicidal.
+      % if warrant_reasons['report']:
+      * I made a report of domestic violence to law enforcement within the last 90 days.
       % endif
-      % if firearms_reasons['vehicle']:
-      * ${other_parties[0].name.full(middle="full")} carries a firearm on their person or in a vehicle.
-      % if firearms_reasons['vehicle'] and respondent_car_make == "":
-      Car make: None entered
-      % else:
-      Car make: ${respondent_car_make }
-      % endif
-      % if firearms_reasons['vehicle'] and respondent_car_model == "":
-      Car model: None entered
-      % else:
-      Car model: ${respondent_car_model }
-      % endif
-      % endif
-      % if firearms_reasons.all_false():
-      None entered
-      % endif
+    show if: firearms_relief['warrant']
+  - Edit: warrant_location_list.revisit
+    button: |
+      **Locations you want to include in a search warrant:**
+
+      % for my_var in warrant_location_list:
+        * ${ my_var.on_one_line(bare=True) }
+      % endfor
+    show if: firearms_relief['warrant']
+  - Edit: firearms_eop_notice
+    button: |
+      **Are you worried that ${other_parties[0].name.full(middle="full")} might hurt you or the people you want to protect when they learn about the Order of Protection?**
+      ${ word(yesno(firearms_eop_notice))}
+    show if: firearms_relief['surrender'] or firearms_relief['warrant']
+      
   - Edit: misc_remedies_text
     button: |
       **What else do you want the court to order ${other_parties[0].name.full(middle="full")} to do or to stop doing?**
