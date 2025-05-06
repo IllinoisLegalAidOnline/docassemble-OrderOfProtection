@@ -241,6 +241,9 @@ code: |
               pt_location.address
           else:
             pt_visitation_center_name
+        elif pt_location_identified:
+            pt_location.address
+
         pt_transportation
         if pt_separate_pickup_location:
           pt_pickup_location.address
@@ -2209,7 +2212,7 @@ fields:
 ---
 id: concealment of children
 question: |
-  Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot hide or remove the children from Illinois?
+  Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot hide the children in Illinois or remove them from Illinois?
 subquestion: |
   You may want this if ${other_parties[0].name.full(middle="full")} has made threats or attempts to unlawfully remove the children.
 fields:
@@ -2704,18 +2707,18 @@ fields:
       is: "other"
       
 ---
-id: any personal property to petitioner
+id: any personal property to award to petitioner
 question: |
   Do you want the court to order that you get or keep control of your belongings?
 subquestion: |
-  The court can order that you will get control of personal property. This is called having **possession** of the property.
+  The court can order that you will get or keep control of personal property. This is called having **possession** of the property.
   
   These can be things that you currently have with you or things you want ${other_parties[0].name.full(middle="full")} to return to you. For example: your car, clothing, or phone.
 fields:
   - no label: award_personal_property
     datatype: yesnoradio
 ---
-id: petitioner personal property to protect
+id: petitioner personal property to award
 question: |
   % if i == 0:
   Personal property you want possession of
@@ -2729,7 +2732,7 @@ fields:
   - Do you want the court to order ${other_parties[0].name.full(middle="full")} to return it to you?: petitioner_personal_property[i].respo_has
     datatype: yesnoradio
 ---
-id: any other petitioner personal property
+id: any other petitioner personal property to award
 question: |
   Are there other items you want the court to give you?
 subquestion: |
@@ -2762,36 +2765,36 @@ code: |
 #  return_property_recompute = True
 ---
 #THIS can probably be deleted
-id: return petitioner property to whom
-question: |
-  Who should ${other_parties[0].name.full(middle="full")} return your property to?
-fields:
-  - no label: return_property_person
-    datatype: radio
-    choices:
-      - Me: petitioner
-      - Another person: other
-  - First: other_return_property_person.name.first
-    show if:
-      variable: return_property_person
-      is: "other"
-  - Middle: other_return_property_person.name.middle
-    required: False
-    show if:
-      variable: return_property_person
-      is: "other"
-  - Last: other_return_property_person.name.last
-    show if:
-      variable: return_property_person
-      is: "other"
-  - Suffix: other_return_property_person.name.suffix
-    required: False
-    code: |
-      name_suffix()
-    show if:
-      variable: return_property_person
-      is: "other"
-      
+#id: return petitioner property to whom
+#question: |
+#  Who should ${other_parties[0].name.full(middle="full")} return your property to?
+#fields:
+#  - no label: return_property_person
+#    datatype: radio
+#    choices:
+#      - Me: petitioner
+#      - Another person: other
+#  - First: other_return_property_person.name.first
+#    show if:
+#      variable: return_property_person
+#      is: "other"
+#  - Middle: other_return_property_person.name.middle
+#    required: False
+#    show if:
+#      variable: return_property_person
+#      is: "other"
+#  - Last: other_return_property_person.name.last
+#    show if:
+#      variable: return_property_person
+#      is: "other"
+#  - Suffix: other_return_property_person.name.suffix
+#    required: False
+#    code: |
+#      name_suffix()
+#    show if:
+#      variable: return_property_person
+#      is: "other"
+#      
 ---
 id: why respondent should return property
 question: |
@@ -2961,7 +2964,7 @@ fields:
 ---
 id: any pets to protect
 question: |
-  Do you want the court to give you possession of all family pets or other animals?
+  Do you want the court to give you possession of family pets or other animals?
 subquestion: |
   The court can order ${other_parties[0].name.full(middle="full")} to stay away from the pets and forbid them from taking, hiding, or harming the pets.
 fields:
@@ -2983,7 +2986,7 @@ fields:
 ---
 id: any other pets
 question: |
-  Do you have another pet you want to protect?
+  Do you have another pet you want the court to give you possession of?
 subquestion: |
   % if len(pets.elements) >= 1:  
   So far you have told us about ${comma_and_list([item.name.text + " (" + indefinite_article(item.description) + ")" for item in pets])}.
@@ -3182,8 +3185,6 @@ fields:
       - Yes: Yes
       - No: No
       - Does not apply: dna
----
-
 ---
 id: request temporary support
 question: |
@@ -3481,8 +3482,8 @@ subquestion: |
     <h6 class="alert-heading">What it means to sign your forms</h6>
     <p>By signing your <i>Petition for Order of Protection</i>, you are certifying that:</p>
     <p><ul>
-      <li>Everything on the forms is true and correct, and</li>
-      <li>You understand that making a false statement on the form is perjury, which can result in criminal penalties.</li>
+      <li>Everything on the forms is true and correct, or you have been informed or you believe it is true and correct, and</li>
+      <li>You understand that making a false statement on the form is perjury and has penalties provided by law.</li>
     </ul></p>
   <p>See the <a href="https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm"><b>Code of Civil Procedure, 735 ILCS 5/1-109</b></a> for more information.</p>
   </div>
@@ -3495,17 +3496,6 @@ fields:
 terms:
   - "e-signature": |
       An e-signature is an electronic signature. It is a digital version of a signature that has the same effect as a hand-written signature. 
----
-template: signature_help
-subject: |
-  **What does it mean to sign the *Petition for Order of Protection*?**
-content: |  
-  By signing your *Petition for Order of Protection*, you are certifying that:
-  
-  * Everything on the form is true and correct, and
-  * You understand that making a false statement on the form is perjury, which can result in criminal penalties.
-  
-  See the [**Code of Civil Procedure, 735 ILCS 5/1-109**](https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm), for more information.
 ---
 id: phone number
 question: |

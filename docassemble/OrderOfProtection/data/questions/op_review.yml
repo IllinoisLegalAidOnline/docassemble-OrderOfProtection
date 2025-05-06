@@ -702,12 +702,12 @@ review:
     button: |
       **Do you know where you want ${other_parties[0].name.full(middle="full")}'s parenting time to happen?**
       ${ word(yesno(pt_location_identified)) }
-    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervisor_type == "person"
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and ((pt_supervised and pt_supervisor_type == "person") or not pt_supervised)
   - Edit: pt_location.address
     button: |
       **Parenting time location:**
       ${ pt_location.on_one_line(bare=True) }
-    show if: pt_location_identified == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant")
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and ((pt_supervised and pt_supervisor_type == "person") or not pt_supervised) and pt_location_identified
   - Edit: pt_transportation
     button: |
       **Who will take the children to and from parenting time?**
@@ -782,7 +782,7 @@ review:
 
   - Edit: petitioner_personal_property.revisit
     button: |
-      **Personal property you want possession of:**
+      **Personal property you want to get or keep possession of:**
 
       % for my_var in petitioner_personal_property:
         * ${ my_var.name.text }
@@ -2711,12 +2711,12 @@ review:
     button: |
       **Do you know where you want ${other_parties[0].name.full(middle="full")}'s parenting time to happen?**
       ${ word(yesno(pt_location_identified)) }
-    show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervisor_type == "person"
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and ((pt_supervised and pt_supervisor_type == "person") or not pt_supervised)
   - Edit: pt_location.address
     button: |
       **Parenting time location:**
       ${ pt_location.on_one_line(bare=True) }
-    show if: pt_location_identified == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant")
+    show if: (parenting_time == "restrict" or parenting_time == "grant") and ((pt_supervised and pt_supervisor_type == "person") or not pt_supervised) and pt_location_identified
   - Edit: pt_transportation
     button: |
       **Who will take the children to and from parenting time?**
