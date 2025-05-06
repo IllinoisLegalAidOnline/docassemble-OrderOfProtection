@@ -662,7 +662,7 @@ review:
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
   - Edit: pt_holiday_list
     button: |
-      **Holday parenting time schedule:**
+      **Holiday parenting time schedule:**
       ${ pt_holiday_list }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_holidays == True
   - Edit: pt_start_date
@@ -1153,19 +1153,54 @@ review:
       ${ respondent_parent_order }
     show if: respondent_parent_help == "Yes"
 
-  - Edit: other_parties[0].sex
+  - Edit: other_parties[0].gender
     button: |
-      **${other_parties[0].name.full(middle="full")}'s sex (public):**
-      ${ other_parties[0].sex }
+      **What is ${other_parties[0].name.full(middle="full")}'s gender?**
+      % if other_parties[0].gender == "":
+      None entered
+      % endif
+      % if other_parties[0].gender == 'other':
+      % if respondent_gender_other != "":
+      Other, ${ respondent_gender_other }
+      % else:
+      Other
+      % endif
+      % else:
+      ${ other_parties[0].gender }
+      % endif
+  - Edit: other_parties[0].gender_cook
+    button: |
+      **What is ${other_parties[0].name.full(middle="full")}'s gender identity (confidential)?**
+      
+      % if other_parties[0].gender_cook.all_false():
+      * None entered
+      % endif
+      % if other_parties[0].gender_cook['male'] == True:
+      * Male
+      % endif
+      % if other_parties[0].gender_cook['female'] == True:
+      * Female
+      % endif
+      % if other_parties[0].gender_cook['transfem'] == True:
+      * Transgender woman / Transfeminine
+      % endif
+      % if other_parties[0].gender_cook['transmasc'] == True:
+      * Transgender man / Transmasculine
+      % endif
+      % if other_parties[0].gender_cook['nonbinary'] == True:
+      * Nonbinary / Gender non-conforming
+      % endif
+      % if other_parties[0].gender_cook['other'] == True:
+      % if respondent_gender_other != "":
+      * Other, ${ respondent_gender_other_cook }
+      % else:
+      * Other
+      % endif
+      % endif
     show if: trial_court_index == -1
-  - Edit: other_parties[0].sex_other
-    button: |
-      **${other_parties[0].name.full(middle="full")}'s other sex (public):**
-      ${ other_parties[0].sex_other }
-    show if: trial_court_index == -1 and other_parties[0].sex == 'other'
   - Edit: respondent_sex_at_birth
     button: |
-      **${other_parties[0].name.full(middle="full")}'s sex assigned at birth:**
+      **${other_parties[0].name.full(middle="full")}'s sex assigned at birth (condfidential):**
       % if respondent_sex_at_birth == "None":
       None entered
       % else:
@@ -1176,50 +1211,6 @@ review:
       % endif
       % endif
     show if: trial_court_index == -1
-  - Edit: other_parties[0].gender
-    button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s gender identity?**
-      
-      % if other_parties[0].gender.all_false():
-      * None entered
-      % endif
-      % if other_parties[0].gender['male'] == True:
-      * Male
-      % endif
-      % if other_parties[0].gender['female'] == True:
-      * Female
-      % endif
-      % if other_parties[0].gender['transfem'] == True:
-      * Transgender woman / Transfeminine
-      % endif
-      % if other_parties[0].gender['transmasc'] == True:
-      * Transgender man / Transmasculine
-      % endif
-      % if other_parties[0].gender['nonbinary'] == True:
-      * Nonbinary / Gender non-conforming
-      % endif
-      % if other_parties[0].gender['other'] == True:
-      * Other
-      % endif
-    show if: trial_court_index == -1
-  - Edit: other_parties[0].gender
-    button: |
-      **${other_parties[0].name.full(middle="full")}'s other gender identity:**
-      ${ respondent_gender_other }
-    show if: trial_court_index == -1 and other_parties[0].gender['other'] == True
-
-  - Edit: other_parties[0].gender
-    button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s gender?**
-      % if other_parties[0].gender == "":
-      None entered
-      % endif
-      % if other_parties[0].gender == 'other':
-      ${ respondent_gender_other }
-      % else:
-      ${ other_parties[0].gender }
-      % endif
-    show if: trial_court_index != -1
     
   - Edit: other_parties[0].race
     button: |
@@ -1279,10 +1270,10 @@ review:
       **Other things about ${other_parties[0].name.full(middle="full")}'s appearance:**
       ${ other_parties[0].tattoos }
       
-  - Edit: alias_names
+  - Edit: other_parties[0].alias_names
     button: |
       **Other names ${other_parties[0].name.full(middle="full")} has used:**
-      ${ alias_names }
+      ${ other_parties[0].alias_names }
     show if: trial_court_index == -1
   - Edit: respondent_on_probation
     button: |
@@ -2671,7 +2662,7 @@ review:
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
   - Edit: pt_holiday_list
     button: |
-      **Holday parenting time schedule:**
+      **Holiday parenting time schedule:**
       ${ pt_holiday_list }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview" and pt_holidays == True
   - Edit: pt_start_date
@@ -3179,19 +3170,54 @@ review:
       ${ respondent_parent_order }
     show if: respondent_parent_help == "Yes"
 
-  - Edit: other_parties[0].sex
+  - Edit: other_parties[0].gender
     button: |
-      **${other_parties[0].name.full(middle="full")}'s sex (public):**
-      ${ other_parties[0].sex }
+      **What is ${other_parties[0].name.full(middle="full")}'s gender?**
+      % if other_parties[0].gender == "":
+      None entered
+      % endif
+      % if other_parties[0].gender == 'other':
+      % if respondent_gender_other != "":
+      Other, ${ respondent_gender_other }
+      % else:
+      Other
+      % endif
+      % else:
+      ${ other_parties[0].gender }
+      % endif
+  - Edit: other_parties[0].gender_cook
+    button: |
+      **What is ${other_parties[0].name.full(middle="full")}'s gender identity (confidential)?**
+      
+      % if other_parties[0].gender_cook.all_false():
+      * None entered
+      % endif
+      % if other_parties[0].gender_cook['male'] == True:
+      * Male
+      % endif
+      % if other_parties[0].gender_cook['female'] == True:
+      * Female
+      % endif
+      % if other_parties[0].gender_cook['transfem'] == True:
+      * Transgender woman / Transfeminine
+      % endif
+      % if other_parties[0].gender_cook['transmasc'] == True:
+      * Transgender man / Transmasculine
+      % endif
+      % if other_parties[0].gender_cook['nonbinary'] == True:
+      * Nonbinary / Gender non-conforming
+      % endif
+      % if other_parties[0].gender_cook['other'] == True:
+      % if respondent_gender_other != "":
+      * Other, ${ respondent_gender_other_cook }
+      % else:
+      * Other
+      % endif
+      % endif
     show if: trial_court_index == -1
-  - Edit: other_parties[0].sex_other
-    button: |
-      **${other_parties[0].name.full(middle="full")}'s other sex (public):**
-      ${ other_parties[0].sex_other }
-    show if: trial_court_index == -1 and other_parties[0].sex == 'other'
   - Edit: respondent_sex_at_birth
     button: |
-      **${other_parties[0].name.full(middle="full")}'s sex assigned at birth:**
+      **${other_parties[0].name.full(middle="full")}'s sex assigned at birth (condfidential):**
       % if respondent_sex_at_birth == "None":
       None entered
       % else:
@@ -3202,50 +3228,6 @@ review:
       % endif
       % endif
     show if: trial_court_index == -1
-  - Edit: other_parties[0].gender
-    button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s gender identity?**
-      
-      % if other_parties[0].gender.all_false():
-      * None entered
-      % endif
-      % if other_parties[0].gender['male'] == True:
-      * Male
-      % endif
-      % if other_parties[0].gender['female'] == True:
-      * Female
-      % endif
-      % if other_parties[0].gender['transfem'] == True:
-      * Transgender woman / Transfeminine
-      % endif
-      % if other_parties[0].gender['transmasc'] == True:
-      * Transgender man / Transmasculine
-      % endif
-      % if other_parties[0].gender['nonbinary'] == True:
-      * Nonbinary / Gender non-conforming
-      % endif
-      % if other_parties[0].gender['other'] == True:
-      * Other
-      % endif
-    show if: trial_court_index == -1
-  - Edit: other_parties[0].gender
-    button: |
-      **${other_parties[0].name.full(middle="full")}'s other gender identity:**
-      ${ respondent_gender_other }
-    show if: trial_court_index == -1 and other_parties[0].gender['other'] == True
-
-  - Edit: other_parties[0].gender
-    button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s gender?**
-      % if other_parties[0].gender == "":
-      None entered
-      % endif
-      % if other_parties[0].gender == 'other':
-      ${ respondent_gender_other }
-      % else:
-      ${ other_parties[0].gender }
-      % endif
-    show if: trial_court_index != -1
     
   - Edit: other_parties[0].race
     button: |
@@ -3305,10 +3287,10 @@ review:
       **Other things about ${other_parties[0].name.full(middle="full")}'s appearance:**
       ${ other_parties[0].tattoos }
       
-  - Edit: alias_names
+  - Edit: other_parties[0].alias_names
     button: |
       **Other names ${other_parties[0].name.full(middle="full")} has used:**
-      ${ alias_names }
+      ${ other_parties[0].alias_names }
     show if: trial_court_index == -1
   - Edit: respondent_on_probation
     button: |

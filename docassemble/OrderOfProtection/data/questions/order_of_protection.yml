@@ -159,9 +159,9 @@ code: |
   if stay_away_jobs:
     if hide_work_address == False:
       jobs[0].employer
-      if stay_away_jobs_2:
-        if hide_work_address_2 == False:
-          jobs[1].employer
+    if stay_away_jobs_2:
+      if hide_work_address_2 == False:
+        jobs[1].employer
   if stay_away_schools:
     schools[0].name
     if minor_kids_with_respondent or protect_petitioner_kids:
@@ -3281,7 +3281,7 @@ fields:
     min: 0.01
     show if: expenses_other
 validation code: |
-  if not (expenses_none or expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_housing or expenses_children or expenses_other):
+  if not (expenses_none or expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_shelter or expenses_housing or expenses_children or expenses_other):
     validation_error("Please check at least one option.", field="expenses_other")
 ---
 id: firearms threat
@@ -3745,28 +3745,22 @@ question: |
 subquestion: |
   This information is used to help law enforcement identify ${other_parties[0].name.full(middle="full")} and enforce the Order of Protection. If you do not know this information, you can leave it blank.
 fields:
-  - Sex (will be public, used by any law enforcement): other_parties[0].sex
+  - Gender (will be public, used by any law enforcement): other_parties[0].gender
     datatype: radio
     required: False
     choices:
       - Male: Male
       - Female: Female
       - Other: other
-  - ${other_parties[0].name.full(middle="full")}'s sex (will be public, used by any law enforcement): other_parties[0].sex_other
+  - ${other_parties[0].name.full(middle="full")}'s gender (will be public, used by any law enforcement): respondent_gender_other
     maxlength: 20
     required: False
     show if:
-      variable: other_parties[0].sex
+      variable: other_parties[0].gender
       is: "other"
-  - Sex assigned at birth (confidential, used by sheriff only): respondent_sex_at_birth
-    datatype: radio
-    required: False
-    choices:
-      - Male: male
-      - Female: female
-    help: |
-      Sex assigned at birth refers to the sex or gender marker on ${other_parties[0].name.full(middle="full")}'s original birth certificate. If they were born intersex, you may want to mention that in gender/other.
-  - Gender identity (confidential, used by sheriff only): other_parties[0].gender
+  - note: |
+     ---
+  - Gender identity (confidential, used by Cook County sheriff only): other_parties[0].gender_cook
     datatype: checkboxes
     none of the above: False
     required: False
@@ -3777,12 +3771,20 @@ fields:
       - Transgender man / Transmasculine: transmasc
       - Nonbinary / Gender non-conforming: nonbinary
       - Other: other
-  - ${other_parties[0].name.full(middle="full")}'s gender identity (confidential, used by sheriff only): respondent_gender_other
+  - ${other_parties[0].name.full(middle="full")}'s gender identity (confidential, used by Cook County sheriff only): respondent_gender_other_cook
     maxlength: 20
     required: False
     show if:
-      variable: other_parties[0].gender['other']
+      variable: other_parties[0].gender_cook['other']
       is: True
+  - Sex assigned at birth (confidential, used by Cook County sheriff only): respondent_sex_at_birth
+    datatype: radio
+    required: False
+    choices:
+      - Male: male
+      - Female: female
+    help: |
+      Sex assigned at birth refers to the sex or gender marker on ${other_parties[0].name.full(middle="full")}'s original birth certificate. If they were born intersex, you may want to mention that in gender/other.
 ---
 id: respondent race
 question: |
@@ -3872,7 +3874,7 @@ fields:
     required: False
     help: |
       Examples: brown, blue, hazel, green
-  - Does ${other_parties[0].name.full(middle="full")} have any distinguishing features like scars, marks or tattoos?: other_parties[0].tattoos
+  - List any distinguishing features like scars, marks or tattoos: other_parties[0].tattoos
     input type: area
     rows: 3
     maxlength: 120
@@ -3897,7 +3899,7 @@ subquestion: |
   
   If you do not know, leave blank.
 fields:
-  - Other names used by ${other_parties[0].name.full(middle="full")}:: alias_names
+  - Other names used by ${other_parties[0].name.full(middle="full")}:: other_parties[0].alias_names
     input type: area
     rows: 3
     maxlength: 120
@@ -6203,7 +6205,7 @@ attachment:
   fields:
     - "respondent": ${other_parties[0].name.full(middle="full")}
     #- "case_number__1": ${ "" }
-    - "alias_names": ${ alias_names}
+    - "alias_names": ${ other_parties[0].alias_names}
     - "respondent_race": ${ respondent_race_other if other_parties[0].race == 'other' else other_parties[0].race }
     - "respondent_dob": |
         % if knows_respondent_dob == 'exact' and other_parties[0].birthdate != "":
