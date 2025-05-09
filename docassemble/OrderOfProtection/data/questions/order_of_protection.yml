@@ -637,7 +637,7 @@ question: |
 subquestion: |
   If you are asking for an Order of Protection for someone other than yourself, select how **they** are related to the person who caused the abuse.
   
-  You can check more than one.
+  You can check more than one. Use the current relationship where possible.
 fields:
   - I am their boyfriend, girlfriend, or romantic partner (including ex-).: relationship_bg
     datatype: yesnowide
@@ -1721,7 +1721,7 @@ fields:
 ---
 id: stay away work question
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to stay away from where you work?
+  Do you want ${other_parties[0].name.full(middle="full")} to stay away from where you work while you are there?
 subquestion: |
   The statewide Order of Protection forms have space for up to 2 places of employment.
   
@@ -1776,14 +1776,14 @@ fields:
 ---
 id: another stay away job
 question: |
-  Do you have another job you want ${other_parties[0].name.full(middle="full")} to stay away from?
+  Do you have another job you want ${other_parties[0].name.full(middle="full")} to stay away from while you are there?
 fields:
   - no label: stay_away_jobs_2
     datatype: yesnoradio
 ---
 id: stay away school question
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to stay away from any schools, kindergartens, or daycare centers?
+  Do you want ${other_parties[0].name.full(middle="full")} to stay away from any schools, kindergartens, or daycare centers while you or people you want to protect are there?
 subquestion: |
   % if minor_kids_with_respondent or protect_petitioner_kids:
   The statewide Order of Protection forms have space for up to 2 schools or daycares. If you need to list more than 2 schools or daycares, you can add them as "other places" you want ${other_parties[0].name.full(middle="full")} to stay away from.
@@ -1829,8 +1829,8 @@ fields:
 ---
 id: second stay away school
 question: |
-  Do you have another school or daycare you want ${other_parties[0].name.full(middle="full")} to stay away from?
-subquestion: |
+  Do you have another school or daycare you want ${other_parties[0].name.full(middle="full")} to stay away from while you or people you want to protect are there?
+subquestion: |  
   So far you entered: ${ schools[0].name }
 
   % if minor_kids_with_respondent or protect_petitioner_kids:
@@ -1891,7 +1891,7 @@ code: |
 ---
 id: stay away other location question
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places?
+  Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places while you are there?
 subquestion: |
   The statewide Order of Protection forms have space for up to 2 other places.
 fields:
@@ -1962,7 +1962,7 @@ fields:
 ---
 id: another stay away location
 question: |
-  Do you have another place you want ${other_parties[0].name.full(middle="full")} to stay away from?
+  Do you have another place you want ${other_parties[0].name.full(middle="full")} to stay away from while you are there?
 subquestion: |
   % if other_location_1_is_school:
   So far you entered: ${ schools[2].name }
@@ -2556,6 +2556,8 @@ question: |
   Where will parenting time happen?
 subquestion: |
   **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+
+  **Note:** The forms do not require a ZIP code for this address. 
 fields:
   - Name of location (if any): pt_location.name
     maxlength: 35
@@ -2625,6 +2627,8 @@ question: |
   Where will pickup for parenting time happen?
 subquestion: |
   **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+
+  **Note:** The forms do not require a ZIP code for this address.
 fields:
   - Name of location (if any): pt_pickup_location.name
     maxlength: 35
@@ -2652,6 +2656,8 @@ question: |
   Where will the return from parenting time happen?
 subquestion: |
   **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+
+  **Note:** The forms do not require a ZIP code for this address.
 fields:
   - Name of location (if any): pt_return_location.name
     maxlength: 35
@@ -3336,13 +3342,14 @@ subquestion: |
   * Parts that can be assembled to make a gun,
   * A Firearm Identification Owner (FOID) card, and
   * A Concealed Carry License.
-  
 
   % if minor_kids_with_respondent or protect_petitioner_kids:
   Reminder: If ${other_parties[0].name.full(middle="full")} threatened you or your children with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
   % else:
   Reminder: If ${other_parties[0].name.full(middle="full")} threatened you with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
-  % endif 
+  % endif
+
+  **Note:** Pages 4 and 5 of the instructions you get at the end of the program include important information about firearms.
 fields:
   - Do you want the court to order any firearms relief? (Check all that apply.): firearms_relief
     datatype: checkboxes
@@ -3355,7 +3362,7 @@ id: intimate partner
 question: |
   Is ${other_parties[0].name.full(middle="full")} a current or former intimate partner?
 subquestion: |
-  This means you were in a romantic relationship with them. This information may be part of the court's decision to remove Respondent's guns.
+  This means you were in a romantic relationship with them. This information may be part of the court's decision to order that ${other_parties[0].name.full(middle="full")} surrender their guns.
 fields:
   - no label: intimate_partner
     datatype: radio
@@ -4695,6 +4702,7 @@ attachment:
     
     - "firearms_cb": ${ True if firearms_turnover else '' }
     - "firearms_turnover": ${ True if firearms_turnover else '' }
+      # when updating this for new form, use intimate_partner and check for petitioner kids
     - "firearms_not_intimate_partner": ${ "*Respondent is not an intimate partner of Petitioner.*" if firearms_turnover == True and intimate_partner != "Yes" else "" }    
     - "respondent_violent": ${ True if firearms_reasons['violence'] == True else ''  }
     - "respondent_firearms_history": ${ True if firearms_reasons['use'] == True else ''  }
