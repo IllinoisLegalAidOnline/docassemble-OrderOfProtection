@@ -172,6 +172,9 @@ review:
       % if protect_other_hh_members:
       * Other household members
       % endif
+      % if protect_obo_minor:
+      * A minor child you are filing on behalf of
+      % endif
     
   - Edit: shared_kids.revisit
     button: |
@@ -212,6 +215,13 @@ review:
       ${high_risk_adult.name.full(middle="full")}
     show if: protect_high_risk_adult
 
+  - Edit: obo_minor.name.first
+    button: |
+      **Minor child you want to protect:**
+      ${obo_minor.name.full(middle="full")}
+    show if: protect_obo_minor
+
+  
   # section: What happened
   - note: |
       <h4>What happened</h4>
@@ -478,6 +488,9 @@ review:
       % endif
       % if children_fled:
       * The children are in Illinois because we fled to avoid abuse elsewhere.
+      % endif
+      % if no_children_decisions:
+      * I'm not asking the court to make decisions about the children.
       % endif
   - Edit: primary_caretaker
     button: |
@@ -2156,6 +2169,9 @@ review:
       % if protect_other_hh_members:
       * Other household members
       % endif
+      % if protect_obo_minor:
+      * A minor child you are filing on behalf of
+      % endif
     
   - Edit: shared_kids.revisit
     button: |
@@ -2195,6 +2211,12 @@ review:
       **High risk adult you want to protect:**
       ${high_risk_adult.name.full(middle="full")}
     show if: protect_high_risk_adult
+
+  - Edit: obo_minor.name.first
+    button: |
+      **Minor child you want to protect:**
+      ${obo_minor.name.full(middle="full")}
+    show if: protect_obo_minor
 
 ---
 id: incidents review screen
@@ -2479,6 +2501,9 @@ review:
       % endif
       % if children_fled:
       * The children are in Illinois because we fled to avoid abuse elsewhere.
+      % endif
+      % if no_children_decisions:
+      * I'm not asking the court to make decisions about the children.
       % endif
   - Edit: primary_caretaker
     button: |
