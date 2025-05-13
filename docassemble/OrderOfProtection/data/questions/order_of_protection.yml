@@ -2859,8 +2859,8 @@ fields:
       - Other items (you can list items below): other
   - Other items (separate by commas): respo_property_other
     input type: area
-    rows: 2
-    maxlength: 160
+    rows: 6
+    maxlength: 200
     show if:
       variable: respo_property['other']
       is: True
@@ -3170,8 +3170,8 @@ fields:
     datatype: yesnowide
   - Other property to protect (separate by commas): restricted_property
     input type: area
-    rows: 4
-    maxlength: 160
+    rows: 6
+    maxlength: 200
     show if: restrict_other_property
 ---
 id: why property should be restricted
@@ -4886,7 +4886,7 @@ attachment:
     - "one_time_present_police_name_known": ${ True if res_property_transfer_person == 'police' and respondent_one_time_entry == True and one_time_police != "" else '' }
     - "one_time_present_police_name": ${ res_property_transfer_police if res_property_transfer_person == 'police' and respondent_one_time_entry == True else '' }
     - "one_time_present_other_cb": ${ True if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
-    - "return_property_person": ${ res_other_transfer_property_person.name.full(middle="full") if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
+    - "one_time_present_person": ${ res_other_transfer_property_person.name.full(middle="full") if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
 
     - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == "Yes" else "" }
     - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
