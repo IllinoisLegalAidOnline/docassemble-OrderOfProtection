@@ -504,13 +504,8 @@ review:
       % elif primary_caretaker == "respondent":
       ${ other_parties[0].name.full(middle="full") }
       % else:
-      Another person, not me or ${ other_parties[0].name.full(middle="full") }
-      % endif
-  - Edit: other_caretaker.name.first
-    button: |
-      **Other caretaker:**
       ${ other_caretaker.name.full(middle="full") }
-    show if: primary_caretaker == "other"
+      % endif
   - Edit: other_caretaker.address.address
     button: |
       **${other_caretaker.name.full(middle="full")}'s address:**
@@ -2526,13 +2521,8 @@ review:
       % elif primary_caretaker == "respondent":
       ${ other_parties[0].name.full(middle="full") }
       % else:
-      Another person, not me or ${ other_parties[0].name.full(middle="full") }
-      % endif
-  - Edit: other_caretaker.name.first
-    button: |
-      **Other caretaker:**
       ${ other_caretaker.name.full(middle="full") }
-    show if: primary_caretaker == "other"
+      % endif
   - Edit: other_caretaker.address.address
     button: |
       **${other_caretaker.name.full(middle="full")}'s address:**
