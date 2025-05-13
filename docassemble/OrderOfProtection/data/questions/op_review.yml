@@ -327,12 +327,16 @@ review:
     button: |
       **Do you have another job you want ${other_parties[0].name.full(middle="full")} to stay away from?**
       ${ word(yesno(stay_away_jobs_2)) }
-    show if: stay_away_jobs and hide_work_address == False
+    show if: stay_away_jobs
+  - Edit: hide_work_address_2
+    button: |
+      **Do you want to keep your other work address hidden?**
+      ${ word(yesno(hide_work_address_2)) }
   - Edit: jobs[1].address
     button: |
       **Second employer name and address:**
       ${ jobs[1].employer }, ${ jobs[1].on_one_line(bare=True) }
-    show if: stay_away_jobs_2 and hide_work_address == False
+    show if: stay_away_jobs_2 and hide_work_address_2 == False
 
   - Edit: stay_away_schools
     button: |
@@ -2335,12 +2339,16 @@ review:
     button: |
       **Do you have another job you want ${other_parties[0].name.full(middle="full")} to stay away from?**
       ${ word(yesno(stay_away_jobs_2)) }
-    show if: stay_away_jobs and hide_work_address == False
+    show if: stay_away_jobs
+  - Edit: hide_work_address_2
+    button: |
+      **Do you want to keep your other work address hidden?**
+      ${ word(yesno(hide_work_address_2)) }
   - Edit: jobs[1].address
     button: |
       **Second employer name and address:**
       ${ jobs[1].employer }, ${ jobs[1].on_one_line(bare=True) }
-    show if: stay_away_jobs_2 and hide_work_address == False
+    show if: stay_away_jobs_2 and hide_work_address_2 == False
   
   - Edit: stay_away_schools
     button: |
@@ -2387,8 +2395,11 @@ review:
       **Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places?**
       ${ word(yesno(stay_away_other)) }
 
+  - Edit: other_location_1_is_school
+    button: |
       **Is this place a school?**
       ${ word(yesno(other_location_1_is_school)) }
+    show if: stay_away_other
   - Edit: hide_other_address_1
     button: |
       **Do you want to hide the details of the place you want ${other_parties[0].name.full(middle="full") } to stay away from?**
@@ -2425,9 +2436,11 @@ review:
     button: |
       **Do you have another place you want ${other_parties[0].name.full(middle="full")} to stay away from?**
       ${ word(yesno(stay_away_other_2)) }
-
-      **Is this place a school?**
+  - Edit: other_location_2_is_school
+    button: |
+      **Is this other place a school?**
       ${ word(yesno(other_location_2_is_school)) }
+    show if: stay_away_other_2
   - Edit: hide_other_address_2
     button: |
       **Do you want to hide the details of the second place you want ${other_parties[0].name.full(middle="full") } to stay away from?**
