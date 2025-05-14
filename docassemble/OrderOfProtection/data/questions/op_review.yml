@@ -362,21 +362,22 @@ review:
     button: |
       **Do you have another school you want ${other_parties[0].name.full(middle="full")} to stay away from?**
       ${ word(yesno(stay_away_schools_2)) }
+    show if: stay_away_schools
   - Edit: schools[1].address
     button: |
       **Second school name and address:**
       ${ schools[1].name }, ${ schools[1].on_one_line(bare=True) }
-    show if: stay_away_schools_2
+    show if: stay_away_schools and stay_away_schools_2
   - Edit: schools[1].hide
     button: |
       **Do you want to hide information about ${ schools[1].name } from  ${other_parties[0].name.full(middle="full")}?**
       ${ word(yesno(schools[1].hide)) }
-    show if: stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
+    show if: stay_away_schools and stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
   - Edit: schools[1].type
     button: |
       **Confidential school information about ${ schools[1].name }:**
       ${ "Type: " + schools[1].type + ", Children who attend: " + comma_and_list(schools[1].kids_who_attend.true_values()) }
-    show if: stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
+    show if: stay_away_schools and stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
   
   - Edit: stay_away_other
     button: |
@@ -2369,21 +2370,22 @@ review:
     button: |
       **Do you have another school you want ${other_parties[0].name.full(middle="full")} to stay away from?**
       ${ word(yesno(stay_away_schools_2)) }
+    show if: stay_away_schools
   - Edit: schools[1].address
     button: |
       **Second school name and address:**
       ${ schools[1].name }, ${ schools[1].on_one_line(bare=True) }
-    show if: stay_away_schools_2
+    show if: stay_away_schools and stay_away_schools_2
   - Edit: schools[1].hide
     button: |
       **Do you want to hide information about ${ schools[1].name } from  ${other_parties[0].name.full(middle="full")}?**
       ${ word(yesno(schools[1].hide)) }
-    show if: stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
+    show if: stay_away_schools and stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
   - Edit: schools[1].type
     button: |
       **Confidential school information about ${ schools[1].name }:**
       ${ "Type: " + schools[1].type + ", Children who attend: " + comma_and_list(schools[1].kids_who_attend.true_values()) }
-    show if: stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
+    show if: stay_away_schools and stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
   
   - Edit: stay_away_other
     button: |

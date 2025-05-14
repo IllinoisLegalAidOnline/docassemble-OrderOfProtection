@@ -4194,6 +4194,16 @@ code: |
         if schools[1].hide:
           op_schools.enabled = True
 
+  if stay_away_other:
+    if other_location_1_is_school:
+      if (minor_kids_with_respondent and no_removal_school) or protect_petitioner_kids:
+        if schools[2].hide:
+          op_schools.enabled = True
+    if stay_away_other_2 and other_location_2_is_school:
+      if (minor_kids_with_respondent and no_removal_school) or protect_petitioner_kids:
+        if schools[3].hide:
+          op_schools.enabled = True
+  
   if minor_kids_with_respondent:
     if parenting_time == "restrict" or parenting_time == "allow":
       if pt_supervised:
@@ -5128,27 +5138,27 @@ attachment:
     - "respondent": ${other_parties[0].name.full(middle="full")}
     - "case_number__1": ${ case_number }
 
-    - "school_1_kids": ${ comma_and_list(schools[0].kids_who_attend.true_values()) if schools[0].hide == True else '' }
-    - "school_1_name": ${ schools[0].name if schools[0].hide == True else ''}
-    - "school_1_type_school": ${ True if (schools[0].hide == True and schools[0].type=='school') else '' }
-    - "school_1_type_daycare": ${ True if (schools[0].hide == True and schools[0].type=='daycare') else '' }
-    - "school_1_address": ${ schools[0].on_one_line(bare=True) if schools[0].hide == True else '' }
-    - "school_2_kids": ${ comma_and_list(schools[1].kids_who_attend.true_values())  if schools[1].hide == True else ''}
-    - "school_2_name": ${ schools[1].name if schools[1].hide == True else '' }
-    - "school_2_type_school": ${ True if (schools[1].hide == True and schools[1].type=='school') else '' }
-    - "school_2_type_daycare": ${ True if (schools[1].hide == True and schools[1].type=='daycare') else '' }
-    - "school_2_address": ${ schools[1].on_one_line(bare=True) if schools[1].hide == True else '' }
+    - "school_1_kids": ${ comma_and_list(schools[0].kids_who_attend.true_values()) if stay_away_schools and schools[0].hide == True else '' }
+    - "school_1_name": ${ schools[0].name if stay_away_schools and schools[0].hide == True else ''}
+    - "school_1_type_school": ${ True if stay_away_schools and (schools[0].hide == True and schools[0].type=='school') else '' }
+    - "school_1_type_daycare": ${ True if stay_away_schools and (schools[0].hide == True and schools[0].type=='daycare') else '' }
+    - "school_1_address": ${ schools[0].on_one_line(bare=True) if stay_away_schools and schools[0].hide == True else '' }
+    - "school_2_kids": ${ comma_and_list(schools[1].kids_who_attend.true_values())  if stay_away_schools and stay_away_schools_2 and schools[1].hide == True else ''}
+    - "school_2_name": ${ schools[1].name if stay_away_schools and stay_away_schools_2 and schools[1].hide == True else '' }
+    - "school_2_type_school": ${ True if stay_away_schools and stay_away_schools_2 and (schools[1].hide == True and schools[1].type=='school') else '' }
+    - "school_2_type_daycare": ${ True if stay_away_schools and stay_away_schools_2 and (schools[1].hide == True and schools[1].type=='daycare') else '' }
+    - "school_2_address": ${ schools[1].on_one_line(bare=True) if stay_away_schools and stay_away_schools_2 and schools[1].hide == True else '' }
 
-    - "school_3_kids": ${ comma_and_list(schools[2].kids_who_attend.true_values()) if schools[2].hide == True else '' }
-    - "school_3_name": ${ schools[2].name if schools[2].hide == True else ''}
-    - "school_3_type_school": ${ True if (schools[2].hide == True and schools[2].type=='school') else '' }
-    - "school_3_type_daycare": ${ True if (schools[2].hide == True and schools[2].type=='daycare') else '' }
-    - "school_3_address": ${ schools[2].on_one_line(bare=True) if schools[2].hide == True else '' }
-    - "school_4_kids": ${ comma_and_list(schools[3].kids_who_attend.true_values())  if schools[3].hide == True else ''}
-    - "school_4_name": ${ schools[3].name if schools[3].hide == True else '' }
-    - "school_4_type_school": ${ True if (schools[3].hide == True and schools[3].type=='school') else '' }
-    - "school_4_type_daycare": ${ True if (schools[3].hide == True and schools[3].type=='daycare') else '' }
-    - "school_4_address": ${ schools[3].on_one_line(bare=True) if schools[3].hide == True else '' }
+    - "school_3_kids": ${ comma_and_list(schools[2].kids_who_attend.true_values()) if stay_away_other and other_location_1_is_school and schools[2].hide == True else '' }
+    - "school_3_name": ${ schools[2].name if stay_away_other and other_location_1_is_school and schools[2].hide == True else ''}
+    - "school_3_type_school": ${ True if stay_away_other and other_location_1_is_school and (schools[2].hide == True and schools[2].type=='school') else '' }
+    - "school_3_type_daycare": ${ True if stay_away_other and other_location_1_is_school and (schools[2].hide == True and schools[2].type=='daycare') else '' }
+    - "school_3_address": ${ schools[2].on_one_line(bare=True) if stay_away_other and other_location_1_is_school and schools[2].hide == True else '' }
+    - "school_4_kids": ${ comma_and_list(schools[3].kids_who_attend.true_values()) if stay_away_other and stay_away_other2 and other_location_2_is_school and schools[3].hide == True else ''}
+    - "school_4_name": ${ schools[3].name if stay_away_other and stay_away_other_2 and other_location_2_is_school and schools[3].hide == True else '' }
+    - "school_4_type_school": ${ True if stay_away_other and stay_away_other_2 and other_location_2_is_school and (schools[3].hide == True and schools[3].type=='school') else '' }
+    - "school_4_type_daycare": ${ True if stay_away_other and stay_away_other_2 and other_location_2_is_school and (schools[3].hide == True and schools[3].type=='daycare') else '' }
+    - "school_4_address": ${ schools[3].on_one_line(bare=True) if stay_away_other and stay_away_other_2 and other_location_2_is_school and schools[3].hide == True else '' }
       
 ---
 attachment:
