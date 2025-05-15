@@ -823,6 +823,15 @@ review:
       I am married to ${other_parties[0].name.full(middle="full")}, and we filed a divorce.
       % endif
     show if: award_personal_property == True and return_property == True
+  - Edit: return_property_person
+    button: |
+      **Who should ${other_parties[0].name.full(middle="full")} return your property to?**
+      % if return_property_person == "petitioner":
+      Me
+      % else:
+      ${ other_return_property_person.name.full(middle="full") }
+      % endif
+    show if: (award_personal_property == True and return_property == True)   
   - Edit: property_transfer_location_cb
     button: |
       **Do you know where you want the personal property transfer to happen?**
@@ -2846,6 +2855,15 @@ review:
       I am married to ${other_parties[0].name.full(middle="full")}, and we filed a divorce.
       % endif
     show if: award_personal_property == True and return_property == True
+  - Edit: return_property_person
+    button: |
+      **Who should ${other_parties[0].name.full(middle="full")} return your property to?**
+      % if return_property_person == "petitioner":
+      Me
+      % else:
+      ${ other_return_property_person.name.full(middle="full") }
+      % endif
+    show if: (award_personal_property == True and return_property == True)   
   - Edit: property_transfer_location_cb
     button: |
       **Do you know where you want the personal property transfer to happen?**

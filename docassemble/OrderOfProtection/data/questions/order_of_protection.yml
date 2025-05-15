@@ -59,6 +59,7 @@ objects:
   - pt_return_location: ALAddress
   - pt_return_person: ALIndividual
   - petitioner_personal_property: DAList.using(object_type=Thing, there_are_any=True)
+  - other_return_property_person: ALIndividual
   - one_time_transfer_person: ALIndividual
   - other_transfer_property_person: ALIndividual
   - res_other_transfer_property_person: ALIndividual
@@ -259,6 +260,7 @@ code: |
     petitioner_personal_property.gather()
     if return_property:
       return_property_reason
+      return_property_person
       if property_transfer_location_cb:
         property_transfer_location.address
         property_transfer_present_cb
@@ -1915,6 +1917,10 @@ question: |
   Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places while you are there?
 subquestion: |
   The statewide Order of Protection forms have space for up to 2 other places.
+  % if stay_away_schools:
+  
+  **Note:** If you want to enter information about additional schools or daycares, select **Yes**.
+  % endif
 fields:
   - no label: stay_away_other
     datatype: yesnoradio
@@ -2819,37 +2825,38 @@ code: |
 
 #  return_property_recompute = True
 ---
-#THIS can probably be deleted
-#id: return petitioner property to whom
-#question: |
-#  Who should ${other_parties[0].name.full(middle="full")} return your property to?
-#fields:
-#  - no label: return_property_person
-#    datatype: radio
-#    choices:
-#      - Me: petitioner
-#      - Another person: other
-#  - First: other_return_property_person.name.first
-#    show if:
-#      variable: return_property_person
-#      is: "other"
-#  - Middle: other_return_property_person.name.middle
-#    required: False
-#    show if:
-#      variable: return_property_person
-#      is: "other"
-#  - Last: other_return_property_person.name.last
-#    show if:
-#      variable: return_property_person
-#      is: "other"
-#  - Suffix: other_return_property_person.name.suffix
-#    required: False
-#    code: |
-#      name_suffix()
-#    show if:
-#      variable: return_property_person
-#      is: "other"
-#      
+id: return petitioner property to whom
+question: |
+  Who should ${other_parties[0].name.full(middle="full")} return your property to?
+subquestion: |
+  **Note:** You can ask that another person or law enforcement be present when ${other_parties[0].name.full(middle="full")} returns your property. You can choose this on another screen.
+fields:
+  - no label: return_property_person
+    datatype: radio
+    choices:
+      - Me: petitioner
+      - Another person: other
+  - First: other_return_property_person.name.first
+    show if:
+      variable: return_property_person
+      is: "other"
+  - Middle: other_return_property_person.name.middle
+    required: False
+    show if:
+      variable: return_property_person
+      is: "other"
+  - Last: other_return_property_person.name.last
+    show if:
+      variable: return_property_person
+      is: "other"
+  - Suffix: other_return_property_person.name.suffix
+    required: False
+    code: |
+      name_suffix()
+    show if:
+      variable: return_property_person
+      is: "other"
+      
 ---
 id: why respondent should return property
 question: |
@@ -4256,7 +4263,9 @@ attachment:
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
-        % if protect_obo_minor:
+        % if protect_obo_minor and protect_high_risk_adult:
+        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        % elif protect_obo_minor:
         ${ obo_minor.name.full(middle="full") }
         % elif protect_high_risk_adult:
         ${ high_risk_adult.name.full(middle="full") }
@@ -4495,7 +4504,7 @@ attachment:
     - "stay_away_jobs": ${ stay_away_jobs }
     - "stay_away_job_1": |
         % if hide_work_address and stay_away_jobs:
-        ${ "" }
+        ${ "Wherever protected party may be employed" }
         % elif stay_away_jobs:
         ${ jobs[0].employer }
         % else:
@@ -4503,7 +4512,7 @@ attachment:
         % endif
     - "stay_away_job_address_1": |
         % if hide_work_address and stay_away_jobs:
-        ${ "Wherever protected party may be employed" }
+        ${ "Confidential" }
         % elif stay_away_jobs:
         ${ jobs[0].on_one_line(bare=True) if stay_away_jobs else '' }
         % else:
@@ -4513,7 +4522,7 @@ attachment:
 
     - "stay_away_job_2": |
         % if hide_work_address_2 and stay_away_jobs_2:
-        ${ "" }
+        ${ "Wherever protected party may be employed" }
         % elif stay_away_jobs_2:
         ${ jobs[1].employer }
         % else:
@@ -4521,7 +4530,7 @@ attachment:
         % endif
     - "stay_away_job_address_2": |
         % if hide_work_address_2 and stay_away_jobs_2:
-        ${ "Wherever protected party may be employed" }
+        ${ "Confidential" }
         % elif stay_away_jobs_2:
         ${ jobs[1].on_one_line(bare=True) if stay_away_jobs_2 else '' }
         % else:
@@ -4531,6 +4540,7 @@ attachment:
         
     - "stay_away_schools": ${ stay_away_schools }
     - "stay_away_school_1": |
+        % if stay_away_schools:
         % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[0].hide:
         ${ "Confidential" }
@@ -4539,8 +4549,10 @@ attachment:
         % endif
         % else:
         ${ schools[0].name if stay_away_schools else '' }
+        % endif
         % endif
     - "stay_away_school_address_1": |
+        % if stay_away_schools:
         % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[0].hide:
         ${ "Confidential" }
@@ -4549,6 +4561,7 @@ attachment:
         % endif
         % else:
         ${ schools[0].on_one_line(bare=True) if stay_away_schools else '' }
+        % endif
         % endif
     - "stay_away_school_hidden_1": |
         % if stay_away_schools:
@@ -4559,6 +4572,7 @@ attachment:
         % endif
         % endif
     - "stay_away_school_2": |
+        % if stay_away_schools:
         % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[1].hide:
         ${ "Confidential" }
@@ -4567,8 +4581,10 @@ attachment:
         % endif
         % else:
         ${ schools[1].name if stay_away_schools_2 else '' }
+        % endif
         % endif
     - "stay_away_school_address_2": |
+        % if stay_away_schools:
         % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[1].hide:
         ${ "Confidential" }
@@ -4578,14 +4594,18 @@ attachment:
         % else:
         ${ schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
+        % endif
     - "stay_away_hidden_school__2": |
+        % if stay_away_schools:
         % if stay_away_schools_2:
         % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[1].hide:
         ${ True }
         % endif
         % endif
-        % endif    
+        % endif
+        % endif
+        
     - "stay_away_other": ${ stay_away_other }
     - "stay_away_other_1": |
         % if stay_away_other and other_location_1_is_school:
@@ -4627,17 +4647,17 @@ attachment:
         % if stay_away_other and other_location_1_is_school:
         % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[2].hide:
-        True
+        ${ True }
         % else:
-        False
+        ${ False }
         % endif
         % else:
-        False
+        ${ False }
         % endif
         % elif hide_other_address_1 and stay_away_other:
-        True
+        ${ True }
         % elif stay_away_other:
-        False
+        ${ False }
         % else:
         ${ "" }
         % endif
@@ -4691,17 +4711,17 @@ attachment:
         % if stay_away_other_2 and other_location_2_is_school:
         % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[3].hide:
-        True
+        ${ True }
         % else:
-        False
+        ${ False }
         % endif
         % else:
-        False
+        ${ False }
         % endif
         % elif hide_other_address_2 and stay_away_other_2:
-        True
+        ${ True }
         % elif stay_away_other_2:
-        False
+        ${ False }
         % else:
         ${ "" }
         % endif
@@ -4931,7 +4951,7 @@ attachment:
     - "property_transfer_present_police_name_known": ${ True if property_transfer_person == 'police' and property_transfer_present_cb == True and property_transfer_police != "" else '' }
     - "property_transfer_present_police_name": ${ property_transfer_police if property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
     - "property_transfer_present_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
-    - "return_property_person": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
     - "property_transfer_time": ${ format_time(property_transfer_time, format='h:mm') if property_transfer_know_date == True else ''  }
     - "property_transfer_time_am": ${ True if format_time(property_transfer_time, format='a') == "AM" and property_transfer_know_date == True else "" }
@@ -5128,7 +5148,9 @@ attachment:
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
-        % if protect_obo_minor:
+        % if protect_obo_minor and protect_high_risk_adult:
+        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        % elif protect_obo_minor:
         ${ obo_minor.name.full(middle="full") }
         % elif protect_high_risk_adult:
         ${ high_risk_adult.name.full(middle="full") }
@@ -5154,8 +5176,9 @@ attachment:
     - "school_3_type_school": ${ True if stay_away_other and other_location_1_is_school and (schools[2].hide == True and schools[2].type=='school') else '' }
     - "school_3_type_daycare": ${ True if stay_away_other and other_location_1_is_school and (schools[2].hide == True and schools[2].type=='daycare') else '' }
     - "school_3_address": ${ schools[2].on_one_line(bare=True) if stay_away_other and other_location_1_is_school and schools[2].hide == True else '' }
-    - "school_4_kids": ${ comma_and_list(schools[3].kids_who_attend.true_values()) if stay_away_other and stay_away_other2 and other_location_2_is_school and schools[3].hide == True else ''}
+
     - "school_4_name": ${ schools[3].name if stay_away_other and stay_away_other_2 and other_location_2_is_school and schools[3].hide == True else '' }
+    - "school_4_kids": ${ comma_and_list(schools[3].kids_who_attend.true_values()) if stay_away_other and stay_away_other_2 and other_location_2_is_school and schools[3].hide == True else '' }
     - "school_4_type_school": ${ True if stay_away_other and stay_away_other_2 and other_location_2_is_school and (schools[3].hide == True and schools[3].type=='school') else '' }
     - "school_4_type_daycare": ${ True if stay_away_other and stay_away_other_2 and other_location_2_is_school and (schools[3].hide == True and schools[3].type=='daycare') else '' }
     - "school_4_address": ${ schools[3].on_one_line(bare=True) if stay_away_other and stay_away_other_2 and other_location_2_is_school and schools[3].hide == True else '' }
@@ -5174,7 +5197,9 @@ attachment:
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
-        % if protect_obo_minor:
+        % if protect_obo_minor and protect_high_risk_adult:
+        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        % elif protect_obo_minor:
         ${ obo_minor.name.full(middle="full") }
         % elif protect_high_risk_adult:
         ${ high_risk_adult.name.full(middle="full") }
@@ -5221,7 +5246,9 @@ attachment:
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
-        % if protect_obo_minor:
+        % if protect_obo_minor and protect_high_risk_adult:
+        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        % elif protect_obo_minor:
         ${ obo_minor.name.full(middle="full") }
         % elif protect_high_risk_adult:
         ${ high_risk_adult.name.full(middle="full") }
@@ -5391,7 +5418,21 @@ attachment:
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
-        % if protect_obo_minor:
+        % if protect_obo_minor and protect_high_risk_adult:
+        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        % elif protect_obo_minor:
+        ${ obo_minor.name.full(middle="full") }
+        % elif protect_high_risk_adult:
+        ${ high_risk_adult.name.full(middle="full") }
+        % else:
+        ${""}
+        % endif
+    - "obo_minor_cb_2": ${ True if protect_obo_minor else '' }
+    - "obo_high_risk_adult_cb_2": ${ True if protect_high_risk_adult else '' }
+    - "obo_child_or_adult_name_2": |
+        % if protect_obo_minor and protect_high_risk_adult:
+        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        % elif protect_obo_minor:
         ${ obo_minor.name.full(middle="full") }
         % elif protect_high_risk_adult:
         ${ high_risk_adult.name.full(middle="full") }
@@ -5401,7 +5442,7 @@ attachment:
     - "respondent__1": ${other_parties[0].name.full(middle="full")}
     - "petitioner__2": ${ users[0].name.full(middle="full") }
     - "petitioner__3": ${ users[0].name.full(middle="full") }
-    - "respondent__1": ${other_parties[0].name.full(middle="full")}
+    - "respondent__3": ${other_parties[0].name.full(middle="full")}
     - "respondent__4": ${other_parties[0].name.full(middle="full")}
     - "case_number__1": ${ case_number }
     - "case_number__2": ${ case_number }
@@ -5429,8 +5470,7 @@ attachment:
     - "respondent_email": ${ other_parties[0].email }
     - "additional_service_address_no": ${ not has_second_service_address }
     - "additional_service_address_yes": ${ has_second_service_address }
-      
-    - "respondent__3": ${other_parties[0].name.full(middle="full") if has_second_service_address == True else ""}
+
     - "service_alt_address_line_1": |
         % if has_second_service_address == True:
         % if second_service_address_choice == "other":
@@ -5488,7 +5528,9 @@ attachment:
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
-        % if protect_obo_minor:
+        % if protect_obo_minor and protect_high_risk_adult:
+        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        % elif protect_obo_minor:
         ${ obo_minor.name.full(middle="full") }
         % elif protect_high_risk_adult:
         ${ high_risk_adult.name.full(middle="full") }
@@ -5623,7 +5665,7 @@ attachment:
     - "stay_away_jobs": ${ stay_away_jobs }
     - "stay_away_job_1": |
         % if hide_work_address and stay_away_jobs:
-        ${ "" }
+        ${ "Wherever protected party may be employed" }
         % elif stay_away_jobs:
         ${ jobs[0].employer }
         % else:
@@ -5631,7 +5673,7 @@ attachment:
         % endif
     - "stay_away_job_address_1": |
         % if hide_work_address and stay_away_jobs:
-        ${ "Wherever protected party may be employed" }
+        ${ "Confidential" }
         % elif stay_away_jobs:
         ${ jobs[0].on_one_line(bare=True) if stay_away_jobs else '' }
         % else:
@@ -5641,7 +5683,7 @@ attachment:
 
     - "stay_away_job_2": |
         % if hide_work_address_2 and stay_away_jobs_2:
-        ${ "" }
+        ${ "Wherever protected party may be employed" }
         % elif stay_away_jobs_2:
         ${ jobs[1].employer }
         % else:
@@ -5649,7 +5691,7 @@ attachment:
         % endif
     - "stay_away_job_address_2": |
         % if hide_work_address_2 and stay_away_jobs_2:
-        ${ "Wherever protected party may be employed" }
+        ${ "Confidential" }
         % elif stay_away_jobs_2:
         ${ jobs[1].on_one_line(bare=True) if stay_away_jobs_2 else '' }
         % else:
@@ -5661,6 +5703,7 @@ attachment:
     
     - "stay_away_schools": ${ stay_away_schools }
     - "stay_away_school_1": |
+        % if stay_away_schools:
         % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[0].hide:
         ${ "Confidential" }
@@ -5669,8 +5712,10 @@ attachment:
         % endif
         % else:
         ${ schools[0].name if stay_away_schools else '' }
+        % endif
         % endif
     - "stay_away_school_address_1": |
+        % if stay_away_schools:
         % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[0].hide:
         ${ "Confidential" }
@@ -5679,6 +5724,7 @@ attachment:
         % endif
         % else:
         ${ schools[0].on_one_line(bare=True) if stay_away_schools else '' }
+        % endif
         % endif
     - "stay_away_school_hidden_1": |
         % if stay_away_schools:
@@ -5689,6 +5735,7 @@ attachment:
         % endif
         % endif
     - "stay_away_school_2": |
+        % if stay_away_schools:
         % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[1].hide:
         ${ "Confidential" }
@@ -5697,8 +5744,10 @@ attachment:
         % endif
         % else:
         ${ schools[1].name if stay_away_schools_2 else '' }
+        % endif
         % endif
     - "stay_away_school_address_2": |
+        % if stay_away_schools:
         % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[1].hide:
         ${ "Confidential" }
@@ -5708,11 +5757,14 @@ attachment:
         % else:
         ${ schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
+        % endif
     - "stay_away_hidden_school__2": |
+        % if stay_away_schools:
         % if stay_away_schools_2:
         % if minor_kids_with_respondent or protect_petitioner_kids:
         % if schools[1].hide:
         ${ True }
+        % endif
         % endif
         % endif
         % endif
@@ -5937,6 +5989,7 @@ attachment:
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
     - "no_removal_schools_list": |
         % if no_removal_school and minor_kids_with_respondent:    
+        
         % if stay_away_schools:
         % if schools[0].hide:
         ${ "School 1: Confidential  " }
@@ -5944,11 +5997,14 @@ attachment:
         ${ schools[0].name + "  " }
         % endif
         % endif
+        
+        % if stay_away_schools:
         % if stay_away_schools_2:
         % if schools[1].hide:
         ${ "School 2: Confidential" }
         % else:
         ${ schools[1].name }
+        % endif
         % endif
         % endif
 
@@ -5960,7 +6016,9 @@ attachment:
         ${ schools[2].name }
         % endif
         % endif
+        % endif
 
+        % if stay_away_other:
         % if stay_away_other_2 and other_location_2_is_school:
         % if schools[3].hide:
         ${ "School 4: Confidential" }
@@ -5972,10 +6030,11 @@ attachment:
         
         % endif
 
-    - "schools_get_order": ${ True if stay_away_schools and minor_kids_with_respondent else '' }
+    - "schools_get_order": ${ True if (stay_away_schools or (stay_away_other and other_location_1_is_school)) and minor_kids_with_respondent else '' }
     
       # page 6
     - "get_order_school_name_1": |
+        % if stay_away_schools:
         % if minor_kids_with_respondent:
         % if schools[0].hide:
         ${ "Confidential" }
@@ -5983,7 +6042,9 @@ attachment:
         ${ schools[0].name if stay_away_schools else '' }
         % endif
         % endif
+        % endif
     - "get_order_school_1": |
+        % if stay_away_schools:
         % if minor_kids_with_respondent:
         % if schools[0].hide:
         ${ "Confidential" }
@@ -5991,7 +6052,9 @@ attachment:
         ${ schools[0].on_one_line(bare=True) if stay_away_schools else '' }
         % endif
         % endif
+        % endif
     - "get_order_school_name_2": |
+        % if stay_away_schools:
         % if minor_kids_with_respondent:
         % if schools[1].hide:
         ${ "Confidential" }
@@ -5999,7 +6062,9 @@ attachment:
         ${ schools[1].name if stay_away_schools_2 else '' }
         % endif
         % endif
+        % endif
     - "get_order_school_2": |
+        % if stay_away_schools:
         % if minor_kids_with_respondent:
         % if schools[1].hide:
         ${ "Confidential" }
@@ -6007,7 +6072,9 @@ attachment:
         ${ schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
         % endif
+        % endif
     - "get_order_school_name_3": |
+        % if stay_away_other and other_location_1_is_school:
         % if minor_kids_with_respondent:
         % if schools[2].hide:
         ${ "Confidential" }
@@ -6015,12 +6082,15 @@ attachment:
         ${ schools[2].name if stay_away_other and other_location_1_is_school else '' }
         % endif
         % endif
+        % endif
     - "get_order_school_3": |
+        % if stay_away_other and other_location_1_is_school:
         % if minor_kids_with_respondent:
         % if schools[1].hide:
         ${ "Confidential" }
         % else:
         ${ schools[2].on_one_line(bare=True) if stay_away_other and other_location_1_is_school else '' }
+        % endif
         % endif
         % endif
     - "confidential_schools__2": ${ True if (schools[0].hide or schools[1].hide or schools[2].hide) and (stay_away_schools or (stay_away_other and other_location_1_is_school)) and minor_kids_with_respondent else False }
@@ -6146,7 +6216,7 @@ attachment:
     - "return_some_property_cb": ${ True if [item.name.text for item in petitioner_personal_property] != [item.name.text for item in petitioner_personal_property if item.respo_has == True] and award_personal_property == True and return_property == True else "" }
 
     - "petitioner_property_ordered_return_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property if item.respo_has == True]) if (award_personal_property == True and return_property == True) else "" }
-    - return_property_person_cb: ${ True if award_personal_property and return_property else "" }
+    - "return_property_person_cb": ${ True if award_personal_property and return_property else "" }
     - "return_property_person": |
         % if award_personal_property == True and return_property == True: 
         % if return_property_person == "petitioner":
@@ -6169,7 +6239,7 @@ attachment:
     - "property_transfer_present_police_name_known": ${ True if property_transfer_person == 'police' and property_transfer_present_cb == True and property_transfer_police != "" else '' }
     - "property_transfer_present_police_name": ${ property_transfer_police if property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
     - "property_transfer_present_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
-    - "return_property_person": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
     - "property_transfer_time": ${ format_time(property_transfer_time, format='h:mm') if property_transfer_know_date == True else ''  }
     - "property_transfer_time_am": ${ True if format_time(property_transfer_time, format='a') == "AM" and property_transfer_know_date == True else "" }
