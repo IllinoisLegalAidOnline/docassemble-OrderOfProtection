@@ -1148,7 +1148,12 @@ review:
       % if misc_remedies_text == "":
       Nothing
       % else:
-      ${ misc_remedies_text } **Because:** ${ misc_remedies_because_text }
+      ${ misc_remedies_text }[NEWLINE][NEWLINE]**Because:**
+      % endif
+      % if misc_remedies_because_text == "":
+      No reasons entered
+      % else:
+      ${ misc_remedies_because_text }
       % endif
 
   # section: respondent
@@ -3196,7 +3201,12 @@ review:
       % if misc_remedies_text == "":
       Nothing
       % else:
-      ${ misc_remedies_text } **Because:** ${ misc_remedies_because_text }
+      ${ misc_remedies_text }[NEWLINE][NEWLINE]**Because:**
+      % endif
+      % if misc_remedies_because_text == "":
+      No reasons entered
+      % else:
+      ${ misc_remedies_because_text }
       % endif
 
 ---

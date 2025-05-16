@@ -4618,7 +4618,7 @@ attachment:
         ${ schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
         % endif
-    - "stay_away_hidden_school__2": |
+    - "stay_away_school_hidden_2": |
         % if stay_away_schools:
         % if stay_away_schools_2:
         % if minor_kids_with_respondent or protect_petitioner_kids:
@@ -5781,7 +5781,7 @@ attachment:
         ${ schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
         % endif
-    - "stay_away_hidden_school__2": |
+    - "stay_away_school_hidden_2": |
         % if stay_away_schools:
         % if stay_away_schools_2:
         % if minor_kids_with_respondent or protect_petitioner_kids:
@@ -5984,7 +5984,7 @@ attachment:
     - "shared_kids_6_idk_par": ${ True if minor_kids_with_respondent and shared_kids[5].pet_parentage == None else "" }
     - "shared_kids_6_include_yes": ${ shared_kids[5].protect if minor_kids_with_respondent else '' }
     - "shared_kids_6_include_no": ${ True if minor_kids_with_respondent and shared_kids[5].protect == False else '' }
-    - "jurisdiction_over_children_cb": ${ True if any(children_live_in_il, children_removed_from_il, children_fled) and minor_kids_with_respondent else "" }
+    - "jurisdiction_over_children_cb": ${ True if any([children_live_in_il, children_removed_from_il, children_fled]) and minor_kids_with_respondent else "" }
     - "children_live_in_il": ${ True if children_live_in_il and minor_kids_with_respondent else '' }
     - "children_removed_from_il": ${ True if children_removed_from_il and minor_kids_with_respondent else '' }
     - "children_fled": ${ True if children_fled and minor_kids_with_respondent else '' }
@@ -6002,7 +6002,7 @@ attachment:
     - "return_children_petitioner_cb": ${ True if return_children_to == "petitioner" and minor_kids_with_respondent else '' }
     - "return_children_other_cb": ${ True if return_children_to == "other" and minor_kids_with_respondent else '' }    
     - "return_children_other_person": ${ return_children_other_person.name.full(middle="full") if return_children_to == "other" and minor_kids_with_respondent else '' }
-    - "return_children_location": ${ return_children_location.on_one_line(bare=True) if knows_return_children_details and minor_kids_with_respondent else "" }
+    - "return_children_location": ${ return_children_location.on_one_line(bare=True) if knows_return_children_details and return_children_to == "other" and minor_kids_with_respondent else "" }
 
     
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
@@ -6506,13 +6506,9 @@ attachment:
         % endif
     - "respondent_no_right_to_stay": ${ True if exclusive_possession_reason == "respondent_no_right_to_stay" and residence_remedies == "exclusive possession" else '' }
     - "both_parties_right_to_stay": ${ True if exclusive_possession_reason == "both_parties_right_to_stay" and residence_remedies == "exclusive possession" else '' }
-     
-    - "alt_housing_cb": ${ residence_remedies == 'provide alternate housing' }
-    - "alt_housing_start_cb": ${ "" }
-    - "alt_housing_start_date": ${ "" }
-    - "alt_housing_requirements_cb": ${ "" }
-    - "alt_housing_requirements_text": ${ "" }
 
+    - "provide_alt_housing": ${ residence_remedies == 'provide alternate housing' }
+    - "alt_housing_requirements_text": ${ "" }
 
     - "stay_away_checkbox": ${ stay_away or any((stay_away_jobs, stay_away_schools, stay_away_other)) }
     - "stay_away": ${ stay_away }
@@ -6613,7 +6609,7 @@ attachment:
         ${ schools[1].on_one_line(bare=True) if stay_away_schools_2 else '' }
         % endif
         % endif
-    - "stay_away_hidden_school__2": |
+    - "stay_away_school_hidden_2": |
         % if stay_away_schools:
         % if stay_away_schools_2:
         % if minor_kids_with_respondent or protect_petitioner_kids:
@@ -6822,7 +6818,7 @@ attachment:
     - "shared_kids_6_idk_par": ${ True if minor_kids_with_respondent and shared_kids[5].pet_parentage == None else "" }
     - "shared_kids_6_include_yes": ${ shared_kids[5].protect if minor_kids_with_respondent else '' }
     - "shared_kids_6_include_no": ${ True if minor_kids_with_respondent and shared_kids[5].protect == False else '' }
-    - "jurisdiction_over_children_cb": ${ True if any(children_live_in_il, children_removed_from_il, children_fled) and minor_kids_with_respondent else "" }
+    - "jurisdiction_over_children_cb": ${ True if any([children_live_in_il, children_removed_from_il, children_fled]) and minor_kids_with_respondent else "" }
     - "children_live_in_il": ${ True if children_live_in_il and minor_kids_with_respondent else '' }
     - "children_removed_from_il": ${ True if children_removed_from_il and minor_kids_with_respondent else '' }
     - "children_fled": ${ True if children_fled and minor_kids_with_respondent else '' }
@@ -6841,7 +6837,7 @@ attachment:
     - "return_children_petitioner_cb": ${ True if return_children_to == "petitioner" and minor_kids_with_respondent else '' }
     - "return_children_other_cb": ${ True if return_children_to == "other" and minor_kids_with_respondent else '' }    
     - "return_children_other_person": ${ return_children_other_person.name.full(middle="full") if return_children_to == "other" and minor_kids_with_respondent else '' }
-    - "return_children_location": ${ return_children_location.on_one_line(bare=True) if knows_return_children_details and minor_kids_with_respondent else "" }
+    - "return_children_location": ${ return_children_location.on_one_line(bare=True) if knows_return_children_details and return_children_to == "other" and minor_kids_with_respondent else "" }
 
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
     - "no_removal_schools_list": |
@@ -7542,7 +7538,7 @@ attachment:
     - "respondent_hair": ${ other_parties[0].hair if other_parties[0].hair != "" else '' }
     - "respondent_eyes": ${ other_parties[0].eyes if other_parties[0].eyes != "" else '' }
     - "respondent_tattoos": ${ other_parties[0].tattoos if other_parties[0].tattoos != "" else '' }
-    - "respondent_warrant_help": ${}
+    - "respondent_warrant_help": ${ respondent_warrant_help if has_helpful_warrant_info else '' }
     - "warrant_location_1": ${ warrant_location_list[0].on_one_line(bare=True) + ", " + warrant_location_list[0].description }
     - "warrant_location_1_days_times": ${ warrant_location_list[0].days_times }
     - "warrant_location_1_others_yes": ${ warrant_location_list[0].others_present  }
