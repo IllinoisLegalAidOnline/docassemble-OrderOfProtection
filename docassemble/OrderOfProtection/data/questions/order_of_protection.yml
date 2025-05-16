@@ -1758,12 +1758,11 @@ id: hide work address
 question: |
   Do you want to keep your work address hidden?
 subquestion: |
-  You do not need to list where you work on your court papers.
+  You do not need to list where you work on your court papers.  If you select **Yes**, your workplace will be listed as, "Wherever protected party may be employed."
 field: hide_work_address
 choices:
   - Yes: True
   - No: False
----
 ---
 id: hide other work address
 question: |
@@ -2134,45 +2133,6 @@ fields:
     datatype: yesnowide
   - I'm not asking the court to make decisions about the children.: no_children_decisions
     datatype: yesnowide
-#---
-#id: parentage established question
-#question: |
-#  Has legal parentage of your minor children with ${other_parties[0].name.full(middle="full")} been established?
-#subquestion: |
-#  Parentage can be established in a few ways.
-#  
-#  Children who were born before, during or within 300 days after the marriage, are considered legal children of the married couple.
-#  
-#  If the parents are not married, parentage can be established by the following:  
-#  
-#  * Both parents can sign a Voluntary Acknowledgment of Paternity, also called a VAP, that must be filed with the appropriate state agency,
-#  * A court or administrative order can establish parentage, or
-#  * In rare cases, another legal process can established parentage.
-#fields:
-#  - no label: parentage
-#    datatype: radio
-#    choices:
-#      - Yes, the children were born before, during, or within 300 days of our marriage.: parentage_established_by_marriage
-#      - Yes, we are not married but parentage was established. I will explain on the next screen.: parentage_established_other
-#      - No, we are not married and parentage has not been established.: parentage_not_established
-#---
-#id: parentage method
-#question: |
-#  How was legal parentage of your minor children with ${other_parties[0].name.full(middle="full")} established?
-#subquestion: |
-#  Check all that apply.
-#fields:
-#  - We signed and filed a Voluntary Acknowledgment of Paternity, also called a VAP.: parentage_vap 
-#    datatype: yesnowide
-#  - A court or administrative order established us as the legal parents of the children.: parentage_order 
-#    datatype: yesnowide
-#  - Legal parentage was established another way. I will explain below.: parentage_other
-#    datatype: yesnowide
-#  - Other parentage method: other_parentage_method
-#    input type: area
-#    rows: 3
-#    maxlength: 150
-#    show if: parentage_other
 ---
 id: primary caretaker
 question: |
@@ -2209,19 +2169,7 @@ fields:
     show if:
       variable: primary_caretaker
       is: "other"
-                                                                                                                  
-#---
-#sets:
-#  - other_caretaker.name.first
-#  - other_caretaker.name.middle
-#  - other_caretaker.name.last
-#  - other_caretaker.name.suffix
-#id: other caretaker name
-#question: |
-#  Who is the primary caretaker of the children with ${other_parties[0].name.full(middle="full")}?
-#fields:
-#  - code: |
-#      other_caretaker.name_fields()
+
 ---
 id: other caretaker address
 question: | 
@@ -2436,9 +2384,7 @@ fields:
     datatype: radio
     choices:
     - I will enter the parenting time schedule on the next screens.: interview
-      #datatype: yesnowide
     - I will make a parenting time schedule and attach it to my court forms.: attach
-      #datatype: yesnowide
       help: |
         Be sure your parenting time schedule includes:
         
@@ -3146,7 +3092,6 @@ code: |
   if cell_numbers.number_gathered() >= 4:
     cell_numbers.there_is_another = False
 ---
-
 id: restrict other property
 question: |
   Additional property protections
@@ -3269,7 +3214,6 @@ subquestion: |
   Maintenance used to be called "spousal support" or "alimony."
   
   **Note:** The court can order temporary maintenance only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
-
 fields:
   - no label: temp_maintenance
     datatype: yesnoradio
@@ -3521,11 +3465,10 @@ subquestion: |
 fields:
   - no label: firearms_eop_notice
     datatype: yesnoradio
-
 ---
 reconsider: True
 code: |
-  if (stay_away) and trial_court_index != 71:
+  if stay_away and trial_court_index != 71:
     no_contact_text = "No contact by any means with protected parties. "
     add_no_contact_language = True
   else: 
@@ -3537,7 +3480,7 @@ question: |
   What else do you want the court to order ${other_parties[0].name.full(middle="full")} to do or to stop doing?
 subquestion: |
   % if add_no_contact_language and trial_court_index != 71:
-  Because you are asking the court to order ${other_parties[0].name.full(middle="full")} to stay away or to stop communication, "No contact by any means with protected parties" will be added. You can change this below.
+  Because you are asking the court to order ${other_parties[0].name.full(middle="full")} to stay away and stop communication, "No contact by any means with protected parties" will be added. You can change this below.
   % endif
 fields:
   - ${other_parties[0].name.full(middle="full")} should be ordered to:: misc_remedies_text
@@ -4038,13 +3981,11 @@ subquestion: |
   If you do not know, leave blank.
 fields:
   - Car make: respondent_car_make
-    #- Car make: cook_vehicle_make
     help: |
       Examples: Chevrolet, Honda, and Ford
     required: False
     maxlength: 25
   - Car model: respondent_car_model
-    #- Car model: cook_vehicle_model
     help: |
       Examples: Malibu, Civic, and Mustang
     required: False
@@ -4326,6 +4267,7 @@ attachment:
     - "eop": ${ eop }
     - "pop": ${ pop }
 
+      # page 2    
     - "hide_address": ${ hide_address }
     - "notice_address_one_line": ${ users[0].address.on_one_line(bare=True) if hide_address else ""}
     - "petitioner_notice_email": ${ users[0].email if (users[0].email_notice and hide_address) else ""}
@@ -4333,8 +4275,6 @@ attachment:
     - "home_address_one_line": ${ users[0].address.on_one_line(bare=True) if not hide_address else "" }
     - "petitioner_home_email": ${ users[0].email if (users[0].email_notice and not hide_address) else ""}
     
-    
-      # page 2
     - "respondent_dob": |
         % if knows_respondent_dob == 'exact' and other_parties[0].birthdate != "":
         ${ other_parties[0].birthdate }
@@ -4393,6 +4333,7 @@ attachment:
     - "respondent_eyes": ${ other_parties[0].eyes if other_parties[0].eyes != "" else '' }
     - "respondent_tattoos": ${ other_parties[0].tattoos if other_parties[0].tattoos != "" else '' }
 
+      # page 3    
     - "relationship_bg": ${ relationship_bg }
     - "relationship_cc": ${ relationship_cc }
     - "relationship_ac": ${ relationship_ac }
@@ -4472,7 +4413,7 @@ attachment:
     - "jurisdiction_abuse_here": ${ jurisdiction_type['Abuse was here'] }
     - "jurisdiction_abuse_elsewhere": ${ jurisdiction_type['Abuse was elsewhere'] }
 
-      # page 3
+      # page 4
     - "incident_date_1": ${ incidents[0].date }
     - "incident_time_1": ${ incidents[0].time }
     - "incident_reason_1": ${ incidents[0].name.text }
@@ -4499,7 +4440,7 @@ attachment:
     - "stay_away_checkbox": ${ stay_away }
     - "stay_away": ${ stay_away }
 
-      # page 4
+      # page 5
     - "possession_residence": ${ not (residence_remedies == 'none') }
     - "exclusive_home_address_checkbox": |
         % if (not hide_address) and (residence_remedies == 'exclusive possession'):
@@ -4560,7 +4501,8 @@ attachment:
         ${ "" }
         % endif
     - "stay_away_job_hidden_2": ${ True if hide_work_address_2 and stay_away_jobs_2 else '' }
-        
+
+      # page 6    
     - "stay_away_schools": ${ stay_away_schools }
     - "stay_away_school_1": |
         % if stay_away_schools:
@@ -4755,8 +4697,6 @@ attachment:
     - "same_school_restrictions": ${ True if (same_school and same_school_restrictions != "none") else ""} 
     - "same_school_name": ${ same_school_name if (same_school and same_school_restrictions != "none") else ""}
 
-
-      # page 5
     - "same_school_not_attend": ${ True if (same_school and same_school_restrictions == "not attend") else ""}
     - "same_school_change_placement": ${ True if (same_school and same_school_restrictions == "change program") else ""}
     - "same_school_avoid_parts": ${ True if (same_school and same_school_restrictions == "not present in parts") else ""}
@@ -4771,7 +4711,8 @@ attachment:
     - "mental_health_counseling": ${ True if request_counseling and mental_health_counseling else '' } 
     - "other_counseling": ${ True if request_counseling and other_counseling else '' }    
     - "other_counseling_text": ${ other_counseling_text if request_counseling and other_counseling else '' }    
-      
+
+      # page 7    
     - "care_and_possession_of_children": ${ minor_kids_with_respondent } 
     - "minor_kids_with_respondent": ${ minor_kids_with_respondent }
     - "shared_kids_1_name": ${ shared_kids[0].name.full(middle="full") if  minor_kids_with_respondent else '' }
@@ -4827,11 +4768,10 @@ attachment:
     - "children_fled": ${ True if children_fled and minor_kids_with_respondent else '' }
     - "no_children_decisions": ${ True if no_children_decisions and minor_kids_with_respondent else '' }
 
-    
+      # page 8    
     - "caretaker_cb": ${ minor_kids_with_respondent }
     - "caretaker_petitioner": ${ True if (primary_caretaker == "petitioner" and minor_kids_with_respondent) else '' }
 
-      # page 6
     - "caretaker_respondent": ${ True if (primary_caretaker == "respondent" and minor_kids_with_respondent) else '' }
     - "caretaker_other": ${ True if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "other_caretaker_name": ${ other_caretaker.name.full(middle="full") if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
@@ -4868,12 +4808,11 @@ attachment:
     - "pt_weekend_start_time": ${ format_time(pt_weekend_start_time, format='h:mm a') if pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_end_day": ${ dow_full[int(pt_weekend_end_day)] if pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_weekend_end_time": ${ format_time(pt_weekend_end_time, format='h:mm a') if pt_weekends == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
-    
+
+      # page 9    
     - "pt_start_date_cb": ${ True if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_start_date": ${ pt_start_date if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
 
-
-      # page 7
     - "pt_holidays": ${ pt_holidays if (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else '' }
     - "pt_holiday_list": ${ pt_holiday_list if pt_holidays == True and (parenting_time == "grant" or parenting_time == "restrict") and pt_format == "interview" and minor_kids_with_respondent else ''}
     - "pt_transportation_cb": ${ True if pt_transportation != "later" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
@@ -4956,6 +4895,9 @@ attachment:
         % endif
     - "award_petitioner_property_cb": ${ True if award_personal_property else "" }
     - "petitioner_property_awarded_list": ${ comma_and_list([item.name.text for item in petitioner_personal_property]) if award_personal_property else "" }
+
+      # page 10
+    
     - "respondent_ordered_return_property_cb": ${ True if award_personal_property == True and return_property == True else "" }
     - "return_all_property_cb": ${ True if [item.name.text for item in petitioner_personal_property] == [item.name.text for item in petitioner_personal_property if item.respo_has == True] and award_personal_property == True and return_property == True else "" }
     - "return_some_property_cb": ${ True if [item.name.text for item in petitioner_personal_property] != [item.name.text for item in petitioner_personal_property if item.respo_has == True] and award_personal_property == True and return_property == True else "" }
@@ -4994,6 +4936,7 @@ attachment:
     - "one_time_present_other_cb": ${ True if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
     - "one_time_present_person": ${ res_other_transfer_property_person.name.full(middle="full") if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
 
+      # page 11    
     - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == "Yes" else "" }
     - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
     - "restrict_cars": ${ True if restrict_other_property == True and restrict_cars else '' }
@@ -5023,7 +4966,9 @@ attachment:
         % if temp_maintenance and (relationship_se or relationship_xs):
         ${ True }
         % endif        
-        % endif        
+        % endif
+
+      # page 12
     - "payment_for_losses_cb":  |
         % if not expenses_none and (expenses_medical or expenses_lost_income or expenses_property or expenses_moving or expenses_housing or expenses_children or expenses_lawyer or expenses_other):
         ${ True }
@@ -5040,8 +4985,6 @@ attachment:
         % if not expenses_none:
         ${ thousands(expenses_medical_amount, show_decimals=True) }
         % endif
-
-      # page 9
     - "expenses_lost_income":  |
         % if not expenses_none:
         ${ expenses_lost_income }
@@ -5117,7 +5060,8 @@ attachment:
     - "firearms_location": ${ True if firearms_threat == True and warrant_reasons['location'] == True else '' }
     - "firearms_report": ${ True if firearms_threat == True and warrant_reasons['report'] == True else '' }
     - "firearms_eop_notice": ${ True if eop == True and firearms_eop_notice == True else '' }
-    
+
+      # page 13    
     - "childrens_records_cb": ${ True if minor_kids_with_respondent and ( no_records_no_contact or no_records_hide_address or no_records_no_removal ) else "" }
     - "no_records_no_contact": ${ True if minor_kids_with_respondent and no_records_no_contact else "" }
     - "no_records_hide_address": ${ True if minor_kids_with_respondent and no_records_hide_address else "" }
@@ -5133,9 +5077,6 @@ attachment:
 
     - "misc_remedies_cb": ${ True if misc_remedies_text != '' else '' }
     - "misc_remedies_text": ${ misc_remedies_text }
-
-
-      # page 10
     - "misc_remedies_because_text": ${ misc_remedies_because_text if misc_remedies_text != '' else '' }
     - "separate_phone_service_cb": ${ True if separate_phone_service else '' }
     - "phone_provider": ${ phone_provider if separate_phone_service else '' }
@@ -5150,8 +5091,9 @@ attachment:
     - "cell_number_2": ${ phone_number_formatted(cell_numbers[1].name.text) if separate_phone_service else '' }
     - "cell_number_3": ${ phone_number_formatted(cell_numbers[2].name.text) if separate_phone_service else '' }
     - "cell_number_4": ${ phone_number_formatted(cell_numbers[3].name.text) if separate_phone_service else '' }
-    - "petitioner_signature": ${ users[0].name.full(middle="full") if e_signature else '' }
 
+      # page 14    
+    - "petitioner_signature": ${ users[0].name.full(middle="full") if e_signature else '' }
     - "preparer_name": ${ users[0].name.full(middle="full") }
     - "preparer_address_one_line": ${ users[0].address.on_one_line(bare=True) }
     - "preparer_phone": ${ phone_number_formatted(users[0].phone_number) }
@@ -5388,7 +5330,7 @@ attachment:
   editable: False
   pdf template file: affidavit_pt_supervisor.pdf
   fields:
-    - "county": ${ trial_court.address.county.upper() }
+    - "county": ${ trial_court.address.county }
     - "petitioner__1": ${ users[0].name.full(middle="full") }
     - "respondent": ${other_parties[0].name.full(middle="full")}
     - "case_number__1": ${ case_number }
@@ -7351,13 +7293,13 @@ attachment:
         % endif
     - "respondent_male_at_birth": ${ True if respondent_sex_at_birth == "male" else '' }    
     - "respondent_female_at_birth": ${ True if respondent_sex_at_birth == "female" else '' }    
-    - "respondent_gender_m": ${ True if other_parties[0].gender['male'] == True else '' } 
-    - "respondent_gender_w": ${ True if other_parties[0].gender['female'] == True else '' }
-    - "respondent_gender_tw": ${ True if other_parties[0].gender['transfem'] == True else '' }
-    - "respondent_gender_tm": ${ True if other_parties[0].gender['transmasc'] == True else '' }
-    - "respondent_gender_nb": ${ True if other_parties[0].gender['nonbinary'] == True else '' }
-    - "respondent_gender_other": ${ True if other_parties[0].gender['other'] == True else '' }
-    - "respondent_gender_other_text": ${ respondent_gender_other if other_parties[0].gender['other'] == True else '' }
+    - "respondent_gender_m": ${ True if other_parties[0].gender_cook['male'] == True else '' } 
+    - "respondent_gender_w": ${ True if other_parties[0].gender_cook['female'] == True else '' }
+    - "respondent_gender_tw": ${ True if other_parties[0].gender_cook['transfem'] == True else '' }
+    - "respondent_gender_tm": ${ True if other_parties[0].gender_cook['transmasc'] == True else '' }
+    - "respondent_gender_nb": ${ True if other_parties[0].gender_cook['nonbinary'] == True else '' }
+    - "respondent_gender_other": ${ True if other_parties[0].gender_cook['other'] == True else '' }
+    - "respondent_gender_other_text": ${ respondent_gender_other if other_parties[0].gender_cook['other'] == True else '' }
     
     - "respondent_age": |
         % if knows_respondent_dob == 'exact' and other_parties[0].birthdate != "":
