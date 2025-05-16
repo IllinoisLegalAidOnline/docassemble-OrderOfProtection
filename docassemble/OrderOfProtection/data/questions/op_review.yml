@@ -1125,6 +1125,17 @@ review:
         * ${ my_var.on_one_line(bare=True) }
       % endfor
     show if: firearms_relief['warrant']
+  - Edit: has_helpful_warrant_info
+    button: |
+      **Do you have other information about ${other_parties[0].name.full(middle="full")} that could help law enforcement with the warrant?**
+      ${ word(yesno(has_helpful_warrant_info))}      
+    show if: firearms_relief['warrant']
+  - Edit: has_helpful_warrant_info
+    button: |
+      **Other information that could help law enforcement with the warrant:**
+      ${ respondent_warrant_help }      
+    show if: firearms_relief['warrant'] and has_helpful_warrant_info
+    
   - Edit: firearms_eop_notice
     button: |
       **Are you worried that ${other_parties[0].name.full(middle="full")} might hurt you or the people you want to protect when they learn about the Order of Protection?**
@@ -3163,12 +3174,22 @@ review:
         * ${ my_var.on_one_line(bare=True) }
       % endfor
     show if: firearms_relief['warrant']
+  - Edit: has_helpful_warrant_info
+    button: |
+      **Do you have other information about ${other_parties[0].name.full(middle="full")} that could help law enforcement with the warrant?**
+      ${ word(yesno(has_helpful_warrant_info))}      
+    show if: firearms_relief['warrant']
+  - Edit: has_helpful_warrant_info
+    button: |
+      **Other information that could help law enforcement with the warrant:**
+      ${ respondent_warrant_help }      
+    show if: firearms_relief['warrant'] and has_helpful_warrant_info
   - Edit: firearms_eop_notice
     button: |
       **Are you worried that ${other_parties[0].name.full(middle="full")} might hurt you or the people you want to protect when they learn about the Order of Protection?**
       ${ word(yesno(firearms_eop_notice))}
     show if: firearms_relief['surrender'] or firearms_relief['warrant']
-      
+  
   - Edit: misc_remedies_text
     button: |
       **What else do you want the court to order ${other_parties[0].name.full(middle="full")} to do or to stop doing?**

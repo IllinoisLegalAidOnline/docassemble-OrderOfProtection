@@ -299,6 +299,7 @@ code: |
     if firearms_relief['warrant']:
       warrant_reasons
       warrant_location_list.gather()
+      has_helpful_warrant_info
     if firearms_relief['surrender'] or firearms_relief['warrant']:
       firearms_eop_notice  
   misc_remedies_text
@@ -1652,7 +1653,7 @@ subquestion: |
   
   This information **will not** appear on public court documents.
 fields:
-  - Active on social media?: respondent_on_social_media
+  - ${other_parties[0].name.full(middle="full")} active on social media?: respondent_on_social_media
     datatype: radio
     choices:
       - Yes: Yes
@@ -3499,6 +3500,19 @@ code: |
   if warrant_location_list.number_gathered() >= 2:
     warrant_location_list.there_is_another = False
 ---
+id: other helpful warrant info
+question: |
+  Do you have other information about ${other_parties[0].name.full(middle="full")} that might be helpful to law enforcement when they execute the warrant?
+fields:
+  - no label: has_helpful_warrant_info
+    datatype: yesnoradio
+  - Other helpful information: respondent_warrant_help
+    input type: area
+    rows: 3
+    maxlength: 100
+    show if: has_helpful_warrant_info
+     
+---
 id: firearms eop prior notice question
 question: |
   Are you worried that ${other_parties[0].name.full(middle="full")} might hurt you or the people you want to protect when they learn about the Order of Protection?
@@ -4163,6 +4177,8 @@ objects:
   - cook_dv_cover_sheet: ALDocument.using(title="Domestic Violence Cover Sheet", filename="cook_dv_cover_sheet.pdf", has_addendum=False)
   - cook_sheriff_info_sheet: ALDocument.using(title="Confidential Sheriff Information Sheet", filename="cook_sheriff_info_sheet.pdf", has_addendum=False)
   - sheriff_cover_sheet: ALDocument.using(title="Sheriff Information Cover Sheet", filename="sheriff_info_cover_sheet.pdf", has_addendum=False)
+  - op_warrant_info_sheet: ALDocument.using(title="Search Warrant Info Sheet", filename="op_warrant_info_sheet.pdf", has_addendum=False)
+  - op_warrant: ALDocument.using(title="Search Warrant for Seizure of Firemarms", filename="op_warrant.pdf", has_addendum=False)
 
 ---
 code: |
@@ -4181,6 +4197,8 @@ code: |
   cook_sheriff_info_sheet.enabled = False
   sheriff_cover_sheet.enabled = False
   sheriff_info_bundle.enabled = False
+  op_warrant_info_sheet.enabled = False
+  op_warrant.enabled = False
   
   if incidents.number() > 4:
     additional_incidents.enabled = True
@@ -4228,13 +4246,18 @@ code: |
     sheriff_cover_sheet.enabled = True
     sheriff_info_bundle.enabled = True
 
+  if firearms_threat:
+    if firearms_relief['warrant']:
+      op_warrant_info_sheet.enabled = True
+      op_warrant.enabled = True
+
 
 ---
 objects:
   - op_petition_single_pdf_bundle: ALDocumentBundle.using(elements=[op_petition, additional_cases, additional_incidents], filename="petition.pdf", title="Petition for Order of Protection")
   - sheriff_info_bundle: ALDocumentBundle.using(elements=[sheriff_cover_sheet, cook_sheriff_info_sheet], filename="cook_sheriff_info_sheet.pdf", title="Confidential Sheriff Information Sheet")
-  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, cook_dv_cover_sheet, op_petition_single_pdf_bundle, op_schools, emergency_op, plenary_op, op_summons, sheriff_info_bundle, affidavit_pt_supervisor, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
-  - al_court_bundle: ALDocumentBundle.using(elements=[cook_dv_cover_sheet, op_petition_single_pdf_bundle, op_schools, emergency_op, plenary_op, op_summons, cook_sheriff_info_sheet, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
+  - al_user_bundle: ALDocumentBundle.using(elements=[op_instructions, cook_dv_cover_sheet, op_petition_single_pdf_bundle, op_schools, op_warrant_info_sheet, op_warrant, emergency_op, plenary_op, op_summons, sheriff_info_bundle, affidavit_pt_supervisor, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
+  - al_court_bundle: ALDocumentBundle.using(elements=[cook_dv_cover_sheet, op_petition_single_pdf_bundle, op_schools, op_warrant_info_sheet, op_warrant, emergency_op, plenary_op, op_summons, cook_sheriff_info_sheet, efiling_exemption], filename="order_of_protection.pdf", title="All forms")
 
 ---
 attachment:
@@ -7479,3 +7502,70 @@ attachment:
   pdf template file: sheriff_cover_sheet.pdf
   fields:
     - "fake": ${ "" }
+
+---
+attachment:
+  variable name: op_warrant_info_sheet[i]
+  name: op_warrant_info_sheet
+  filename: warrant_info_sheet
+  skip undefined: True
+  editable: False
+  pdf template file: op_warrant_info_sheet.pdf
+  fields:
+    - "county": ${ trial_court.address.county }
+    - "petitioner": ${ users[0].name.full(middle="full") }
+    - "obo_minor_cb": ${ True if protect_obo_minor else '' }
+    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "case_number__1": ${ case_number }
+    - "petitioner_notice_phone": ${ phone_number_formatted(users[0].phone_number) }
+    - "petitioner_notice_email": ${ users[0].email if users[0].email_notice else "" }
+    - "respondent_dob": |
+        % if knows_respondent_dob == 'exact' and other_parties[0].birthdate != "":
+        ${ other_parties[0].birthdate }
+        % elif knows_respondent_dob == 'some':
+        ${ other_parties[0].approx_age }
+        % else:
+        ${ "do not know" }
+        % endif
+    - "respondent_gender": ${ respondent_gender_other if other_parties[0].gender == 'other' else other_parties[0].gender }
+    - "respondent_race": ${ respondent_race_other if other_parties[0].race == 'other' else other_parties[0].race }
+    - "respondent_height": |
+        % if other_parties[0].height_feet > 1:
+        ${ str(other_parties[0].height_feet) + "\'" }
+        % if other_parties[0].height_inches > 0:
+        ${ str(other_parties[0].height_inches) + "\""}
+        % endif
+        % else:
+        ${""}
+        % endif
+    - "respondent_weight": ${ str(other_parties[0].weight) + " lbs." if other_parties[0].weight > 0 else '' }
+    - "respondent_hair": ${ other_parties[0].hair if other_parties[0].hair != "" else '' }
+    - "respondent_eyes": ${ other_parties[0].eyes if other_parties[0].eyes != "" else '' }
+    - "respondent_tattoos": ${ other_parties[0].tattoos if other_parties[0].tattoos != "" else '' }
+    - "respondent_warrant_help": ${}
+    - "warrant_location_1": ${ warrant_location_list[0].on_one_line(bare=True) + ", " + warrant_location_list[0].description }
+    - "warrant_location_1_days_times": ${ warrant_location_list[0].days_times }
+    - "warrant_location_1_others_yes": ${ warrant_location_list[0].others_present  }
+    - "warrant_location_1_others_no": ${ not warrant_location_list[0].others_present  }
+    - "warrant_location_1_others_info": ${ warrant_location_list[0].others_present_details if warrant_location_list[0].others_present else '' }
+    - "warrant_location_2": ${ warrant_location_list[1].on_one_line(bare=True) + ", " + warrant_location_list[1].description if warrant_location_list.number() > 1 else "" }
+    - "warrant_location_2_days_times": ${ warrant_location_list[1].days_times if warrant_location_list.number() > 1 else "" }
+    - "warrant_location_2_others_yes": ${ warrant_location_list[1].others_present if warrant_location_list.number() > 1 else "" }
+    - "warrant_location_2_others_no": ${ not warrant_location_list[1].others_present if warrant_location_list.number() > 1 else "" }
+    - "warrant_location_2_others_info": ${ warrant_location_list[1].others_present_details if warrant_location_list.number() > 1 and warrant_location_list[1].others_present else '' }
+
+---
+attachment:
+  variable name: op_warrant[i]
+  name: op_warrant
+  filename: search_warrant
+  skip undefined: True
+  editable: False
+  pdf template file: op_warrant.pdf
+  fields:
+    - "county": ${ trial_court.address.county }
+    - "petitioner": ${ users[0].name.full(middle="full") }
+    - "obo_minor_cb": ${ True if protect_obo_minor else '' }
+    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "case_number__1": ${ case_number }
+            
