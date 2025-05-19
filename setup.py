@@ -44,7 +44,7 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.OrderOfProtection',
-      version='1.0.47',
+      version='1.0.48',
       description=('A docassemble extension.'),
       long_description='# docassemble.OrderOfProtection\r\n\r\nA docassemble extension.\r\n\r\n## Author\r\n\r\nMatt Newsted, mnewsted@illinoislegalaid.org\r\n\r\n',
       long_description_content_type='text/markdown',
