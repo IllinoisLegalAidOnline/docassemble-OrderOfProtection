@@ -551,20 +551,22 @@ review:
       % else:
       Another person
       % endif
+    show if: current_possession_of_children == False
   - Edit: return_children_to
     button: |
       **Other person children should be returned to:**
       ${ return_children_other_person.name.full(middle="full") }
-    show if: return_children_to == "other"
+    show if: current_possession_of_children == False and return_children_to == "other"
   - Edit: knows_return_children_details
     button: |
       **Do you know where you want ${other_parties[0].name.full(middle="full")} to return the children?**
       ${ word(yesno(knows_return_children_details)) }
+    show if: current_possession_of_children == False and return_children_to != "court"
   - Edit: return_children_location.address
     button: |
       **Where should ${other_parties[0].name.full(middle="full")} return the children to?**
       ${ return_children_location.on_one_line(bare=True) }
-    show if: knows_return_children_details == True
+    show if: current_possession_of_children == False and return_children_to != "court" and knows_return_children_details == True
   - Edit: appear_with_children_prevent
     button: |
       **${other_parties[0].name.full(middle="full")} should be ordered to bring the children to court:**
@@ -578,12 +580,12 @@ review:
       % if appear_with_children_exam:
       * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}
       % endif
-    show if: return_children_to == "court"
+    show if: current_possession_of_children == False and return_children_to == "court"
   - Edit: res_appear_alone
     button: |
       **Should ${other_parties[0].name.full(middle="full")} be ordered to come to court alone?**
       ${ word(yesno(res_appear_alone))}
-    show if: return_children_to != "court"
+    show if: showifdef('return_children_to') != "court"
   - Edit: res_appear_alone
     button: |
       **Why should ${other_parties[0].name.full(middle="full")} be ordered to come to court alone?**
@@ -597,7 +599,8 @@ review:
       % if appear_alone_exam:
       * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}
       % endif
-    show if: return_children_to != "court" and res_appear_alone
+    show if: showifdef('return_children_to') != "court" and res_appear_alone      
+
   - Edit: no_records_no_contact
     button: |
       **${other_parties[0].name.full(middle="full")} should not have access to the children's records for the following reasons:**
@@ -738,7 +741,7 @@ review:
       **Do you know where you want ${other_parties[0].name.full(middle="full")}'s parenting time to happen?**
       ${ word(yesno(pt_location_identified)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and ((pt_supervised and pt_supervisor_type == "person") or not pt_supervised)
-  - Edit: pt_location.address
+  - Edit: pt_location_identified
     button: |
       **Parenting time location:**
       ${ pt_location.on_one_line(bare=True) }
@@ -766,7 +769,7 @@ review:
       **Is there a pickup location for parenting time?**
       ${ word(yesno(pt_separate_pickup_location)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant")
-  - Edit: pt_pickup_location.address
+  - Edit: pt_separate_pickup_location
     button: |
       **Parenting time pickup location:**
       % if pt_pickup_location.name == "":
@@ -780,7 +783,7 @@ review:
       **Is there a return location after parenting time?**
       ${ word(yesno(pt_separate_return_location)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant")
-  - Edit: pt_return_location.address
+  - Edit: pt_separate_return_location
     button: |
       **Parenting time return location:**
       % if pt_return_location.name == "":
@@ -1111,6 +1114,7 @@ review:
       % if firearms_relief['warrant']:
       * I want a **search warrant** to be issued so law enforcement can search ${other_parties[0].name.full(middle="full")}'s property and seize fierarms.
       % endif
+    show if: firearms_threat
   - Edit: intimate_partner
     button: |
       **Is ${other_parties[0].name.full(middle="full")} a current or former intimate partner?**
@@ -1121,7 +1125,7 @@ review:
       % else:
       Does not apply
       % endif
-    show if: firearms_relief['surrender']
+    show if: firearms_threat and firearms_relief['surrender']
   - Edit: warrant_reasons
     button: |
       **Why do you want the court to order a search warrant?**
@@ -1138,7 +1142,7 @@ review:
       % if warrant_reasons['report']:
       * I made a report of domestic violence to law enforcement within the last 90 days.
       % endif
-    show if: firearms_relief['warrant']
+    show if: firearms_threat and firearms_relief['warrant']
   - Edit: warrant_location_list.revisit
     button: |
       **Locations you want to include in a search warrant:**
@@ -1146,7 +1150,7 @@ review:
       % for my_var in warrant_location_list:
         * ${ my_var.on_one_line(bare=True) }
       % endfor
-    show if: firearms_relief['warrant']
+    show if: firearms_threat and firearms_relief['warrant']
   - Edit: has_helpful_warrant_info
     button: |
       **Do you have other information about ${other_parties[0].name.full(middle="full")} that could help law enforcement with the warrant?**
@@ -1156,13 +1160,17 @@ review:
     button: |
       **Other information that could help law enforcement with the warrant:**
       ${ respondent_warrant_help }      
-    show if: firearms_relief['warrant'] and has_helpful_warrant_info
-    
+    show if: firearms_threat and firearms_relief['warrant'] and has_helpful_warrant_info
+  - Edit: made_dv_report
+    button: |
+      **Have you made a report of domestic violence to law enforcement within the last 90 days?**
+      ${ word(yesno(made_dv_report))}
+    show if: firearms_threat
   - Edit: firearms_eop_notice
     button: |
       **Are you worried that ${other_parties[0].name.full(middle="full")} might hurt you or the people you want to protect when they learn about the Order of Protection?**
       ${ word(yesno(firearms_eop_notice))}
-    show if: firearms_relief['surrender'] or firearms_relief['warrant']
+    show if: firearms_threat and (firearms_relief['surrender'] or firearms_relief['warrant'])
     
   - Edit: misc_remedies_text
     button: |
@@ -2618,20 +2626,22 @@ review:
       % else:
       Another person
       % endif
+    show if: current_possession_of_children == False
   - Edit: return_children_to
     button: |
       **Other person children should be returned to:**
       ${ return_children_other_person.name.full(middle="full") }
-    show if: return_children_to == "other"
+    show if: current_possession_of_children == False and return_children_to == "other"
   - Edit: knows_return_children_details
     button: |
       **Do you know where you want ${other_parties[0].name.full(middle="full")} to return the children?**
       ${ word(yesno(knows_return_children_details)) }
+    show if: current_possession_of_children == False and return_children_to != "court"
   - Edit: return_children_location.address
     button: |
       **Where should ${other_parties[0].name.full(middle="full")} return the children to?**
       ${ return_children_location.on_one_line(bare=True) }
-    show if: knows_return_children_details == True
+    show if: current_possession_of_children == False and return_children_to != "court" and knows_return_children_details == True
   - Edit: appear_with_children_prevent
     button: |
       **${other_parties[0].name.full(middle="full")} should be ordered to bring the children to court:**
@@ -2645,12 +2655,12 @@ review:
       % if appear_with_children_exam:
       * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}
       % endif
-    show if: return_children_to == "court"
+    show if: current_possession_of_children == False and return_children_to == "court"
   - Edit: res_appear_alone
     button: |
       **Should ${other_parties[0].name.full(middle="full")} be ordered to come to court alone?**
       ${ word(yesno(res_appear_alone))}
-    show if: return_children_to != "court"
+    show if: showifdef('return_children_to') != "court"
   - Edit: res_appear_alone
     button: |
       **Why should ${other_parties[0].name.full(middle="full")} be ordered to come to court alone?**
@@ -2664,7 +2674,8 @@ review:
       % if appear_alone_exam:
       * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}
       % endif
-    show if: return_children_to != "court" and res_appear_alone
+    show if: showifdef('return_children_to') != "court" and res_appear_alone      
+
   - Edit: no_records_no_contact
     button: |
       **${other_parties[0].name.full(middle="full")} should not have access to the children's records for the following reasons:**
@@ -2805,7 +2816,7 @@ review:
       **Do you know where you want ${other_parties[0].name.full(middle="full")}'s parenting time to happen?**
       ${ word(yesno(pt_location_identified)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and ((pt_supervised and pt_supervisor_type == "person") or not pt_supervised)
-  - Edit: pt_location.address
+  - Edit: pt_location_identified
     button: |
       **Parenting time location:**
       ${ pt_location.on_one_line(bare=True) }
@@ -2833,7 +2844,7 @@ review:
       **Is there a pickup location for parenting time?**
       ${ word(yesno(pt_separate_pickup_location)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant")
-  - Edit: pt_pickup_location.address
+  - Edit: pt_separate_pickup_location
     button: |
       **Parenting time pickup location:**
       % if pt_pickup_location.name == "":
@@ -2847,7 +2858,7 @@ review:
       **Is there a return location after parenting time?**
       ${ word(yesno(pt_separate_return_location)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant")
-  - Edit: pt_return_location.address
+  - Edit: pt_separate_return_location
     button: |
       **Parenting time return location:**
       % if pt_return_location.name == "":
@@ -3190,6 +3201,7 @@ review:
       % if firearms_relief['warrant']:
       * I want a **search warrant** to be issued so law enforcement can search ${other_parties[0].name.full(middle="full")}'s property and seize fierarms.
       % endif
+    show if: firearms_threat
   - Edit: intimate_partner
     button: |
       **Is ${other_parties[0].name.full(middle="full")} a current or former intimate partner?**
@@ -3200,7 +3212,7 @@ review:
       % else:
       Does not apply
       % endif
-    show if: firearms_relief['surrender']
+    show if: firearms_threat and firearms_relief['surrender']
   - Edit: warrant_reasons
     button: |
       **Why do you want the court to order a search warrant?**
@@ -3217,7 +3229,7 @@ review:
       % if warrant_reasons['report']:
       * I made a report of domestic violence to law enforcement within the last 90 days.
       % endif
-    show if: firearms_relief['warrant']
+    show if: firearms_threat and firearms_relief['warrant']
   - Edit: warrant_location_list.revisit
     button: |
       **Locations you want to include in a search warrant:**
@@ -3225,7 +3237,7 @@ review:
       % for my_var in warrant_location_list:
         * ${ my_var.on_one_line(bare=True) }
       % endfor
-    show if: firearms_relief['warrant']
+    show if: firearms_threat and firearms_relief['warrant']
   - Edit: has_helpful_warrant_info
     button: |
       **Do you have other information about ${other_parties[0].name.full(middle="full")} that could help law enforcement with the warrant?**
@@ -3235,13 +3247,18 @@ review:
     button: |
       **Other information that could help law enforcement with the warrant:**
       ${ respondent_warrant_help }      
-    show if: firearms_relief['warrant'] and has_helpful_warrant_info
+    show if: firearms_threat and firearms_relief['warrant'] and has_helpful_warrant_info
+  - Edit: made_dv_report
+    button: |
+      **Have you made a report of domestic violence to law enforcement within the last 90 days?**
+      ${ word(yesno(made_dv_report))}
+    show if: firearms_threat
   - Edit: firearms_eop_notice
     button: |
       **Are you worried that ${other_parties[0].name.full(middle="full")} might hurt you or the people you want to protect when they learn about the Order of Protection?**
       ${ word(yesno(firearms_eop_notice))}
-    show if: firearms_relief['surrender'] or firearms_relief['warrant']
-  
+    show if: firearms_threat and (firearms_relief['surrender'] or firearms_relief['warrant'])
+    
   - Edit: misc_remedies_text
     button: |
       **What else do you want the court to order ${other_parties[0].name.full(middle="full")} to do or to stop doing?**
