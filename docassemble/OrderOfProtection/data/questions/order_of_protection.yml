@@ -2337,7 +2337,7 @@ fields:
   - ZIP code: return_children_location.zip
     required: False
 ---
-id: reason respondent should bring childrent to court
+id: reason respondent should bring children to court
 question: |
   Why should ${other_parties[0].name.full(middle="full")} be ordered to bring the children to court?
 subquestion: |
@@ -5069,7 +5069,8 @@ attachment:
     - "pt_immediate_return_other": ${ True if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_immediate_return_other_name": ${ pt_return_person.name.full(middle="full") if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
 
-    - "order_to_appear_cb": ${ True if return_children_to == "court" or (return_children_to != "court" and res_appear_alone) and minor_kids_with_respondent else '' }
+    - "order_to_appear_cb": ${ True if minor_kids_with_respondent and (return_children_to == "court" or (current_possession_of_children == True and res_appear_alone) or ( current_possession_of_children == False and return_children_to != "court" and res_appear_alone ) ) else '' } 
+         
     - "appear_alone_cb": ${ True if return_children_to != "court" and res_appear_alone else '' }
     - "appear_with_children_cb": ${ True if return_children_to == "court" and minor_kids_with_respondent else '' }      
     - "appear_with_children_prevent": |
@@ -5102,6 +5103,8 @@ attachment:
         ${ True}
         % endif
         % endif
+
+        
     - "no_conceal_children_cb": ${ True if no_conceal_children and minor_kids_with_respondent else '' }
 
     - "return_property_cb": |
@@ -5277,7 +5280,7 @@ attachment:
     - "firearms_threat": ${ True if firearms_threat == True and warrant_reasons['threat'] == True else '' }
     - "firearms_has_guns": ${ True if firearms_threat == True and warrant_reasons['has_guns'] == True else '' }
     - "firearms_location": ${ True if firearms_threat == True and warrant_reasons['location'] == True else '' }
-    - "firearms_report": ${ True if firearms_threat == True and made_dv_report == True else '' }
+    - "firearms_report": ${ True if firearms_threat == True and firearms_relief['warrant'] == True and made_dv_report == True else '' }
     - "firearms_eop_notice": ${ True if firearms_threat == True and eop == True and firearms_eop_notice == True else '' }
       
       # page 13    
