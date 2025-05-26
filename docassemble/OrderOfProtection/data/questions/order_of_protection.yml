@@ -3576,13 +3576,20 @@ fields:
     default: IL      
   - ZIP code: warrant_location_list[i].zip
   - Description of location, including building type, fences, entrances, etc., if known: warrant_location_list[i].description
-    maxlength: 40
+    input type: area
+    rows: 2
+    maxlength: 75
+    required: False
   - Days and times ${other_parties[0].name.full(middle="full")} will likely be at this location: warrant_location_list[i].days_times
-    maxlength: 40
+    input type: area
+    rows: 2
+    maxlength: 60
   - Is anyone else likely to be at this location?: warrant_location_list[i].others_present
     datatype: yesnoradio
   - Information about other people or pets at this location: warrant_location_list[i].others_present_details
-    maxlength: 50
+    input type: area
+    rows: 2
+    maxlength: 75
     help: |
       Include the names and ages of people, and the days and times they are likely to be there.
     show if: warrant_location_list[i].others_present  
@@ -3627,7 +3634,7 @@ fields:
     datatype: yesnoradio
   - Other helpful information: respondent_warrant_help
     input type: area
-    rows: 4
+    rows: 3
     maxlength: 120
     show if: has_helpful_warrant_info
      
@@ -5069,38 +5076,55 @@ attachment:
     - "pt_immediate_return_other": ${ True if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_immediate_return_other_name": ${ pt_return_person.name.full(middle="full") if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
 
-    - "order_to_appear_cb": ${ True if minor_kids_with_respondent and (return_children_to == "court" or (current_possession_of_children == True and res_appear_alone) or ( current_possession_of_children == False and return_children_to != "court" and res_appear_alone ) ) else '' } 
-         
-    - "appear_alone_cb": ${ True if return_children_to != "court" and res_appear_alone else '' }
-    - "appear_with_children_cb": ${ True if return_children_to == "court" and minor_kids_with_respondent else '' }      
+    - "order_to_appear_cb": ${ True if minor_kids_with_respondent and ((current_possession_of_children == False and return_children_to == "court" ) or (current_possession_of_children == True and res_appear_alone) or ( current_possession_of_children == False and return_children_to != "court" and res_appear_alone ) ) else '' }         
+    - "appear_alone_cb": ${ True if minor_kids_with_respondent and (current_possession_of_children == True and res_appear_alone) or ( current_possession_of_children == False and return_children_to != "court" and res_appear_alone ) else '' }
+    - "appear_with_children_cb": ${ True if minor_kids_with_respondent and (current_possession_of_children == False and return_children_to == "court" ) else '' }      
     - "appear_with_children_prevent": |
         % if minor_kids_with_respondent:
-        % if return_children_to != "court":
+        % if current_possession_of_children == True:
         % if res_appear_alone and appear_alone_prevent:
         ${ True}
         % endif
-        % elif return_children_to == "court" and appear_with_children_prevent:
+        % elif return_children_to == "court":
+        % if appear_with_children_prevent:
         ${ True}
+        % endif
+        % elif res_appear_alone:
+        % if appear_alone_prevent:
+        ${ True }
+        % endif
         % endif
         % endif
     - "appear_with_children_return": |
         % if minor_kids_with_respondent:
-        % if return_children_to != "court":
+        % if current_possession_of_children == True:
         % if res_appear_alone and appear_alone_return:
         ${ True}
         % endif
-        % elif return_children_to == "court" and appear_with_children_return:
+        % elif return_children_to == "court":
+        % if appear_with_children_return:
         ${ True}
+        % endif
+        % elif res_appear_alone:
+        % if appear_alone_return:
+        ${ True }
+        % endif
         % endif
         % endif
     - "appear_with_children_exam": |
         % if minor_kids_with_respondent:
-        % if return_children_to != "court":
+        % if current_possession_of_children == True:
         % if res_appear_alone and appear_alone_exam:
         ${ True}
         % endif
-        % elif return_children_to == "court" and appear_with_children_exam:
+        % elif return_children_to == "court":
+        % if appear_with_children_exam:
         ${ True}
+        % endif
+        % elif res_appear_alone:
+        % if appear_alone_exam:
+        ${ True }
+        % endif
         % endif
         % endif
 
@@ -6382,39 +6406,58 @@ attachment:
 
     - "no_conceal_children_cb": ${ True if no_conceal_children and minor_kids_with_respondent else '' }
 
-    - "order_to_appear_cb": ${ True if return_children_to == "court" or (return_children_to != "court" and res_appear_alone) and minor_kids_with_respondent else '' }
-    - "appear_alone_cb": ${ True if return_children_to != "court" and res_appear_alone else '' }
-    - "appear_with_children_cb": ${ True if return_children_to == "court" and minor_kids_with_respondent else '' }      
+    - "order_to_appear_cb": ${ True if minor_kids_with_respondent and ((current_possession_of_children == False and return_children_to == "court" ) or (current_possession_of_children == True and res_appear_alone) or ( current_possession_of_children == False and return_children_to != "court" and res_appear_alone ) ) else '' }
+    - "appear_alone_cb": ${ True if minor_kids_with_respondent and (current_possession_of_children == True and res_appear_alone) or ( current_possession_of_children == False and return_children_to != "court" and res_appear_alone ) else '' }
+    - "appear_with_children_cb": ${ True if minor_kids_with_respondent and (current_possession_of_children == False and return_children_to == "court" ) else '' }      
     - "appear_with_children_prevent": |
         % if minor_kids_with_respondent:
-        % if return_children_to != "court":
+        % if current_possession_of_children == True:
         % if res_appear_alone and appear_alone_prevent:
         ${ True}
         % endif
-        % elif return_children_to == "court" and appear_with_children_prevent:
+        % elif return_children_to == "court":
+        % if appear_with_children_prevent:
         ${ True}
+        % endif
+        % elif res_appear_alone:
+        % if appear_alone_prevent:
+        ${ True }
+        % endif
         % endif
         % endif
     - "appear_with_children_return": |
         % if minor_kids_with_respondent:
-        % if return_children_to != "court":
+        % if current_possession_of_children == True:
         % if res_appear_alone and appear_alone_return:
         ${ True}
         % endif
-        % elif return_children_to == "court" and appear_with_children_return:
+        % elif return_children_to == "court":
+        % if appear_with_children_return:
         ${ True}
+        % endif
+        % elif res_appear_alone:
+        % if appear_alone_return:
+        ${ True }
+        % endif
         % endif
         % endif
     - "appear_with_children_exam": |
         % if minor_kids_with_respondent:
-        % if return_children_to != "court":
+        % if current_possession_of_children == True:
         % if res_appear_alone and appear_alone_exam:
         ${ True}
         % endif
-        % elif return_children_to == "court" and appear_with_children_exam:
+        % elif return_children_to == "court":
+        % if appear_with_children_exam:
         ${ True}
         % endif
+        % elif res_appear_alone:
+        % if appear_alone_exam:
+        ${ True }
         % endif
+        % endif
+        % endif
+
     - "return_property_cb": |
         % if award_personal_property:
         True
@@ -7250,37 +7293,55 @@ attachment:
 
     - "no_conceal_children_cb": ${ True if no_conceal_children and minor_kids_with_respondent else '' }
 
-    - "order_to_appear_cb": ${ True if return_children_to == "court" or (return_children_to != "court" and res_appear_alone) and minor_kids_with_respondent else '' }
-    - "appear_alone_cb": ${ True if return_children_to != "court" and res_appear_alone else '' }
-    - "appear_with_children_cb": ${ True if return_children_to == "court" and minor_kids_with_respondent else '' }      
+    - "order_to_appear_cb": ${ True if minor_kids_with_respondent and ((current_possession_of_children == False and return_children_to == "court" ) or (current_possession_of_children == True and res_appear_alone) or ( current_possession_of_children == False and return_children_to != "court" and res_appear_alone ) ) else '' }
+    - "appear_alone_cb": ${ True if minor_kids_with_respondent and (current_possession_of_children == True and res_appear_alone) or ( current_possession_of_children == False and return_children_to != "court" and res_appear_alone ) else '' }
+    - "appear_with_children_cb": ${ True if minor_kids_with_respondent and (current_possession_of_children == False and return_children_to == "court" ) else '' }      
     - "appear_with_children_prevent": |
         % if minor_kids_with_respondent:
-        % if return_children_to != "court":
+        % if current_possession_of_children == True:
         % if res_appear_alone and appear_alone_prevent:
         ${ True}
         % endif
-        % elif return_children_to == "court" and appear_with_children_prevent:
+        % elif return_children_to == "court":
+        % if appear_with_children_prevent:
         ${ True}
+        % endif
+        % elif res_appear_alone:
+        % if appear_alone_prevent:
+        ${ True }
+        % endif
         % endif
         % endif
     - "appear_with_children_return": |
         % if minor_kids_with_respondent:
-        % if return_children_to != "court":
+        % if current_possession_of_children == True:
         % if res_appear_alone and appear_alone_return:
         ${ True}
         % endif
-        % elif return_children_to == "court" and appear_with_children_return:
+        % elif return_children_to == "court":
+        % if appear_with_children_return:
         ${ True}
+        % endif
+        % elif res_appear_alone:
+        % if appear_alone_return:
+        ${ True }
+        % endif
         % endif
         % endif
     - "appear_with_children_exam": |
         % if minor_kids_with_respondent:
-        % if return_children_to != "court":
+        % if current_possession_of_children == True:
         % if res_appear_alone and appear_alone_exam:
         ${ True}
         % endif
-        % elif return_children_to == "court" and appear_with_children_exam:
+        % elif return_children_to == "court":
+        % if appear_with_children_exam:
         ${ True}
+        % endif
+        % elif res_appear_alone:
+        % if appear_alone_exam:
+        ${ True }
+        % endif
         % endif
         % endif
         
