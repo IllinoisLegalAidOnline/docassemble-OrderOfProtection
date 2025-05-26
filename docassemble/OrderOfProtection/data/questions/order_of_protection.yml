@@ -103,7 +103,6 @@ mandatory: True
 code: |
   nav.set_section('section_intro')
   sees_nav_bar
-  forms_update
   snapshot_start  
   instructions
   whats_next
@@ -441,15 +440,6 @@ subquestion: |
   * If you need to exit this program, click the red **Escape** button at the top of the screen.
   * Learn about [**safety while using the Internet**](https://www.thehotline.org/help/tech-social-media-safety/).
 field: sees_nav_bar
----
-id: may 2025 forms update
-continue button field: forms_update
-question: |
-  Important May 11, 2025 forms update
-subquestion: |
-  **New statewide Order of Protection forms are now available.**
-    
-  ILAO is working hard to update our Order of Protection Easy Forms. If you prefer to use the latest forms, you can download them from the [**Illinois Courts website**](https://www.illinoiscourts.gov/forms/approved-forms/forms-approved-forms-circuit-court/order-of-protection/).
 ---
 id: instructions
 continue button field: instructions
