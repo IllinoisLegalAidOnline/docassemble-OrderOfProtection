@@ -4091,6 +4091,7 @@ fields:
       Try to be descritive. Examples: tattoos on hands, facial scars, birthmarks, mustache, beard
   - Does ${other_parties[0].name.full(middle="full")} wear glasses?: other_parties[0].glasses
     datatype: radio
+    required: False
     choices: 
       - Yes: Yes
       - Sometimes: Sometimes

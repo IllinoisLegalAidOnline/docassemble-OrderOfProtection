@@ -146,7 +146,6 @@ review:
       **Do you have minor children with ${other_parties[0].name.full(middle="full")}?**
       ${ word(yesno(minor_kids_with_respondent)) }
 
-
   # section: People you want to protect
   - note: |
       <h4>People you want to protect</h4>
@@ -1349,15 +1348,23 @@ review:
       **What is ${other_parties[0].name.full(middle="full")}'s eye color?**
       ${ other_parties[0].eyes }
     show if: trial_court_index == -1 and other_parties[0].eyes != ""
-  - Edit: other_parties[0].glasses
-    button: |
-      **Does ${other_parties[0].name.full(middle="full")} wear glasses?**
-      ${ other_parties[0].glasses }
-    show if: trial_court_index == -1
   - Edit: other_parties[0].tattoos
     button: |
       **Other things about ${other_parties[0].name.full(middle="full")}'s appearance:**
+      % if other_parties[0].tattoos != "":
       ${ other_parties[0].tattoos }
+      % else:
+      Not entered
+      % endif
+  - Edit: other_parties[0].glasses
+    button: |
+      **Does ${other_parties[0].name.full(middle="full")} wear glasses?**
+      % if other_parties[0].glasses is not None:
+      ${ other_parties[0].glasses }
+      % else:
+      Not entered
+      % endif
+    show if: trial_court_index == -1
       
   - Edit: other_parties[0].alias_names
     button: |
@@ -2563,6 +2570,10 @@ question: |
 subquestion: |
   Edit your answers below.
 review: 
+  - Edit: minor_kids_with_respondent
+    button: |
+      **Do you have minor children with ${other_parties[0].name.full(middle="full")}?**
+      ${ word(yesno(minor_kids_with_respondent)) }
   - Edit: primary_caretaker
     button: |
       **Primary caretaker of the children with ${ other_parties[0].name.full(middle="full") }:**
@@ -3448,15 +3459,23 @@ review:
       **What is ${other_parties[0].name.full(middle="full")}'s eye color?**
       ${ other_parties[0].eyes }
     show if: trial_court_index == -1 and other_parties[0].eyes != ""
-  - Edit: other_parties[0].glasses
-    button: |
-      **Does ${other_parties[0].name.full(middle="full")} wear glasses?**
-      ${ other_parties[0].glasses }
-    show if: trial_court_index == -1
   - Edit: other_parties[0].tattoos
     button: |
       **Other things about ${other_parties[0].name.full(middle="full")}'s appearance:**
+      % if other_parties[0].tattoos != "":
       ${ other_parties[0].tattoos }
+      % else:
+      Not entered
+      % endif
+  - Edit: other_parties[0].glasses
+    button: |
+      **Does ${other_parties[0].name.full(middle="full")} wear glasses?**
+      % if other_parties[0].glasses is not None:
+      ${ other_parties[0].glasses }
+      % else:
+      Not entered
+      % endif
+    show if: trial_court_index == -1
       
   - Edit: other_parties[0].alias_names
     button: |
