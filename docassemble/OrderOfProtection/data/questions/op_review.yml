@@ -14,7 +14,7 @@ review:
   - Edit: users[0].name.first
     button: |
       **Your name:**
-      ${users[0].name.full(middle="full")}
+      ${users[0].name_full()}
   - Edit: users[0].birthdate
     button: |
       **Your birthdate:**
@@ -140,10 +140,10 @@ review:
   - Edit: other_parties[0].name.first
     button: |
       **Person you want an Order of Protection against:**
-      ${other_parties[0].name.full(middle="full")}
+      ${other_parties[0].name_full()}
   - Edit: minor_kids_with_respondent
     button: |
-      **Do you have minor children with ${other_parties[0].name.full(middle="full")}?**
+      **Do you have minor children with ${other_parties[0].name_full()}?**
       ${ word(yesno(minor_kids_with_respondent)) }
 
   # section: People you want to protect
@@ -157,10 +157,10 @@ review:
       * Me
       % endif
       % if protect_shared_kids:
-      * Minor children you have with ${other_parties[0].name.full(middle="full")}
+      * Minor children you have with ${other_parties[0].name_full()}
       % endif
       % if protect_petitioner_kids:
-      * Minor children you **did not** have with ${other_parties[0].name.full(middle="full")}
+      * Minor children you **did not** have with ${other_parties[0].name_full()}
       % endif
       % if protect_dependent_adult:
       * A dependent adult
@@ -177,19 +177,19 @@ review:
     
   - Edit: shared_kids.revisit
     button: |
-      **Your minor children with ${other_parties[0].name.full(middle="full")}: (Edit to change names and details)**
+      **Your minor children with ${other_parties[0].name_full()}: (Edit to change names and details)**
 
       % for my_var in shared_kids:
-        * ${ my_var.name.full(middle="full") }
+        * ${ my_var.name_full() }
       % endfor
     show if: minor_kids_with_respondent
 
   - Edit: petitioner_kids.revisit
     button: |
-      **Your minor children **not with** ${other_parties[0].name.full(middle="full")}:**
+      **Your minor children **not with** ${other_parties[0].name_full()}:**
 
       % for my_var in petitioner_kids:
-        * ${ my_var.name.full(middle="full") }
+        * ${ my_var.name_full() }
       % endfor
     show if: protect_petitioner_kids
 
@@ -198,26 +198,26 @@ review:
       **Other household members:**
 
       % for my_var in other_hh_members:
-        * ${ my_var.name.full(middle="full") }
+        * ${ my_var.name_full() }
       % endfor
     show if: protect_other_hh_members
 
   - Edit: dependent_adult.name.first
     button: |
       **Dependent adult you want to protect:**
-      ${dependent_adult.name.full(middle="full")}
+      ${dependent_adult.name_full()}
     show if: protect_dependent_adult
 
   - Edit: high_risk_adult.name.first
     button: |
       **High risk adult you want to protect:**
-      ${high_risk_adult.name.full(middle="full")}
+      ${high_risk_adult.name_full()}
     show if: protect_high_risk_adult
 
   - Edit: obo_minor.name.first
     button: |
       **Minor child you want to protect:**
-      ${obo_minor.name.full(middle="full")}
+      ${obo_minor.name_full()}
     show if: protect_obo_minor
 
   
@@ -237,7 +237,7 @@ review:
       <h4>Protections</h4>
   - Edit: no_harassment
     button: |
-      **What you want the court to order ${other_parties[0].name.full(middle="full")} to not do:**
+      **What you want the court to order ${other_parties[0].name_full()} to not do:**
       
       % if no_harassment:
       * Harassment
@@ -266,7 +266,7 @@ review:
 
   - Edit: stay_away
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stay away and have no contact at all times?**
+      **Do you want ${other_parties[0].name_full()} to stay away and have no contact at all times?**
       ${ word(yesno(stay_away)) }
 
   - Edit: hide_address
@@ -287,22 +287,22 @@ review:
       % if residence_remedies == 'exclusive possession':
       I want **exclusive possession** of my residence.
       % elif residence_remedies == 'provide alternate housing':
-      I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live.
+      I want ${other_parties[0].name_full()} to **provide a different place** for me and the protected people to live.
       % else:
-      Nothing. I don't want the court to give me exclusive possession or to order ${other_parties[0].name.full(middle="full")} to provide a different place for me and the protected people to live.
+      Nothing. I don't want the court to give me exclusive possession or to order ${other_parties[0].name_full()} to provide a different place for me and the protected people to live.
       % endif    
   - Edit: exclusive_possession_reason
     button: |
       **Why should the court give you exclusive possession of the residence?**
       % if exclusive_possession_reason == 'respondent_no_right_to_stay':
-      I have a right to occupy the residence and ${other_parties[0].name.full(middle="full")} has no right.
+      I have a right to occupy the residence and ${other_parties[0].name_full()} has no right.
       % else:
       Both of us have a right to occupy the residence, but it would be harder on me to leave.
       % endif
     show if: residence_remedies == 'exclusive possession'
   - Edit: no_stay_under_influence
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stay away from and not be at your residence while under the influence?**
+      **Do you want ${other_parties[0].name_full()} to stay away from and not be at your residence while under the influence?**
       ${ word(yesno(no_stay_under_influence)) }
       % if no_stay_under_influence:
       [NEWLINE][NEWLINE]
@@ -311,7 +311,7 @@ review:
     show if: not (stay_away or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing'))
   - Edit: stay_away_jobs
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stay away from where you work?**
+      **Do you want ${other_parties[0].name_full()} to stay away from where you work?**
       ${ word(yesno(stay_away_jobs)) }
   - Edit: hide_work_address
     button: |
@@ -324,7 +324,7 @@ review:
     show if: stay_away_jobs and hide_work_address == False
   - Edit: stay_away_jobs_2
     button: |
-      **Do you have another job you want ${other_parties[0].name.full(middle="full")} to stay away from?**
+      **Do you have another job you want ${other_parties[0].name_full()} to stay away from?**
       ${ word(yesno(stay_away_jobs_2)) }
     show if: stay_away_jobs
   - Edit: hide_work_address_2
@@ -339,7 +339,7 @@ review:
 
   - Edit: stay_away_schools
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stay away from schools or daycares?**
+      **Do you want ${other_parties[0].name_full()} to stay away from schools or daycares?**
       ${ word(yesno(stay_away_schools)) }
   - Edit: schools[0].address
     button: |
@@ -348,7 +348,7 @@ review:
     show if: stay_away_schools
   - Edit: schools[0].hide
     button: |
-      **Do you want to hide information about ${ schools[0].name } from  ${other_parties[0].name.full(middle="full")}?**
+      **Do you want to hide information about ${ schools[0].name } from  ${other_parties[0].name_full()}?**
       ${ word(yesno(schools[0].hide)) }
     show if: stay_away_schools and (minor_kids_with_respondent or protect_petitioner_kids)
   - Edit: schools[0].type
@@ -359,7 +359,7 @@ review:
 
   - Edit: stay_away_schools_2
     button: |
-      **Do you have another school you want ${other_parties[0].name.full(middle="full")} to stay away from?**
+      **Do you have another school you want ${other_parties[0].name_full()} to stay away from?**
       ${ word(yesno(stay_away_schools_2)) }
     show if: stay_away_schools
   - Edit: schools[1].address
@@ -369,7 +369,7 @@ review:
     show if: stay_away_schools and stay_away_schools_2
   - Edit: schools[1].hide
     button: |
-      **Do you want to hide information about ${ schools[1].name } from  ${other_parties[0].name.full(middle="full")}?**
+      **Do you want to hide information about ${ schools[1].name } from  ${other_parties[0].name_full()}?**
       ${ word(yesno(schools[1].hide)) }
     show if: stay_away_schools and stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
   - Edit: schools[1].type
@@ -380,14 +380,14 @@ review:
   
   - Edit: stay_away_other
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places?**
+      **Do you want ${other_parties[0].name_full()} to stay away from other places?**
       ${ word(yesno(stay_away_other)) }
 
       **Is this place a school?**
       ${ word(yesno(other_location_1_is_school)) }
   - Edit: hide_other_address_1
     button: |
-      **Do you want to hide the details of the place you want ${other_parties[0].name.full(middle="full") } to stay away from?**
+      **Do you want to hide the details of the place you want ${other_parties[0].name_full() } to stay away from?**
       ${ word(yesno(hide_other_address_1)) }
     show if: stay_away_other and not other_location_1_is_school
   - Edit: other_locations_hidden_description_1
@@ -408,7 +408,7 @@ review:
     show if: stay_away_other and other_location_1_is_school
   - Edit: schools[2].hide
     button: |
-      **Do you want to hide information about ${ schools[2].name } from  ${other_parties[0].name.full(middle="full")}?**
+      **Do you want to hide information about ${ schools[2].name } from  ${other_parties[0].name_full()}?**
       ${ word(yesno(schools[2].hide)) }
     show if: stay_away_other and other_location_1_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
   - Edit: schools[2].type
@@ -419,14 +419,14 @@ review:
   
   - Edit: stay_away_other_2
     button: |
-      **Do you have another place you want ${other_parties[0].name.full(middle="full")} to stay away from?**
+      **Do you have another place you want ${other_parties[0].name_full()} to stay away from?**
       ${ word(yesno(stay_away_other_2)) }
 
       **Is this place a school?**
       ${ word(yesno(other_location_2_is_school)) }
   - Edit: hide_other_address_2
     button: |
-      **Do you want to hide the details of the second place you want ${other_parties[0].name.full(middle="full") } to stay away from?**
+      **Do you want to hide the details of the second place you want ${other_parties[0].name_full() } to stay away from?**
       ${ word(yesno(hide_other_address_2)) }
     show if: stay_away_other_2 and not other_location_2_is_school
   - Edit: other_locations_hidden_description_2
@@ -447,7 +447,7 @@ review:
     show if: stay_away_other_2 and other_location_2_is_school
   - Edit: schools[3].hide
     button: |
-      **Do you want to hide information about ${ schools[3].name } from  ${other_parties[0].name.full(middle="full")}?**
+      **Do you want to hide information about ${ schools[3].name } from  ${other_parties[0].name_full()}?**
       ${ word(yesno(schools[3].hide)) }
     show if: stay_away_other_2 and other_location_2_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
   - Edit: schools[3].type
@@ -458,7 +458,7 @@ review:
   
   - Edit: same_school
     button: |
-      **Does ${other_parties[0].name.full(middle="full")} attend the same school as you or other protected people?**
+      **Does ${other_parties[0].name_full()} attend the same school as you or other protected people?**
       ${ word(yesno(same_school)) }
   - Edit: same_school_name
     button: |
@@ -472,7 +472,7 @@ review:
     show if: same_school
   - Edit: parts_of_school
     button: |
-      **Parts of school where ${other_parties[0].name.full(middle="full")} should not go:**
+      **Parts of school where ${other_parties[0].name_full()} should not go:**
       ${ parts_of_school }
     show if: same_school_restrictions
 
@@ -482,17 +482,17 @@ review:
     show if: minor_kids_with_respondent
   - Edit: primary_caretaker
     button: |
-      **Primary caretaker of the children with ${ other_parties[0].name.full(middle="full") }:**
+      **Primary caretaker of the children with ${ other_parties[0].name_full() }:**
       % if primary_caretaker == "petitioner":
       Me
       % elif primary_caretaker == "respondent":
-      ${ other_parties[0].name.full(middle="full") }
+      ${ other_parties[0].name_full() }
       % else:
-      ${ other_caretaker.name.full(middle="full") }
+      ${ other_caretaker.name_full() }
       % endif
   - Edit: other_caretaker.address.address
     button: |
-      **${other_caretaker.name.full(middle="full")}'s address:**
+      **${other_caretaker.name_full()}'s address:**
       ${ other_caretaker.address.on_one_line(bare=True) }
     show if: primary_caretaker == "other"
   - Edit: court_make_children_decisions
@@ -516,21 +516,21 @@ review:
 
   - Edit: temp_custody_of_children
     button: |
-      **Do you want the court to grant you temporary decisionmaking responsibility (custody) of the children you have with ${other_parties[0].name.full(middle="full")}?**
+      **Do you want the court to grant you temporary decisionmaking responsibility (custody) of the children you have with ${other_parties[0].name_full()}?**
       ${ word(yesno(temp_custody_of_children)) }
 
 
   - Edit: physical_care_of_children
     button: |
-      **Do you want the court to give you possession of the children you have with ${ other_parties[0].name.full(middle="full") }?**
+      **Do you want the court to give you possession of the children you have with ${ other_parties[0].name_full() }?**
       ${ word(yesno(physical_care_of_children)) }
   - Edit: no_conceal_children
     button: |
-      **Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot hide or remove the children from Illinois?**
+      **Do you want the court to order that ${other_parties[0].name_full()} cannot hide or remove the children from Illinois?**
       ${ word(yesno(no_conceal_children)) }
   - Edit: no_removal_school
     button: |
-      **Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot remove the children from your care or from a school or daycare?**
+      **Do you want the court to order that ${other_parties[0].name_full()} cannot remove the children from your care or from a school or daycare?**
       ${ word(yesno(no_removal_school)) }
 #- Edit: keep_schools_confidential
 #  button: |
@@ -538,15 +538,15 @@ review:
 #    ${ word(yesno(keep_schools_confidential)) }
   - Edit: current_possession_of_children
     button: |
-      **Do you currently have physical care and possession of your children with  ${other_parties[0].name.full(middle="full")}?**
+      **Do you currently have physical care and possession of your children with  ${other_parties[0].name_full()}?**
       ${ word(yesno(current_possession_of_children)) }
   - Edit: return_children_to
     button: |
-      **Who should ${other_parties[0].name.full(middle="full")} return the children to?**
+      **Who should ${other_parties[0].name_full()} return the children to?**
       % if return_children_to == "petitioner":
       Me
       % elif return_children_to == "court":
-      ${other_parties[0].name.full(middle="full")} should bring them to court.
+      ${other_parties[0].name_full()} should bring them to court.
       % else:
       Another person
       % endif
@@ -554,21 +554,21 @@ review:
   - Edit: return_children_to
     button: |
       **Other person children should be returned to:**
-      ${ return_children_other_person.name.full(middle="full") }
+      ${ return_children_other_person.name_full() }
     show if: minor_kids_with_respondent and current_possession_of_children == False and return_children_to == "other"
   - Edit: knows_return_children_details
     button: |
-      **Do you know where you want ${other_parties[0].name.full(middle="full")} to return the children?**
+      **Do you know where you want ${other_parties[0].name_full()} to return the children?**
       ${ word(yesno(knows_return_children_details)) }
     show if: minor_kids_with_respondent and current_possession_of_children == False and return_children_to != "court"
   - Edit: return_children_location.address
     button: |
-      **Where should ${other_parties[0].name.full(middle="full")} return the children to?**
+      **Where should ${other_parties[0].name_full()} return the children to?**
       ${ return_children_location.on_one_line(bare=True) }
     show if: minor_kids_with_respondent and current_possession_of_children == False and return_children_to != "court" and knows_return_children_details == True
   - Edit: appear_with_children_prevent
     button: |
-      **${other_parties[0].name.full(middle="full")} should be ordered to bring the children to court:**
+      **${other_parties[0].name_full()} should be ordered to bring the children to court:**
       
       % if appear_with_children_prevent:
       * To prevent abuse, neglect, removal, or concealment of the children
@@ -577,7 +577,7 @@ review:
       * To return the children to me
       % endif
       % if appear_with_children_exam:
-      * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}
+      * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name_full()}
       % endif
       % if not appear_with_children_prevent and not appear_with_children_return and not appear_with_children_exam:
       * No reasons entered
@@ -585,12 +585,12 @@ review:
     show if: minor_kids_with_respondent and current_possession_of_children == False and return_children_to == "court"
   - Edit: res_appear_alone
     button: |
-      **Should ${other_parties[0].name.full(middle="full")} be ordered to come to court alone?**
+      **Should ${other_parties[0].name_full()} be ordered to come to court alone?**
       ${ word(yesno(res_appear_alone))}
     show if: minor_kids_with_respondent and (current_possession_of_children == True or ( current_possession_of_children == False and return_children_to != "court" ))
   - Edit: res_appear_alone
     button: |
-      **Why should ${other_parties[0].name.full(middle="full")} be ordered to come to court alone?**
+      **Why should ${other_parties[0].name_full()} be ordered to come to court alone?**
       
       % if appear_alone_prevent:
       * To prevent abuse, neglect, removal, or concealment of the children
@@ -599,7 +599,7 @@ review:
       * To return the children to me
       % endif
       % if appear_alone_exam:
-      * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}
+      * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name_full()}
       % endif
       % if not appear_alone_prevent and not appear_alone_return and not appear_alone_exam:
       * No reasons entered
@@ -608,10 +608,10 @@ review:
     
   - Edit: no_records_no_contact
     button: |
-      **${other_parties[0].name.full(middle="full")} should not have access to the children's records for the following reasons:**
+      **${other_parties[0].name_full()} should not have access to the children's records for the following reasons:**
       
       % if no_records_no_contact:
-      * I am requesting ${other_parties[0].name.full(middle="full")} have no contact with the children.
+      * I am requesting ${other_parties[0].name_full()} have no contact with the children.
       % endif
       % if no_records_hide_address:
       * My address is not listed on the court forms to prevent further abuse.
@@ -626,23 +626,23 @@ review:
     button: |
       **What should the court do about parenting time?**
       % if parenting_time == "deny":
-      Deny ${other_parties[0].name.full(middle="full")} any parenting time
+      Deny ${other_parties[0].name_full()} any parenting time
       % endif 
       % if parenting_time == "restrict":
-      Restrict ${other_parties[0].name.full(middle="full")}'s parenting time
+      Restrict ${other_parties[0].name_full()}'s parenting time
       % endif 
       % if parenting_time == "grant":
-      Grant or allow ${other_parties[0].name.full(middle="full")} parenting time
+      Grant or allow ${other_parties[0].name_full()} parenting time
       % endif 
       % if parenting_time == "reserve":
-      Reserve ${other_parties[0].name.full(middle="full")}'s parenting time until a later hearing
+      Reserve ${other_parties[0].name_full()}'s parenting time until a later hearing
       % endif 
   - Edit: restrict_or_deny_pt_reasons
     button: |
       % if parenting_time == "restrict":
-      **Why do you want to restrict ${other_parties[0].name.full(middle="full")}'s parenting time?**
+      **Why do you want to restrict ${other_parties[0].name_full()}'s parenting time?**
       % else:
-      **Why do you want to deny ${other_parties[0].name.full(middle="full")} any parenting time?**
+      **Why do you want to deny ${other_parties[0].name_full()} any parenting time?**
       % endif  
       
       % if restrict_or_deny_pt_reasons["no_pt_no_abuse"]:
@@ -670,7 +670,7 @@ review:
     show if: parenting_time == "restrict" or parenting_time == "grant"
   - Edit: pt_weekdays
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to have parenting time on weekdays?**
+      **Do you want ${other_parties[0].name_full()} to have parenting time on weekdays?**
       ${ word(yesno(pt_weekdays)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
   - Edit: pt_weekday_days
@@ -685,7 +685,7 @@ review:
     
   - Edit: pt_weekends
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to have parenting time on weekends?**
+      **Do you want ${other_parties[0].name_full()} to have parenting time on weekends?**
       ${ word(yesno(pt_weekends)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
   - Edit: pt_weekend_cadence
@@ -715,7 +715,7 @@ review:
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
   - Edit: pt_supervised
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")}'s parenting time to be supervised?**
+      **Do you want ${other_parties[0].name_full()}'s parenting time to be supervised?**
       ${ word(yesno(pt_supervised)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant")
   - Edit: pt_supervisor_type
@@ -730,7 +730,7 @@ review:
   - Edit: pt_supervisor.name.first
     button: |
       **Adult who will supervise parenting time:**
-      ${ pt_supervisor.name.full(middle="full") }
+      ${ pt_supervisor.name_full() }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervised == True and pt_supervisor_type == "person"
   - Edit: pt_visitation_center_name
     button: |
@@ -743,7 +743,7 @@ review:
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervised == True and pt_supervisor_type == "agency"
   - Edit: pt_location_identified
     button: |
-      **Do you know where you want ${other_parties[0].name.full(middle="full")}'s parenting time to happen?**
+      **Do you know where you want ${other_parties[0].name_full()}'s parenting time to happen?**
       ${ word(yesno(pt_location_identified)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and ((pt_supervised and pt_supervisor_type == "person") or not pt_supervised)
   - Edit: pt_location_identified
@@ -757,7 +757,7 @@ review:
       % if pt_transportation == "petitioner":
       I will provide transportation.
       % elif pt_transportation == "respondent":
-      ${other_parties[0].name.full(middle="full")} will provide transportation.
+      ${other_parties[0].name_full()} will provide transportation.
       % elif pt_transportation == "other":
       Someone else will provide transportation.
       % else:
@@ -767,7 +767,7 @@ review:
   - Edit: pt_transportation_person.name.first
     button: |
       **Person who will provide transportation to and from parenting time:**
-      ${ pt_transportation_person.name.full(middle="full") }
+      ${ pt_transportation_person.name_full() }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_transportation == "other"
   - Edit: pt_separate_pickup_location
     button: |
@@ -799,7 +799,7 @@ review:
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_separate_return_location == True
   - Edit: pt_immediate_return
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to return the children immediately after parenting time?**
+      **Do you want ${other_parties[0].name_full()} to return the children immediately after parenting time?**
       ${ word(yesno(pt_immediate_return)) }
       % if pt_immediate_return:
       % if pt_return_person_choice == "Me":
@@ -807,7 +807,7 @@ review:
       They should be returned to me.
       % elif pt_return_person_choice == "other":
       
-      They should be returned to ${ pt_return_person.name.full(middle="full")}.
+      They should be returned to ${ pt_return_person.name_full()}.
       % else:
       
       I will identify a return person later.
@@ -834,7 +834,7 @@ review:
    
   - Edit: petitioner_personal_property.revisit
     button: |
-      **Personal property ${other_parties[0].name.full(middle="full")} should return to you:**
+      **Personal property ${other_parties[0].name_full()} should return to you:**
 
       % for my_var in petitioner_personal_property:
       % if my_var.respo_has == True:
@@ -844,22 +844,22 @@ review:
     show if: award_personal_property == True and return_property == True
   - Edit: return_property_reason
     button: |
-      **Why should ${other_parties[0].name.full(middle="full")} return the property?**
+      **Why should ${other_parties[0].name_full()} return the property?**
       % if return_property_reason == "petitioner owns":
       I own the property.
       % elif return_property_reason == "both own":      
       We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.
       % else:
-      I am married to ${other_parties[0].name.full(middle="full")}, and we filed a divorce.
+      I am married to ${other_parties[0].name_full()}, and we filed a divorce.
       % endif
     show if: award_personal_property == True and return_property == True
   - Edit: return_property_person
     button: |
-      **Who should ${other_parties[0].name.full(middle="full")} return your property to?**
+      **Who should ${other_parties[0].name_full()} return your property to?**
       % if return_property_person == "petitioner":
       Me
       % else:
-      ${ other_return_property_person.name.full(middle="full") }
+      ${ other_return_property_person.name_full() }
       % endif
     show if: (award_personal_property == True and return_property == True)   
   - Edit: property_transfer_location_cb
@@ -887,7 +887,7 @@ review:
       Law enforcement, ${ property_transfer_police }
       % endif
       % else:
-      ${ other_transfer_property_person.name.full(middle="full") }
+      ${ other_transfer_property_person.name_full() }
       % endif
     show if: award_personal_property == True and return_property == True and property_transfer_location_cb == True and property_transfer_present_cb == True
   - Edit: property_transfer_know_date
@@ -902,11 +902,11 @@ review:
     show if: award_personal_property == True and return_property == True and property_transfer_location_cb and property_transfer_know_date == True
   - Edit: return_respo_property
     button: |
-      **Any personal property ${other_parties[0].name.full(middle="full")} will need returned to them right away?**
+      **Any personal property ${other_parties[0].name_full()} will need returned to them right away?**
       ${ word(yesno(return_respo_property)) }
   - Edit: respo_property
     button: |
-      **Personal property of ${other_parties[0].name.full(middle="full")} that should be returned:**
+      **Personal property of ${other_parties[0].name_full()} that should be returned:**
 
       % if respo_property['clothes'] == True:
       * Clothes
@@ -920,12 +920,12 @@ review:
     show if: (return_respo_property == True)
   - Edit: respo_property_other
     button: |
-      **Other personal property of ${other_parties[0].name.full(middle="full")}:**
+      **Other personal property of ${other_parties[0].name_full()}:**
       ${ respo_property_other }
     show if: (return_respo_property == True and respo_property['other'] == True)
   - Edit: respondent_one_time_entry
     button: |
-      **Should ${other_parties[0].name.full(middle="full")} be allowed to enter the home only one time to get their personal property?**
+      **Should ${other_parties[0].name_full()} be allowed to enter the home only one time to get their personal property?**
       ${ word(yesno(respondent_one_time_entry)) }
   - Edit: res_property_transfer_person
     button: |
@@ -937,7 +937,7 @@ review:
       Law enforcement, ${ res_property_transfer_police }
       % endif
       % else:
-      ${ res_other_transfer_property_person.name.full(middle="full") }
+      ${ res_other_transfer_property_person.name_full() }
       % endif
     show if: respondent_one_time_entry == True
       
@@ -987,13 +987,13 @@ review:
       % elif restrict_property_reason == "both":      
       We both own the property, but not having it would be harder on me. It would put me at risk for abuse or sharing is not practical.
       % else:
-      I am married to ${other_parties[0].name.full(middle="full")}, and we have filed for divorce.
+      I am married to ${other_parties[0].name_full()}, and we have filed for divorce.
       % endif
     show if: restrict_other_property == True
     
   - Edit: restrict_elderly_petitioner_resources
     button: |
-      **Should the court protect an elderly person's resources from  ${other_parties[0].name.full(middle="full")}?**
+      **Should the court protect an elderly person's resources from  ${other_parties[0].name_full()}?**
       % if restrict_elderly_petitioner_resources == "Yes":
       Yes
       % elif restrict_elderly_petitioner_resources == "No":
@@ -1007,12 +1007,12 @@ review:
       <h4>Other remedies</h4>
   - Edit: temp_child_support
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary child support?**
+      **Do you want ${other_parties[0].name_full()} to pay temporary child support?**
       ${ word(yesno(temp_child_support)) }
     show if: minor_kids_with_respondent == True
   - Edit: temp_maintenance
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary maintenance?**
+      **Do you want ${other_parties[0].name_full()} to pay temporary maintenance?**
       ${ word(yesno(temp_maintenance)) }
     show if: relationship_se == True or relationship_xs == True
   - Edit: separate_phone_service
@@ -1023,9 +1023,9 @@ review:
     button: |
       **Who is the cell phone account holder?**
       % if phone_account_holder == 'respondent':
-      ${other_parties[0].name.full(middle="full")}
+      ${other_parties[0].name_full()}
       % else:
-      ${ other_phone_account_holder.name.full(middle="full") }
+      ${ other_phone_account_holder.name_full() }
       % endif
     show if: separate_phone_service == True
   - Edit: phone_provider
@@ -1033,7 +1033,7 @@ review:
       **Cell phone account details:**
       
       * Provider: ${ phone_provider }
-      * ${other_parties[0].name.full(middle="full")}'s phone number: ${ phone_number_formatted(billing_phone_number) }
+      * ${other_parties[0].name_full()}'s phone number: ${ phone_number_formatted(billing_phone_number) }
     show if: separate_phone_service == True
   - Edit: cell_numbers.revisit
     button: |
@@ -1046,7 +1046,7 @@ review:
     
   - Edit: expenses_none
     button: |
-      **Losses you want ${other_parties[0].name.full(middle="full")} to pay for:**
+      **Losses you want ${other_parties[0].name_full()} to pay for:**
 
       % if expenses_none:
       * None
@@ -1081,11 +1081,11 @@ review:
       % endif
   - Edit: request_counseling
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to get counseling?**
+      **Do you want ${other_parties[0].name_full()} to get counseling?**
       ${ word(yesno(request_counseling)) }
   - Edit: dv_counseling
     button: |
-      **Counseling you want ${ other_parties[0].name.full(middle="full") } to do:**
+      **Counseling you want ${ other_parties[0].name_full() } to do:**
       
       % if dv_counseling:
       * Domestic violence partner abuse counseling
@@ -1107,22 +1107,22 @@ review:
 
   - Edit: firearms_threat
     button: |
-      **Is ${other_parties[0].name.full(middle="full")} a threat to the physical safety of you or your children?**
+      **Is ${other_parties[0].name_full()} a threat to the physical safety of you or your children?**
       ${ word(yesno(firearms_threat)) }
   - Edit: firearms_relief
     button: |
       **Do you want the court to order any firearms relief?**
 
       % if firearms_relief['surrender']:
-      * I want ${other_parties[0].name.full(middle="full")} to **surrender firearms** to law enforcement.
+      * I want ${other_parties[0].name_full()} to **surrender firearms** to law enforcement.
       % endif
       % if firearms_relief['warrant']:
-      * I want a **search warrant** to be issued so law enforcement can search ${other_parties[0].name.full(middle="full")}'s property and seize fierarms.
+      * I want a **search warrant** to be issued so law enforcement can search ${other_parties[0].name_full()}'s property and seize fierarms.
       % endif
     show if: firearms_threat
   - Edit: intimate_partner
     button: |
-      **Is ${other_parties[0].name.full(middle="full")} a current or former intimate partner?**
+      **Is ${other_parties[0].name_full()} a current or former intimate partner?**
       % if intimate_partner == "Yes":
       Yes
       % elif intimate_partner == "No":
@@ -1136,13 +1136,13 @@ review:
       **Why do you want the court to order a search warrant?**
 
       % if warrant_reasons['threat']:
-      * ${other_parties[0].name.full(middle="full")} is an immediate threat to the physical safety of the people I want to protect.
+      * ${other_parties[0].name_full()} is an immediate threat to the physical safety of the people I want to protect.
       % endif
       % if warrant_reasons['has_guns']:
-      * ${other_parties[0].name.full(middle="full")} has a firearm or firearm parts that could be used to make a firearm.
+      * ${other_parties[0].name_full()} has a firearm or firearm parts that could be used to make a firearm.
       % endif
       % if warrant_reasons['location']:
-      * The firearm or firearm parts are in the residence, vehicle, or other property of ${other_parties[0].name.full(middle="full")}.
+      * The firearm or firearm parts are in the residence, vehicle, or other property of ${other_parties[0].name_full()}.
       % endif
       % if warrant_reasons['report']:
       * I made a report of domestic violence to law enforcement within the last 90 days.
@@ -1158,7 +1158,7 @@ review:
     show if: firearms_threat and firearms_relief['warrant']
   - Edit: has_helpful_warrant_info
     button: |
-      **Do you have other information about ${other_parties[0].name.full(middle="full")} that could help law enforcement with the warrant?**
+      **Do you have other information about ${other_parties[0].name_full()} that could help law enforcement with the warrant?**
       ${ word(yesno(has_helpful_warrant_info))}      
     show if: firearms_relief['warrant']
   - Edit: has_helpful_warrant_info
@@ -1173,13 +1173,13 @@ review:
     show if: firearms_threat
   - Edit: firearms_eop_notice
     button: |
-      **Are you worried that ${other_parties[0].name.full(middle="full")} might hurt you or the people you want to protect when they learn about the Order of Protection?**
+      **Are you worried that ${other_parties[0].name_full()} might hurt you or the people you want to protect when they learn about the Order of Protection?**
       ${ word(yesno(firearms_eop_notice))}
     show if: firearms_threat and (firearms_relief['surrender'] or firearms_relief['warrant'])
     
   - Edit: misc_remedies_text
     button: |
-      **What else do you want the court to order ${other_parties[0].name.full(middle="full")} to do or to stop doing?**
+      **What else do you want the court to order ${other_parties[0].name_full()} to do or to stop doing?**
       % if misc_remedies_text == "":
       Nothing
       % else:
@@ -1196,7 +1196,7 @@ review:
       <h4>About the person who caused abuse</h4>
   - Edit: knows_respondent_dob
     button: |
-      **What you know about ${other_parties[0].name.full(middle="full")}'s birthdate?**[NEWLINE]
+      **What you know about ${other_parties[0].name_full()}'s birthdate?**[NEWLINE]
       % if knows_respondent_dob == "exact" and other_parties[0].birthdate != "":
       The exact date: ${ other_parties[0].birthdate }
       % elif knows_respondent_dob == "some":
@@ -1207,7 +1207,7 @@ review:
 
   - Edit: respondent_parent_help
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")}'s parent or guardian help them follow the Order of Protection?**
+      **Do you want ${other_parties[0].name_full()}'s parent or guardian help them follow the Order of Protection?**
       % if respondent_parent_help == "Yes":
       Yes
       % elif respondent_parent_help == "No":
@@ -1222,13 +1222,13 @@ review:
     show if: respondent_parent_help == "Yes"
   - Edit: respondent_parent_order
     button: |
-      **What should ${other_parties[0].name.full(middle="full")}'s parent or guardian be ordered to do?**
+      **What should ${other_parties[0].name_full()}'s parent or guardian be ordered to do?**
       ${ respondent_parent_order }
     show if: respondent_parent_help == "Yes"
 
   - Edit: other_parties[0].gender
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s gender?**
+      **What is ${other_parties[0].name_full()}'s gender?**
       % if other_parties[0].gender == "":
       None entered
       % endif
@@ -1243,7 +1243,7 @@ review:
       % endif
   - Edit: other_parties[0].gender_cook
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s gender identity (confidential)?**
+      **What is ${other_parties[0].name_full()}'s gender identity (confidential)?**
       
       % if other_parties[0].gender_cook.all_false():
       * None entered
@@ -1273,7 +1273,7 @@ review:
     show if: trial_court_index == -1
   - Edit: respondent_sex_at_birth
     button: |
-      **${other_parties[0].name.full(middle="full")}'s sex assigned at birth (condfidential):**
+      **${other_parties[0].name_full()}'s sex assigned at birth (condfidential):**
       % if respondent_sex_at_birth == "None":
       None entered
       % else:
@@ -1287,7 +1287,7 @@ review:
     
   - Edit: other_parties[0].race
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s race?**
+      **What is ${other_parties[0].name_full()}'s race?**
       % if other_parties[0].race == 'other':
       ${ respondent_race_other }
       % else:
@@ -1296,7 +1296,7 @@ review:
 
   - Edit: other_parties[0].height_feet
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s height?**
+      **What is ${other_parties[0].name_full()}'s height?**
       % if other_parties[0].height_feet > 1:
       ${ other_parties[0].height_feet } feet
       % if other_parties[0].height_inches > 0:
@@ -1307,7 +1307,7 @@ review:
       % endif
   - Edit: other_parties[0].weight
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s weight?**
+      **What is ${other_parties[0].name_full()}'s weight?**
       % if other_parties[0].weight > 0:
       ${ other_parties[0].weight } pounds
       % else:
@@ -1315,7 +1315,7 @@ review:
       % endif
   - Edit: other_parties[0].hair
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s hair color?**
+      **What is ${other_parties[0].name_full()}'s hair color?**
       % if other_parties[0].hair != "":
       ${ other_parties[0].hair }
       % else:
@@ -1323,7 +1323,7 @@ review:
       % endif
   - Edit: other_parties[0].eyes
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s eye color?**
+      **What is ${other_parties[0].name_full()}'s eye color?**
       % if other_parties[0].eyes != "":
       ${ other_parties[0].eyes }
       % else:
@@ -1331,7 +1331,7 @@ review:
       % endif
   - Edit: other_parties[0].skin
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s skin color?**
+      **What is ${other_parties[0].name_full()}'s skin color?**
       % if other_parties[0].skin == 'other':
       ${ respondent_skin_other }
       % else:
@@ -1340,17 +1340,17 @@ review:
     show if: trial_court_index == -1
   - Edit: other_parties[0].hair
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s hair color?**
+      **What is ${other_parties[0].name_full()}'s hair color?**
       ${ other_parties[0].hair }
     show if: trial_court_index == -1 and other_parties[0].hair != ""
   - Edit: other_parties[0].eyes
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s eye color?**
+      **What is ${other_parties[0].name_full()}'s eye color?**
       ${ other_parties[0].eyes }
     show if: trial_court_index == -1 and other_parties[0].eyes != ""
   - Edit: other_parties[0].tattoos
     button: |
-      **Other things about ${other_parties[0].name.full(middle="full")}'s appearance:**
+      **Other things about ${other_parties[0].name_full()}'s appearance:**
       % if other_parties[0].tattoos != "":
       ${ other_parties[0].tattoos }
       % else:
@@ -1358,7 +1358,7 @@ review:
       % endif
   - Edit: other_parties[0].glasses
     button: |
-      **Does ${other_parties[0].name.full(middle="full")} wear glasses?**
+      **Does ${other_parties[0].name_full()} wear glasses?**
       % if other_parties[0].glasses is not None:
       ${ other_parties[0].glasses }
       % else:
@@ -1368,12 +1368,12 @@ review:
       
   - Edit: other_parties[0].alias_names
     button: |
-      **Other names ${other_parties[0].name.full(middle="full")} has used:**
+      **Other names ${other_parties[0].name_full()} has used:**
       ${ other_parties[0].alias_names }
     show if: trial_court_index == -1
   - Edit: respondent_on_probation
     button: |
-      **Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?**
+      **Is ${other_parties[0].name_full()} on court-ordered probation?**
       % if respondent_on_probation == "Yes":
       Yes
       % elif respondent_on_probation == "No":
@@ -1389,7 +1389,7 @@ review:
     show if: respondent_on_probation == "Yes" and trial_court_index == -1
   - Edit: caution_reasons
     button : |
-      **Reasons sheriff should use caution when approaching ${other_parties[0].name.full(middle="full")}:**
+      **Reasons sheriff should use caution when approaching ${other_parties[0].name_full()}:**
       
       % if not any(caution_reasons):
       * None entered
@@ -1422,15 +1422,15 @@ review:
       
   - Edit: knows_respondent_home
     button: |
-      **Do you know ${other_parties[0].name.full(middle="full")}'s current home address?**
+      **Do you know ${other_parties[0].name_full()}'s current home address?**
       ${ word(yesno(knows_respondent_home)) }
   - Edit: knows_respondent_home_last
     button: |
-      **Do you know ${other_parties[0].name.full(middle="full")}'s last known address?**
+      **Do you know ${other_parties[0].name_full()}'s last known address?**
       ${ word(yesno(knows_respondent_home_last)) }      
   - Edit: other_parties[0].address.address
     button: |
-      **${other_parties[0].name.full(middle="full")}'s home address:**
+      **${other_parties[0].name_full()}'s home address:**
       % if other_parties[0].address.address != "":
       % if knows_respondent_home:
       ${ other_parties[0].address.on_one_line(bare=True) }
@@ -1442,7 +1442,7 @@ review:
       % endif
   - Edit: other_parties[0].phone_number
     button: |
-      **${other_parties[0].name.full(middle="full")}'s home phone number:**
+      **${other_parties[0].name_full()}'s home phone number:**
       % if other_parties[0].phone_number != "":
       ${ phone_number_formatted(other_parties[0].phone_number) }      
       % else:
@@ -1450,7 +1450,7 @@ review:
       % endif
   - Edit: other_parties[0].mobile_number
     button: |
-      **${other_parties[0].name.full(middle="full")}'s cell number:**
+      **${other_parties[0].name_full()}'s cell number:**
       % if other_parties[0].mobile_number != "":
       ${ phone_number_formatted(other_parties[0].mobile_number) }      
       % else:
@@ -1458,7 +1458,7 @@ review:
       % endif
   - Edit: other_parties[0].email
     button: |
-      **${other_parties[0].name.full(middle="full")}'s email:**
+      **${other_parties[0].name_full()}'s email:**
       % if other_parties[0].email != "":
       ${ other_parties[0].email }
       % else:
@@ -1466,20 +1466,20 @@ review:
       % endif
   - Edit: respondent_on_social_media
     button: |
-      **Is ${other_parties[0].name.full(middle="full")} active on social media?**
+      **Is ${other_parties[0].name_full()} active on social media?**
       ${ respondent_on_social_media }      
   - Edit: respondent_social_media_accounts
     button: |
-      **${other_parties[0].name.full(middle="full")}'s social media accounts:**
+      **${other_parties[0].name_full()}'s social media accounts:**
       ${ respondent_social_media_accounts }
     show if: respondent_on_social_media == 'Yes'
   - Edit: knows_respondent_work
     button: |
-      **Do you know ${other_parties[0].name.full(middle="full")}'s work info?**
+      **Do you know ${other_parties[0].name_full()}'s work info?**
       ${ word(yesno(knows_respondent_work)) }
   - Edit: other_parties[0].work_address.address
     button: |
-      **${other_parties[0].name.full(middle="full")}'s work info:**
+      **${other_parties[0].name_full()}'s work info:**
       % if knows_respondent_work:
       ${ other_parties[0].employer + ", " + other_parties[0].work_address.on_one_line(bare=True) }
       % else:
@@ -1487,7 +1487,7 @@ review:
       % endif
   - Edit: respondent_work_type
     button: |
-      **${other_parties[0].name.full(middle="full")}'s occupation or type of work:**
+      **${other_parties[0].name_full()}'s occupation or type of work:**
       % if knows_respondent_work and respondent_work_type != "":
       ${ respondent_work_type }
       % else:
@@ -1497,7 +1497,7 @@ review:
 
   - Edit: cook_vehicle_color
     button: |
-      **Details on ${other_parties[0].name.full(middle="full")}'s car:**
+      **Details on ${other_parties[0].name_full()}'s car:**
 
       % if respondent_car_make == "":
       * Car make: None entered
@@ -1534,7 +1534,7 @@ review:
 
   - Edit: other_parties[0].work_hours
     button: |
-      **${other_parties[0].name.full(middle="full")}'s work schedule:**
+      **${other_parties[0].name_full()}'s work schedule:**
       % if knows_respondent_work and other_parties[0].work_hours != "":
       ${ other_parties[0].work_hours }
       % else:
@@ -1543,12 +1543,12 @@ review:
 
   - Edit: has_other_ops
     button: |
-      **Are there other Orders of Protection against ${other_parties[0].name.full(middle="full")}?**
+      **Are there other Orders of Protection against ${other_parties[0].name_full()}?**
       ${ has_other_ops }
       
   - Edit: other_ops.revisit
     button: |
-      **Other Orders of Protection against ${other_parties[0].name.full(middle="full")}: (Edit to change details)**
+      **Other Orders of Protection against ${other_parties[0].name_full()}: (Edit to change details)**
 
       % for my_var in other_ops:
         * ${ my_var.name.text } in ${ my_var.year }
@@ -1557,12 +1557,12 @@ review:
 
   - Edit: has_other_cases
     button: |
-      **Are there other cases with ${other_parties[0].name.full(middle="full")}?**
+      **Are there other cases with ${other_parties[0].name_full()}?**
       ${ has_other_cases }
       
   - Edit: other_cases.revisit
     button: |
-      **Other cases with ${other_parties[0].name.full(middle="full")}: (Edit to change details)**
+      **Other cases with ${other_parties[0].name_full()}: (Edit to change details)**
 
       % for my_var in other_cases:
         * ${ my_var.name.text } in ${ my_var.year }
@@ -1574,7 +1574,7 @@ review:
       <h4>Filing and service details</h4>
   - Edit: service_method
     button: |
-      **How do you want ${other_parties[0].name.full(middle="full")} to be served?**
+      **How do you want ${other_parties[0].name_full()} to be served?**
       % if service_method == "sheriff":
       By the sheriff
       % elif service_method == "sps":
@@ -1587,7 +1587,7 @@ review:
 
   - Edit: service_address_choice
     button: |
-      **Where can ${other_parties[0].name.full(middle="full")} be found for service?**
+      **Where can ${other_parties[0].name_full()} be found for service?**
       % if service_address_choice == "other":
       At another address
       % else:
@@ -1600,11 +1600,11 @@ review:
     show if: service_address_choice == "other"
   - Edit: has_second_service_address
     button: |
-      **Do you know another location where ${other_parties[0].name.full(middle="full")} can be found for service?**
+      **Do you know another location where ${other_parties[0].name_full()} can be found for service?**
       ${ word(yesno(has_second_service_address)) }
   - Edit: second_service_address_choice
     button: |
-      **Where else can ${other_parties[0].name.full(middle="full")} be found for service?**
+      **Where else can ${other_parties[0].name_full()} be found for service?**
       % if second_service_address_choice == "other":
       At another address
       % else:
@@ -1618,23 +1618,23 @@ review:
     show if: has_second_service_address and second_service_address_choice == "other"
   - Edit: other_parties[0].phone_number_alt
     button: |
-      **${other_parties[0].name.full(middle="full")}'s other contact info:**
+      **${other_parties[0].name_full()}'s other contact info:**
   
       % if other_parties[0].phone_number_alt != "":
-      * ${other_parties[0].name.full(middle="full")}'s alternate phone: ${ phone_number_formatted(other_parties[0].phone_number_alt) }
+      * ${other_parties[0].name_full()}'s alternate phone: ${ phone_number_formatted(other_parties[0].phone_number_alt) }
       % else:
-      * ${other_parties[0].name.full(middle="full")}'s alternate phone: None entered
+      * ${other_parties[0].name_full()}'s alternate phone: None entered
       % endif
       % if other_parties[0].email_alt != "":
-      * ${other_parties[0].name.full(middle="full")}'s alternate email: ${ other_parties[0].email_alt }
+      * ${other_parties[0].name_full()}'s alternate email: ${ other_parties[0].email_alt }
       % else:
-      * ${other_parties[0].name.full(middle="full")}'s alternate email: None entered
+      * ${other_parties[0].name_full()}'s alternate email: None entered
       % endif
     show if: has_second_service_address
       
   - Edit: service_information
     button: |
-      **Additional information to help serve court papers on ${other_parties[0].name.full(middle="full")}:**
+      **Additional information to help serve court papers on ${other_parties[0].name_full()}:**
       ${ service_information }
     show if: trial_court_index == -1
       
@@ -1660,7 +1660,7 @@ review:
     
   - Edit: previous_cook_case_type
     button: |
-      **Previous Cook County case involving ${other_parties[0].name.full(middle="full")}:**
+      **Previous Cook County case involving ${other_parties[0].name_full()}:**
       ${ previous_cook_case_type.capitalize() }
     show if: trial_court_index == -1
   - Edit: previous_cook_case_date
@@ -1706,7 +1706,7 @@ review:
 id: shared kids revisit review screen
 continue button field: shared_kids.revisit
 question: |
-  Edit the minor children you have with ${other_parties[0].name.full(middle="full")}
+  Edit the minor children you have with ${other_parties[0].name_full()}
 subquestion: |
   ${ shared_kids.table }
   
@@ -1718,7 +1718,7 @@ table: shared_kids.table
 rows: shared_kids
 columns:
   - Name: |
-      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+      row_item.name_full() if defined("row_item.name.first") else ""
   - Birthdate: |
       row_item.birthdate if defined("row_item.birthdate") else ""
   - Details (including residence, parentage, protected by order): |
@@ -1731,12 +1731,12 @@ id: shared kids details review screen
 continue button field: x.review_shared_child_details
 generic object: ALIndividual
 question: |
-  Edit ${ x.name.full(middle="full") }'s information
+  Edit ${ x.name_full() }'s information
 review: 
   - Edit: x.name.first
     button: |
       **Name:**
-      ${ x.name.full(middle="full")  }
+      ${ x.name_full()  }
   - Edit: x.birthdate
     button: |
       **Birthdate:**
@@ -1757,7 +1757,7 @@ review:
       % endif
   - Edit: x.res_parentage
     button: |
-      **Has ${other_parties[0].name.full(middle="full")}'s legal parentage been established?**
+      **Has ${other_parties[0].name_full()}'s legal parentage been established?**
       % if x.res_parentage == True:
       Yes
       % elif x.res_parentage == False:
@@ -1774,7 +1774,7 @@ continue button label: Next
 id: petitioner kids revisit review screen
 continue button field: petitioner_kids.revisit
 question: |
-  Edit your minor children you **do not** have with ${other_parties[0].name.full(middle="full")} you want protected by this order
+  Edit your minor children you **do not** have with ${other_parties[0].name_full()} you want protected by this order
 subquestion: |
   ${ petitioner_kids.table }
 
@@ -1784,7 +1784,7 @@ table: petitioner_kids.table
 rows: petitioner_kids
 columns:
   - Name: |
-      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+      row_item.name_full() if defined("row_item.name.first") else ""
 edit:
   - name.first
 delete buttons: True
@@ -1804,7 +1804,7 @@ table: other_hh_members.table
 rows: other_hh_members
 columns:
   - Name: |
-      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+      row_item.name_full() if defined("row_item.name.first") else ""
 edit:
   - name.first
 delete buttons: True
@@ -1859,7 +1859,7 @@ continue button label: Next
 id: other ops revisit review screen
 continue button field: other_ops.revisit
 question: |
-  Edit the other Orders of Protection against ${other_parties[0].name.full(middle="full")}
+  Edit the other Orders of Protection against ${other_parties[0].name_full()}
 subquestion: |
   ${ other_ops.table }
 
@@ -1908,7 +1908,7 @@ continue button label: Next
 id: other cases revisit review screen
 continue button field: other_cases.revisit
 question: |
-  Edit the other court cases with ${other_parties[0].name.full(middle="full")}
+  Edit the other court cases with ${other_parties[0].name_full()}
 subquestion: |
   ${ other_cases.table }
 
@@ -1970,7 +1970,7 @@ rows: petitioner_personal_property
 columns:
   - Item name: |
       row_item.name.text if defined("row_item.name.text") else ""
-  - ${other_parties[0].name.full(middle="full")} should return: |
+  - ${other_parties[0].name_full()} should return: |
       word(yesno(row_item.respo_has)) if defined("row_item.respo_has") else ""
   - Edit: |
       action_button_html(url_action(row_item.attr_name("name.text")), label="Edit", icon="pencil-alt")
@@ -1989,7 +1989,7 @@ review:
       ${ x.name.text  }
   - Edit: x.respo_has
     button: |
-      **${other_parties[0].name.full(middle="full")} should return:**
+      **${other_parties[0].name_full()} should return:**
       ${ word(yesno(x.respo_has)) } 
 continue button label: Next
 ---
@@ -2053,7 +2053,7 @@ columns:
       row_item.on_one_line(bare=True) if defined("row_item.address") else ""
   - Description: |
       row_item.description if defined("row_item.description") else ""
-  - Details (including when ${other_parties[0].name.full(middle="full")} is there, others at the location): |
+  - Details (including when ${other_parties[0].name_full()} is there, others at the location): |
       action_button_html(url_action(row_item.attr_name("address")), label="Edit", icon="pencil-alt")
 delete buttons: True
 confirm: True
@@ -2069,7 +2069,7 @@ review:
   - Edit: users[0].name.first
     button: |
       **Your name:**
-      ${users[0].name.full(middle="full")}
+      ${users[0].name_full()}
   - Edit: users[0].birthdate
     button: |
       **Your birthdate:**
@@ -2195,17 +2195,17 @@ review:
   - Edit: other_parties[0].name.first
     button: |
       **Person you want an Order of Protection against:**
-      ${other_parties[0].name.full(middle="full")}
+      ${other_parties[0].name_full()}
   - Edit: minor_kids_with_respondent
     button: |
-      **Do you have minor children with ${other_parties[0].name.full(middle="full")}?**
+      **Do you have minor children with ${other_parties[0].name_full()}?**
       ${ word(yesno(minor_kids_with_respondent)) }
   - Edit: shared_kids.revisit
     button: |
-      **Your minor children with ${other_parties[0].name.full(middle="full")}: (Edit to change names and details)**
+      **Your minor children with ${other_parties[0].name_full()}: (Edit to change names and details)**
 
       % for my_var in shared_kids:
-        * ${ my_var.name.full(middle="full") }
+        * ${ my_var.name_full() }
       % endfor
     show if: minor_kids_with_respondent
 
@@ -2226,10 +2226,10 @@ review:
       * Me
       % endif
       % if protect_shared_kids:
-      * Minor children you have with ${other_parties[0].name.full(middle="full")}
+      * Minor children you have with ${other_parties[0].name_full()}
       % endif
       % if protect_petitioner_kids:
-      * Minor children you **did not** have with ${other_parties[0].name.full(middle="full")}
+      * Minor children you **did not** have with ${other_parties[0].name_full()}
       % endif
       % if protect_dependent_adult:
       * A dependent adult
@@ -2246,19 +2246,19 @@ review:
     
   - Edit: shared_kids.revisit
     button: |
-      **Your minor children with ${other_parties[0].name.full(middle="full")}: (Edit to change names and details)**
+      **Your minor children with ${other_parties[0].name_full()}: (Edit to change names and details)**
 
       % for my_var in shared_kids:
-        * ${ my_var.name.full(middle="full") }
+        * ${ my_var.name_full() }
       % endfor
     show if: minor_kids_with_respondent
 
   - Edit: petitioner_kids.revisit
     button: |
-      **Your minor children **not with** ${other_parties[0].name.full(middle="full")}:**
+      **Your minor children **not with** ${other_parties[0].name_full()}:**
 
       % for my_var in petitioner_kids:
-        * ${ my_var.name.full(middle="full") }
+        * ${ my_var.name_full() }
       % endfor
     show if: protect_petitioner_kids
 
@@ -2267,26 +2267,26 @@ review:
       **Other household members:**
 
       % for my_var in other_hh_members:
-        * ${ my_var.name.full(middle="full") }
+        * ${ my_var.name_full() }
       % endfor
     show if: protect_other_hh_members
 
   - Edit: dependent_adult.name.first
     button: |
       **Dependent adult you want to protect:**
-      ${dependent_adult.name.full(middle="full")}
+      ${dependent_adult.name_full()}
     show if: protect_dependent_adult
 
   - Edit: high_risk_adult.name.first
     button: |
       **High risk adult you want to protect:**
-      ${high_risk_adult.name.full(middle="full")}
+      ${high_risk_adult.name_full()}
     show if: protect_high_risk_adult
 
   - Edit: obo_minor.name.first
     button: |
       **Minor child you want to protect:**
-      ${obo_minor.name.full(middle="full")}
+      ${obo_minor.name_full()}
     show if: protect_obo_minor
 
 ---
@@ -2317,7 +2317,7 @@ subquestion: |
 review:
   - Edit: no_harassment
     button: |
-      **What you want the court to order ${other_parties[0].name.full(middle="full")} to not do:**
+      **What you want the court to order ${other_parties[0].name_full()} to not do:**
       
       % if no_harassment:
       * Harassment
@@ -2346,7 +2346,7 @@ review:
 
   - Edit: stay_away
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stay away and have no contact at all times?**
+      **Do you want ${other_parties[0].name_full()} to stay away and have no contact at all times?**
       ${ word(yesno(stay_away)) }
 
   - Edit: hide_address
@@ -2367,22 +2367,22 @@ review:
       % if residence_remedies == 'exclusive possession':
       I want **exclusive possession** of my residence.
       % elif residence_remedies == 'provide alternate housing':
-      I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live.
+      I want ${other_parties[0].name_full()} to **provide a different place** for me and the protected people to live.
       % else:
-      Nothing. I don't want the court to give me exclusive possession or to order ${other_parties[0].name.full(middle="full")} to provide a different place for me and the protected people to live.
+      Nothing. I don't want the court to give me exclusive possession or to order ${other_parties[0].name_full()} to provide a different place for me and the protected people to live.
       % endif    
   - Edit: exclusive_possession_reason
     button: |
       **Why should the court give you exclusive possession of the residence?**
       % if exclusive_possession_reason == 'respondent_no_right_to_stay':
-      I have a right to occupy the residence and ${other_parties[0].name.full(middle="full")} has no right.
+      I have a right to occupy the residence and ${other_parties[0].name_full()} has no right.
       % else:
       Both of us have a right to occupy the residence, but it would be harder on me to leave.
       % endif
     show if: residence_remedies == 'exclusive possession'
   - Edit: no_stay_under_influence
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stay away from and not be at your residence while under the influence?**
+      **Do you want ${other_parties[0].name_full()} to stay away from and not be at your residence while under the influence?**
       ${ word(yesno(no_stay_under_influence)) }
       % if no_stay_under_influence:
       [NEWLINE][NEWLINE]
@@ -2391,7 +2391,7 @@ review:
     show if: not (stay_away or (residence_remedies == 'exclusive possession') or (residence_remedies == 'provide alternate housing'))
   - Edit: stay_away_jobs
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stay away from where you work?**
+      **Do you want ${other_parties[0].name_full()} to stay away from where you work?**
       ${ word(yesno(stay_away_jobs)) }
   - Edit: hide_work_address
     button: |
@@ -2404,7 +2404,7 @@ review:
     show if: stay_away_jobs and hide_work_address == False
   - Edit: stay_away_jobs_2
     button: |
-      **Do you have another job you want ${other_parties[0].name.full(middle="full")} to stay away from?**
+      **Do you have another job you want ${other_parties[0].name_full()} to stay away from?**
       ${ word(yesno(stay_away_jobs_2)) }
     show if: stay_away_jobs
   - Edit: hide_work_address_2
@@ -2419,7 +2419,7 @@ review:
   
   - Edit: stay_away_schools
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stay away from schools or daycares?**
+      **Do you want ${other_parties[0].name_full()} to stay away from schools or daycares?**
       ${ word(yesno(stay_away_schools)) }
   - Edit: schools[0].address
     button: |
@@ -2428,7 +2428,7 @@ review:
     show if: stay_away_schools
   - Edit: schools[0].hide
     button: |
-      **Do you want to hide information about ${ schools[0].name } from  ${other_parties[0].name.full(middle="full")}?**
+      **Do you want to hide information about ${ schools[0].name } from  ${other_parties[0].name_full()}?**
       ${ word(yesno(schools[0].hide)) }
     show if: stay_away_schools and (minor_kids_with_respondent or protect_petitioner_kids)
   - Edit: schools[0].type
@@ -2439,7 +2439,7 @@ review:
 
   - Edit: stay_away_schools_2
     button: |
-      **Do you have another school you want ${other_parties[0].name.full(middle="full")} to stay away from?**
+      **Do you have another school you want ${other_parties[0].name_full()} to stay away from?**
       ${ word(yesno(stay_away_schools_2)) }
     show if: stay_away_schools
   - Edit: schools[1].address
@@ -2449,7 +2449,7 @@ review:
     show if: stay_away_schools and stay_away_schools_2
   - Edit: schools[1].hide
     button: |
-      **Do you want to hide information about ${ schools[1].name } from  ${other_parties[0].name.full(middle="full")}?**
+      **Do you want to hide information about ${ schools[1].name } from  ${other_parties[0].name_full()}?**
       ${ word(yesno(schools[1].hide)) }
     show if: stay_away_schools and stay_away_schools_2 and (minor_kids_with_respondent or protect_petitioner_kids)
   - Edit: schools[1].type
@@ -2460,7 +2460,7 @@ review:
   
   - Edit: stay_away_other
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places?**
+      **Do you want ${other_parties[0].name_full()} to stay away from other places?**
       ${ word(yesno(stay_away_other)) }
 
   - Edit: other_location_1_is_school
@@ -2470,7 +2470,7 @@ review:
     show if: stay_away_other
   - Edit: hide_other_address_1
     button: |
-      **Do you want to hide the details of the place you want ${other_parties[0].name.full(middle="full") } to stay away from?**
+      **Do you want to hide the details of the place you want ${other_parties[0].name_full() } to stay away from?**
       ${ word(yesno(hide_other_address_1)) }
     show if: stay_away_other and not other_location_1_is_school
   - Edit: other_locations_hidden_description_1
@@ -2491,7 +2491,7 @@ review:
     show if: stay_away_other and other_location_1_is_school
   - Edit: schools[2].hide
     button: |
-      **Do you want to hide information about ${ schools[2].name } from  ${other_parties[0].name.full(middle="full")}?**
+      **Do you want to hide information about ${ schools[2].name } from  ${other_parties[0].name_full()}?**
       ${ word(yesno(schools[2].hide)) }
     show if: stay_away_other and other_location_1_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
   - Edit: schools[2].type
@@ -2502,7 +2502,7 @@ review:
   
   - Edit: stay_away_other_2
     button: |
-      **Do you have another place you want ${other_parties[0].name.full(middle="full")} to stay away from?**
+      **Do you have another place you want ${other_parties[0].name_full()} to stay away from?**
       ${ word(yesno(stay_away_other_2)) }
   - Edit: other_location_2_is_school
     button: |
@@ -2511,7 +2511,7 @@ review:
     show if: stay_away_other_2
   - Edit: hide_other_address_2
     button: |
-      **Do you want to hide the details of the second place you want ${other_parties[0].name.full(middle="full") } to stay away from?**
+      **Do you want to hide the details of the second place you want ${other_parties[0].name_full() } to stay away from?**
       ${ word(yesno(hide_other_address_2)) }
     show if: stay_away_other_2 and not other_location_2_is_school
   - Edit: other_locations_hidden_description_2
@@ -2532,7 +2532,7 @@ review:
     show if: stay_away_other_2 and other_location_2_is_school
   - Edit: schools[3].hide
     button: |
-      **Do you want to hide information about ${ schools[3].name } from  ${other_parties[0].name.full(middle="full")}?**
+      **Do you want to hide information about ${ schools[3].name } from  ${other_parties[0].name_full()}?**
       ${ word(yesno(schools[3].hide)) }
     show if: stay_away_other_2 and other_location_2_is_school and (minor_kids_with_respondent or protect_petitioner_kids)
   - Edit: schools[3].type
@@ -2543,7 +2543,7 @@ review:
   
   - Edit: same_school
     button: |
-      **Does ${other_parties[0].name.full(middle="full")} attend the same school as you or other protected people?**
+      **Does ${other_parties[0].name_full()} attend the same school as you or other protected people?**
       ${ word(yesno(same_school)) }
   - Edit: same_school_name
     button: |
@@ -2557,7 +2557,7 @@ review:
     show if: same_school
   - Edit: parts_of_school
     button: |
-      **Parts of school where ${other_parties[0].name.full(middle="full")} should not go:**
+      **Parts of school where ${other_parties[0].name_full()} should not go:**
       ${ parts_of_school }
     show if: same_school_restrictions
 
@@ -2572,21 +2572,21 @@ subquestion: |
 review: 
   - Edit: minor_kids_with_respondent
     button: |
-      **Do you have minor children with ${other_parties[0].name.full(middle="full")}?**
+      **Do you have minor children with ${other_parties[0].name_full()}?**
       ${ word(yesno(minor_kids_with_respondent)) }
   - Edit: primary_caretaker
     button: |
-      **Primary caretaker of the children with ${ other_parties[0].name.full(middle="full") }:**
+      **Primary caretaker of the children with ${ other_parties[0].name_full() }:**
       % if primary_caretaker == "petitioner":
       Me
       % elif primary_caretaker == "respondent":
-      ${ other_parties[0].name.full(middle="full") }
+      ${ other_parties[0].name_full() }
       % else:
-      ${ other_caretaker.name.full(middle="full") }
+      ${ other_caretaker.name_full() }
       % endif
   - Edit: other_caretaker.address.address
     button: |
-      **${other_caretaker.name.full(middle="full")}'s address:**
+      **${other_caretaker.name_full()}'s address:**
       ${ other_caretaker.address.on_one_line(bare=True) }
     show if: primary_caretaker == "other"
   - Edit: court_make_children_decisions
@@ -2610,20 +2610,20 @@ review:
 
   - Edit: temp_custody_of_children
     button: |
-      **Do you want the court to grant you temporary decisionmaking responsibility (custody) of the children you have with ${other_parties[0].name.full(middle="full")}?**
+      **Do you want the court to grant you temporary decisionmaking responsibility (custody) of the children you have with ${other_parties[0].name_full()}?**
       ${ word(yesno(temp_custody_of_children)) }
 
   - Edit: physical_care_of_children
     button: |
-      **Do you want the court to give you possession of the children you have with ${ other_parties[0].name.full(middle="full") }?**
+      **Do you want the court to give you possession of the children you have with ${ other_parties[0].name_full() }?**
       ${ word(yesno(physical_care_of_children)) }
   - Edit: no_conceal_children
     button: |
-      **Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot hide or remove the children from Illinois?**
+      **Do you want the court to order that ${other_parties[0].name_full()} cannot hide or remove the children from Illinois?**
       ${ word(yesno(no_conceal_children)) }
   - Edit: no_removal_school
     button: |
-      **Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot remove the children from your care or from a school or daycare?**
+      **Do you want the court to order that ${other_parties[0].name_full()} cannot remove the children from your care or from a school or daycare?**
       ${ word(yesno(no_removal_school)) }
 #- Edit: keep_schools_confidential
 #  button: |
@@ -2631,15 +2631,15 @@ review:
 #    ${ word(yesno(keep_schools_confidential)) }
   - Edit: current_possession_of_children
     button: |
-      **Do you currently have physical care and possession of your children with  ${other_parties[0].name.full(middle="full")}?**
+      **Do you currently have physical care and possession of your children with  ${other_parties[0].name_full()}?**
       ${ word(yesno(current_possession_of_children)) }
   - Edit: return_children_to
     button: |
-      **Who should ${other_parties[0].name.full(middle="full")} return the children to?**
+      **Who should ${other_parties[0].name_full()} return the children to?**
       % if return_children_to == "petitioner":
       Me
       % elif return_children_to == "court":
-      ${other_parties[0].name.full(middle="full")} should bring them to court.
+      ${other_parties[0].name_full()} should bring them to court.
       % else:
       Another person
       % endif
@@ -2647,21 +2647,21 @@ review:
   - Edit: return_children_to
     button: |
       **Other person children should be returned to:**
-      ${ return_children_other_person.name.full(middle="full") }
+      ${ return_children_other_person.name_full() }
     show if: minor_kids_with_respondent and current_possession_of_children == False and return_children_to == "other"
   - Edit: knows_return_children_details
     button: |
-      **Do you know where you want ${other_parties[0].name.full(middle="full")} to return the children?**
+      **Do you know where you want ${other_parties[0].name_full()} to return the children?**
       ${ word(yesno(knows_return_children_details)) }
     show if: minor_kids_with_respondent and current_possession_of_children == False and return_children_to != "court"
   - Edit: return_children_location.address
     button: |
-      **Where should ${other_parties[0].name.full(middle="full")} return the children to?**
+      **Where should ${other_parties[0].name_full()} return the children to?**
       ${ return_children_location.on_one_line(bare=True) }
     show if: minor_kids_with_respondent and current_possession_of_children == False and return_children_to != "court" and knows_return_children_details == True
   - Edit: appear_with_children_prevent
     button: |
-      **${other_parties[0].name.full(middle="full")} should be ordered to bring the children to court:**
+      **${other_parties[0].name_full()} should be ordered to bring the children to court:**
       
       % if appear_with_children_prevent:
       * To prevent abuse, neglect, removal, or concealment of the children
@@ -2670,7 +2670,7 @@ review:
       * To return the children to me
       % endif
       % if appear_with_children_exam:
-      * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}
+      * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name_full()}
       % endif
       % if not appear_with_children_prevent and not appear_with_children_return and not appear_with_children_exam:
       * No reasons entered
@@ -2678,12 +2678,12 @@ review:
     show if: minor_kids_with_respondent and current_possession_of_children == False and return_children_to == "court"
   - Edit: res_appear_alone
     button: |
-      **Should ${other_parties[0].name.full(middle="full")} be ordered to come to court alone?**
+      **Should ${other_parties[0].name_full()} be ordered to come to court alone?**
       ${ word(yesno(res_appear_alone))}
     show if: minor_kids_with_respondent and (current_possession_of_children == True or ( current_possession_of_children == False and return_children_to != "court" ))
   - Edit: res_appear_alone
     button: |
-      **Why should ${other_parties[0].name.full(middle="full")} be ordered to come to court alone?**
+      **Why should ${other_parties[0].name_full()} be ordered to come to court alone?**
       
       % if appear_alone_prevent:
       * To prevent abuse, neglect, removal, or concealment of the children
@@ -2692,7 +2692,7 @@ review:
       * To return the children to me
       % endif
       % if appear_alone_exam:
-      * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}
+      * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name_full()}
       % endif
       % if not appear_alone_prevent and not appear_alone_return and not appear_alone_exam:
       * No reasons entered
@@ -2701,10 +2701,10 @@ review:
     
   - Edit: no_records_no_contact
     button: |
-      **${other_parties[0].name.full(middle="full")} should not have access to the children's records for the following reasons:**
+      **${other_parties[0].name_full()} should not have access to the children's records for the following reasons:**
       
       % if no_records_no_contact:
-      * I am requesting ${other_parties[0].name.full(middle="full")} have no contact with the children.
+      * I am requesting ${other_parties[0].name_full()} have no contact with the children.
       % endif
       % if no_records_hide_address:
       * My address is not listed on the court forms to prevent further abuse.
@@ -2719,23 +2719,23 @@ review:
     button: |
       **What should the court do about parenting time?**
       % if parenting_time == "deny":
-      Deny ${other_parties[0].name.full(middle="full")} any parenting time
+      Deny ${other_parties[0].name_full()} any parenting time
       % endif 
       % if parenting_time == "restrict":
-      Restrict ${other_parties[0].name.full(middle="full")}'s parenting time
+      Restrict ${other_parties[0].name_full()}'s parenting time
       % endif 
       % if parenting_time == "grant":
-      Grant or allow ${other_parties[0].name.full(middle="full")} parenting time
+      Grant or allow ${other_parties[0].name_full()} parenting time
       % endif 
       % if parenting_time == "reserve":
-      Reserve ${other_parties[0].name.full(middle="full")}'s parenting time until a later hearing
+      Reserve ${other_parties[0].name_full()}'s parenting time until a later hearing
       % endif 
   - Edit: restrict_or_deny_pt_reasons
     button: |
       % if parenting_time == "restrict":
-      **Why do you want to restrict ${other_parties[0].name.full(middle="full")}'s parenting time?**
+      **Why do you want to restrict ${other_parties[0].name_full()}'s parenting time?**
       % else:
-      **Why do you want to deny ${other_parties[0].name.full(middle="full")} any parenting time?**
+      **Why do you want to deny ${other_parties[0].name_full()} any parenting time?**
       % endif  
       
       % if restrict_or_deny_pt_reasons["no_pt_no_abuse"]:
@@ -2763,7 +2763,7 @@ review:
     show if: parenting_time == "restrict" or parenting_time == "grant"
   - Edit: pt_weekdays
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to have parenting time on weekdays?**
+      **Do you want ${other_parties[0].name_full()} to have parenting time on weekdays?**
       ${ word(yesno(pt_weekdays)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
   - Edit: pt_weekday_days
@@ -2778,7 +2778,7 @@ review:
     
   - Edit: pt_weekends
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to have parenting time on weekends?**
+      **Do you want ${other_parties[0].name_full()} to have parenting time on weekends?**
       ${ word(yesno(pt_weekends)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
   - Edit: pt_weekend_cadence
@@ -2808,7 +2808,7 @@ review:
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_format == "interview"
   - Edit: pt_supervised
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")}'s parenting time to be supervised?**
+      **Do you want ${other_parties[0].name_full()}'s parenting time to be supervised?**
       ${ word(yesno(pt_supervised)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant")
   - Edit: pt_supervisor_type
@@ -2823,7 +2823,7 @@ review:
   - Edit: pt_supervisor.name.first
     button: |
       **Adult who will supervise parenting time:**
-      ${ pt_supervisor.name.full(middle="full") }
+      ${ pt_supervisor.name_full() }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervised == True and pt_supervisor_type == "person"
   - Edit: pt_visitation_center_name
     button: |
@@ -2836,7 +2836,7 @@ review:
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_supervised == True and pt_supervisor_type == "agency"
   - Edit: pt_location_identified
     button: |
-      **Do you know where you want ${other_parties[0].name.full(middle="full")}'s parenting time to happen?**
+      **Do you know where you want ${other_parties[0].name_full()}'s parenting time to happen?**
       ${ word(yesno(pt_location_identified)) }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and ((pt_supervised and pt_supervisor_type == "person") or not pt_supervised)
   - Edit: pt_location_identified
@@ -2850,7 +2850,7 @@ review:
       % if pt_transportation == "petitioner":
       I will provide transportation.
       % elif pt_transportation == "respondent":
-      ${other_parties[0].name.full(middle="full")} will provide transportation.
+      ${other_parties[0].name_full()} will provide transportation.
       % elif pt_transportation == "other":
       Someone else will provide transportation.
       % else:
@@ -2860,7 +2860,7 @@ review:
   - Edit: pt_transportation_person.name.first
     button: |
       **Person who will provide transportation to and from parenting time:**
-      ${ pt_transportation_person.name.full(middle="full") }
+      ${ pt_transportation_person.name_full() }
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_transportation == "other"
   - Edit: pt_separate_pickup_location
     button: |
@@ -2892,7 +2892,7 @@ review:
     show if: (parenting_time == "restrict" or parenting_time == "grant") and pt_separate_return_location == True
   - Edit: pt_immediate_return
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to return the children immediately after parenting time?**
+      **Do you want ${other_parties[0].name_full()} to return the children immediately after parenting time?**
       ${ word(yesno(pt_immediate_return)) }
       % if pt_immediate_return:
       % if pt_return_person_choice == "Me":
@@ -2900,7 +2900,7 @@ review:
       They should be returned to me.
       % elif pt_return_person_choice == "other":
       
-      They should be returned to ${ pt_return_person.name.full(middle="full")}.
+      They should be returned to ${ pt_return_person.name_full()}.
       % else:
       
       I will identify a return person later.
@@ -2933,7 +2933,7 @@ review:
    
   - Edit: petitioner_personal_property.revisit
     button: |
-      **Personal property ${other_parties[0].name.full(middle="full")} should return to you:**
+      **Personal property ${other_parties[0].name_full()} should return to you:**
 
       % for my_var in petitioner_personal_property:
       % if my_var.respo_has == True:
@@ -2943,22 +2943,22 @@ review:
     show if: award_personal_property == True and return_property == True
   - Edit: return_property_reason
     button: |
-      **Why should ${other_parties[0].name.full(middle="full")} return the property?**
+      **Why should ${other_parties[0].name_full()} return the property?**
       % if return_property_reason == "petitioner owns":
       I own the property.
       % elif return_property_reason == "both own":      
       We both own the property, but sharing it would be harder on me. It would put me at risk for abuse or sharing is not practical.
       % else:
-      I am married to ${other_parties[0].name.full(middle="full")}, and we filed a divorce.
+      I am married to ${other_parties[0].name_full()}, and we filed a divorce.
       % endif
     show if: award_personal_property == True and return_property == True
   - Edit: return_property_person
     button: |
-      **Who should ${other_parties[0].name.full(middle="full")} return your property to?**
+      **Who should ${other_parties[0].name_full()} return your property to?**
       % if return_property_person == "petitioner":
       Me
       % else:
-      ${ other_return_property_person.name.full(middle="full") }
+      ${ other_return_property_person.name_full() }
       % endif
     show if: (award_personal_property == True and return_property == True)   
   - Edit: property_transfer_location_cb
@@ -2986,7 +2986,7 @@ review:
       Law enforcement, ${ property_transfer_police }
       % endif
       % else:
-      ${ other_transfer_property_person.name.full(middle="full") }
+      ${ other_transfer_property_person.name_full() }
       % endif
     show if: award_personal_property == True and return_property == True and property_transfer_location_cb == True and property_transfer_present_cb == True
   - Edit: property_transfer_know_date
@@ -3002,11 +3002,11 @@ review:
 
   - Edit: return_respo_property
     button: |
-      **Any personal property ${other_parties[0].name.full(middle="full")} will need returned to them right away?**
+      **Any personal property ${other_parties[0].name_full()} will need returned to them right away?**
       ${ word(yesno(return_respo_property)) }
   - Edit: respo_property
     button: |
-      **Personal property of ${other_parties[0].name.full(middle="full")} that should be returned:**
+      **Personal property of ${other_parties[0].name_full()} that should be returned:**
 
       % if respo_property['clothes'] == True:
       * Clothes
@@ -3020,12 +3020,12 @@ review:
     show if: (return_respo_property == True)
   - Edit: respo_property_other
     button: |
-      **Other personal property of ${other_parties[0].name.full(middle="full")}:**
+      **Other personal property of ${other_parties[0].name_full()}:**
       ${ respo_property_other }
     show if: (return_respo_property == True and respo_property['other'] == True)
   - Edit: respondent_one_time_entry
     button: |
-      **Should ${other_parties[0].name.full(middle="full")} be allowed to enter the home only one time to get their personal property?**
+      **Should ${other_parties[0].name_full()} be allowed to enter the home only one time to get their personal property?**
       ${ word(yesno(respondent_one_time_entry)) }
   - Edit: res_property_transfer_person
     button: |
@@ -3037,7 +3037,7 @@ review:
       Law enforcement, ${ res_property_transfer_police }
       % endif
       % else:
-      ${ res_other_transfer_property_person.name.full(middle="full") }
+      ${ res_other_transfer_property_person.name_full() }
       % endif
     show if: respondent_one_time_entry == True
     
@@ -3087,13 +3087,13 @@ review:
       % elif restrict_property_reason == "both":      
       We both own the property, but not having it would be harder on me. It would put me at risk for abuse or sharing is not practical.
       % else:
-      I am married to ${other_parties[0].name.full(middle="full")}, and we have filed for divorce.
+      I am married to ${other_parties[0].name_full()}, and we have filed for divorce.
       % endif
     show if: restrict_other_property == True
     
   - Edit: restrict_elderly_petitioner_resources
     button: |
-      **Should the court protect an elderly person's resources from  ${other_parties[0].name.full(middle="full")}?**
+      **Should the court protect an elderly person's resources from  ${other_parties[0].name_full()}?**
       % if restrict_elderly_petitioner_resources == "Yes":
       Yes
       % elif restrict_elderly_petitioner_resources == "No":
@@ -3113,12 +3113,12 @@ subquestion: |
 review:
   - Edit: temp_child_support
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary child support?**
+      **Do you want ${other_parties[0].name_full()} to pay temporary child support?**
       ${ word(yesno(temp_child_support)) }
     show if: minor_kids_with_respondent == True
   - Edit: temp_maintenance
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to pay temporary maintenance?**
+      **Do you want ${other_parties[0].name_full()} to pay temporary maintenance?**
       ${ word(yesno(temp_maintenance)) }
     show if: relationship_se == True or relationship_xs == True
   - Edit: separate_phone_service
@@ -3129,9 +3129,9 @@ review:
     button: |
       **Who is the cell phone account holder?**
       % if phone_account_holder == 'respondent':
-      ${other_parties[0].name.full(middle="full")}
+      ${other_parties[0].name_full()}
       % else:
-      ${ other_phone_account_holder.name.full(middle="full") }
+      ${ other_phone_account_holder.name_full() }
       % endif
     show if: separate_phone_service == True
   - Edit: phone_provider
@@ -3139,7 +3139,7 @@ review:
       **Cell phone account details:**
       
       * Provider: ${ phone_provider }
-      * ${other_parties[0].name.full(middle="full")}'s phone number: ${ phone_number_formatted(billing_phone_number) }
+      * ${other_parties[0].name_full()}'s phone number: ${ phone_number_formatted(billing_phone_number) }
     show if: separate_phone_service == True
   - Edit: cell_numbers.revisit
     button: |
@@ -3151,7 +3151,7 @@ review:
     show if: separate_phone_service == True
   - Edit: expenses_none
     button: |
-      **Losses you want ${other_parties[0].name.full(middle="full")} to pay for:**
+      **Losses you want ${other_parties[0].name_full()} to pay for:**
 
       % if expenses_none:
       * None
@@ -3186,11 +3186,11 @@ review:
       % endif
   - Edit: request_counseling
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")} to get counseling?**
+      **Do you want ${other_parties[0].name_full()} to get counseling?**
       ${ word(yesno(request_counseling)) }
   - Edit: dv_counseling
     button: |
-      **Counseling you want ${ other_parties[0].name.full(middle="full") } to do:**
+      **Counseling you want ${ other_parties[0].name_full() } to do:**
       
       % if dv_counseling:
       * Domestic violence partner abuse counseling
@@ -3212,22 +3212,22 @@ review:
 
   - Edit: firearms_threat
     button: |
-      **Is ${other_parties[0].name.full(middle="full")} a threat to the physical safety of you or your children?**
+      **Is ${other_parties[0].name_full()} a threat to the physical safety of you or your children?**
       ${ word(yesno(firearms_threat)) }
   - Edit: firearms_relief
     button: |
       **Do you want the court to order any firearms relief?**
 
       % if firearms_relief['surrender']:
-      * I want ${other_parties[0].name.full(middle="full")} to **surrender firearms** to law enforcement.
+      * I want ${other_parties[0].name_full()} to **surrender firearms** to law enforcement.
       % endif
       % if firearms_relief['warrant']:
-      * I want a **search warrant** to be issued so law enforcement can search ${other_parties[0].name.full(middle="full")}'s property and seize fierarms.
+      * I want a **search warrant** to be issued so law enforcement can search ${other_parties[0].name_full()}'s property and seize fierarms.
       % endif
     show if: firearms_threat
   - Edit: intimate_partner
     button: |
-      **Is ${other_parties[0].name.full(middle="full")} a current or former intimate partner?**
+      **Is ${other_parties[0].name_full()} a current or former intimate partner?**
       % if intimate_partner == "Yes":
       Yes
       % elif intimate_partner == "No":
@@ -3241,13 +3241,13 @@ review:
       **Why do you want the court to order a search warrant?**
 
       % if warrant_reasons['threat']:
-      * ${other_parties[0].name.full(middle="full")} is an immediate threat to the physical safety of the people I want to protect.
+      * ${other_parties[0].name_full()} is an immediate threat to the physical safety of the people I want to protect.
       % endif
       % if warrant_reasons['has_guns']:
-      * ${other_parties[0].name.full(middle="full")} has a firearm or firearm parts that could be used to make a firearm.
+      * ${other_parties[0].name_full()} has a firearm or firearm parts that could be used to make a firearm.
       % endif
       % if warrant_reasons['location']:
-      * The firearm or firearm parts are in the residence, vehicle, or other property of ${other_parties[0].name.full(middle="full")}.
+      * The firearm or firearm parts are in the residence, vehicle, or other property of ${other_parties[0].name_full()}.
       % endif
       % if warrant_reasons['report']:
       * I made a report of domestic violence to law enforcement within the last 90 days.
@@ -3263,7 +3263,7 @@ review:
     show if: firearms_threat and firearms_relief['warrant']
   - Edit: has_helpful_warrant_info
     button: |
-      **Do you have other information about ${other_parties[0].name.full(middle="full")} that could help law enforcement with the warrant?**
+      **Do you have other information about ${other_parties[0].name_full()} that could help law enforcement with the warrant?**
       ${ word(yesno(has_helpful_warrant_info))}      
     show if: firearms_relief['warrant']
   - Edit: has_helpful_warrant_info
@@ -3278,13 +3278,13 @@ review:
     show if: firearms_threat
   - Edit: firearms_eop_notice
     button: |
-      **Are you worried that ${other_parties[0].name.full(middle="full")} might hurt you or the people you want to protect when they learn about the Order of Protection?**
+      **Are you worried that ${other_parties[0].name_full()} might hurt you or the people you want to protect when they learn about the Order of Protection?**
       ${ word(yesno(firearms_eop_notice))}
     show if: firearms_threat and (firearms_relief['surrender'] or firearms_relief['warrant'])
     
   - Edit: misc_remedies_text
     button: |
-      **What else do you want the court to order ${other_parties[0].name.full(middle="full")} to do or to stop doing?**
+      **What else do you want the court to order ${other_parties[0].name_full()} to do or to stop doing?**
       % if misc_remedies_text == "":
       Nothing
       % else:
@@ -3307,7 +3307,7 @@ subquestion: |
 review:
   - Edit: knows_respondent_dob
     button: |
-      **What you know about ${other_parties[0].name.full(middle="full")}'s birthdate?**[NEWLINE]
+      **What you know about ${other_parties[0].name_full()}'s birthdate?**[NEWLINE]
       % if knows_respondent_dob == "exact" and other_parties[0].birthdate != "":
       The exact date: ${ other_parties[0].birthdate }
       % elif knows_respondent_dob == "some":
@@ -3317,7 +3317,7 @@ review:
       % endif
   - Edit: respondent_parent_help
     button: |
-      **Do you want ${other_parties[0].name.full(middle="full")}'s parent or guardian help them follow the Order of Protection?**
+      **Do you want ${other_parties[0].name_full()}'s parent or guardian help them follow the Order of Protection?**
       % if respondent_parent_help == "Yes":
       Yes
       % elif respondent_parent_help == "No":
@@ -3332,13 +3332,13 @@ review:
     show if: respondent_parent_help == "Yes"
   - Edit: respondent_parent_order
     button: |
-      **What should ${other_parties[0].name.full(middle="full")}'s parent or guardian be ordered to do?**
+      **What should ${other_parties[0].name_full()}'s parent or guardian be ordered to do?**
       ${ respondent_parent_order }
     show if: respondent_parent_help == "Yes"
 
   - Edit: other_parties[0].gender
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s gender?**
+      **What is ${other_parties[0].name_full()}'s gender?**
       % if other_parties[0].gender == "":
       None entered
       % endif
@@ -3353,7 +3353,7 @@ review:
       % endif
   - Edit: other_parties[0].gender_cook
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s gender identity (confidential)?**
+      **What is ${other_parties[0].name_full()}'s gender identity (confidential)?**
       
       % if other_parties[0].gender_cook.all_false():
       * None entered
@@ -3383,7 +3383,7 @@ review:
     show if: trial_court_index == -1
   - Edit: respondent_sex_at_birth
     button: |
-      **${other_parties[0].name.full(middle="full")}'s sex assigned at birth (condfidential):**
+      **${other_parties[0].name_full()}'s sex assigned at birth (condfidential):**
       % if respondent_sex_at_birth == "None":
       None entered
       % else:
@@ -3397,7 +3397,7 @@ review:
     
   - Edit: other_parties[0].race
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s race?**
+      **What is ${other_parties[0].name_full()}'s race?**
       % if other_parties[0].race == 'other':
       ${ respondent_race_other }
       % else:
@@ -3406,7 +3406,7 @@ review:
 
   - Edit: other_parties[0].height_feet
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s height?**
+      **What is ${other_parties[0].name_full()}'s height?**
       % if other_parties[0].height_feet > 1:
       ${ other_parties[0].height_feet } feet
       % if other_parties[0].height_inches > 0:
@@ -3417,7 +3417,7 @@ review:
       % endif
   - Edit: other_parties[0].weight
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s weight?**
+      **What is ${other_parties[0].name_full()}'s weight?**
       % if other_parties[0].weight > 0:
       ${ other_parties[0].weight } pounds
       % else:
@@ -3425,7 +3425,7 @@ review:
       % endif
   - Edit: other_parties[0].hair
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s hair color?**
+      **What is ${other_parties[0].name_full()}'s hair color?**
       % if other_parties[0].hair != "":
       ${ other_parties[0].hair }
       % else:
@@ -3433,7 +3433,7 @@ review:
       % endif
   - Edit: other_parties[0].eyes
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s eye color?**
+      **What is ${other_parties[0].name_full()}'s eye color?**
       % if other_parties[0].eyes != "":
       ${ other_parties[0].eyes }
       % else:
@@ -3442,7 +3442,7 @@ review:
 
   - Edit: other_parties[0].skin
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s skin color?**
+      **What is ${other_parties[0].name_full()}'s skin color?**
       % if other_parties[0].skin == 'other':
       ${ respondent_skin_other }
       % else:
@@ -3451,17 +3451,17 @@ review:
     show if: trial_court_index == -1
   - Edit: other_parties[0].hair
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s hair color?**
+      **What is ${other_parties[0].name_full()}'s hair color?**
       ${ other_parties[0].hair }
     show if: trial_court_index == -1 and other_parties[0].hair != ""
   - Edit: other_parties[0].eyes
     button: |
-      **What is ${other_parties[0].name.full(middle="full")}'s eye color?**
+      **What is ${other_parties[0].name_full()}'s eye color?**
       ${ other_parties[0].eyes }
     show if: trial_court_index == -1 and other_parties[0].eyes != ""
   - Edit: other_parties[0].tattoos
     button: |
-      **Other things about ${other_parties[0].name.full(middle="full")}'s appearance:**
+      **Other things about ${other_parties[0].name_full()}'s appearance:**
       % if other_parties[0].tattoos != "":
       ${ other_parties[0].tattoos }
       % else:
@@ -3469,7 +3469,7 @@ review:
       % endif
   - Edit: other_parties[0].glasses
     button: |
-      **Does ${other_parties[0].name.full(middle="full")} wear glasses?**
+      **Does ${other_parties[0].name_full()} wear glasses?**
       % if other_parties[0].glasses is not None:
       ${ other_parties[0].glasses }
       % else:
@@ -3479,12 +3479,12 @@ review:
       
   - Edit: other_parties[0].alias_names
     button: |
-      **Other names ${other_parties[0].name.full(middle="full")} has used:**
+      **Other names ${other_parties[0].name_full()} has used:**
       ${ other_parties[0].alias_names }
     show if: trial_court_index == -1
   - Edit: respondent_on_probation
     button: |
-      **Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?**
+      **Is ${other_parties[0].name_full()} on court-ordered probation?**
       % if respondent_on_probation == "Yes":
       Yes
       % elif respondent_on_probation == "No":
@@ -3500,7 +3500,7 @@ review:
     show if: respondent_on_probation == "Yes" and trial_court_index == -1
   - Edit: caution_reasons
     button : |
-      **Reasons sheriff should use caution when approaching ${other_parties[0].name.full(middle="full")}:**
+      **Reasons sheriff should use caution when approaching ${other_parties[0].name_full()}:**
       
       % if not any(caution_reasons):
       * None entered
@@ -3533,15 +3533,15 @@ review:
       
   - Edit: knows_respondent_home
     button: |
-      **Do you know ${other_parties[0].name.full(middle="full")}'s current home address?**
+      **Do you know ${other_parties[0].name_full()}'s current home address?**
       ${ word(yesno(knows_respondent_home)) }
   - Edit: knows_respondent_home_last
     button: |
-      **Do you know ${other_parties[0].name.full(middle="full")}'s last known address?**
+      **Do you know ${other_parties[0].name_full()}'s last known address?**
       ${ word(yesno(knows_respondent_home_last)) }      
   - Edit: other_parties[0].address.address
     button: |
-      **${other_parties[0].name.full(middle="full")}'s home address:**
+      **${other_parties[0].name_full()}'s home address:**
       % if other_parties[0].address.address != "":
       % if knows_respondent_home:
       ${ other_parties[0].address.on_one_line(bare=True) }
@@ -3553,7 +3553,7 @@ review:
       % endif
   - Edit: other_parties[0].phone_number
     button: |
-      **${other_parties[0].name.full(middle="full")}'s home phone number:**
+      **${other_parties[0].name_full()}'s home phone number:**
       % if other_parties[0].phone_number != "":
       ${ phone_number_formatted(other_parties[0].phone_number) }      
       % else:
@@ -3561,7 +3561,7 @@ review:
       % endif
   - Edit: other_parties[0].mobile_number
     button: |
-      **${other_parties[0].name.full(middle="full")}'s cell number:**
+      **${other_parties[0].name_full()}'s cell number:**
       % if other_parties[0].mobile_number != "":
       ${ phone_number_formatted(other_parties[0].mobile_number) }      
       % else:
@@ -3569,7 +3569,7 @@ review:
       % endif
   - Edit: other_parties[0].email
     button: |
-      **${other_parties[0].name.full(middle="full")}'s email:**
+      **${other_parties[0].name_full()}'s email:**
       % if other_parties[0].email != "":
       ${ other_parties[0].email }
       % else:
@@ -3577,20 +3577,20 @@ review:
       % endif
   - Edit: respondent_on_social_media
     button: |
-      **Is ${other_parties[0].name.full(middle="full")} active on social media?**
+      **Is ${other_parties[0].name_full()} active on social media?**
       ${ respondent_on_social_media }      
   - Edit: respondent_social_media_accounts
     button: |
-      **${other_parties[0].name.full(middle="full")}'s social media accounts:**
+      **${other_parties[0].name_full()}'s social media accounts:**
       ${ respondent_social_media_accounts }
     show if: respondent_on_social_media == 'Yes'
   - Edit: knows_respondent_work
     button: |
-      **Do you know ${other_parties[0].name.full(middle="full")}'s work info?**
+      **Do you know ${other_parties[0].name_full()}'s work info?**
       ${ word(yesno(knows_respondent_work)) }
   - Edit: other_parties[0].work_address.address
     button: |
-      **${other_parties[0].name.full(middle="full")}'s work info:**
+      **${other_parties[0].name_full()}'s work info:**
       % if knows_respondent_work:
       ${ other_parties[0].employer + ", " + other_parties[0].work_address.on_one_line(bare=True) }
       % else:
@@ -3598,7 +3598,7 @@ review:
       % endif
   - Edit: respondent_work_type
     button: |
-      **${other_parties[0].name.full(middle="full")}'s occupation or type of work:**
+      **${other_parties[0].name_full()}'s occupation or type of work:**
       % if knows_respondent_work and respondent_work_type != "":
       ${ respondent_work_type }
       % else:
@@ -3608,7 +3608,7 @@ review:
 
   - Edit: cook_vehicle_color
     button: |
-      **Details on ${other_parties[0].name.full(middle="full")}'s car:**
+      **Details on ${other_parties[0].name_full()}'s car:**
 
       % if respondent_car_make == "":
       * Car make: None entered
@@ -3645,7 +3645,7 @@ review:
 
   - Edit: other_parties[0].work_hours
     button: |
-      **${other_parties[0].name.full(middle="full")}'s work schedule:**
+      **${other_parties[0].name_full()}'s work schedule:**
       % if knows_respondent_work and other_parties[0].work_hours != "":
       ${ other_parties[0].work_hours }
       % else:
@@ -3654,12 +3654,12 @@ review:
 
   - Edit: has_other_ops
     button: |
-      **Are there other Orders of Protection against ${other_parties[0].name.full(middle="full")}?**
+      **Are there other Orders of Protection against ${other_parties[0].name_full()}?**
       ${ has_other_ops }
       
   - Edit: other_ops.revisit
     button: |
-      **Other Orders of Protection against ${other_parties[0].name.full(middle="full")}: (Edit to change details)**
+      **Other Orders of Protection against ${other_parties[0].name_full()}: (Edit to change details)**
 
       % for my_var in other_ops:
         * ${ my_var.name.text } in ${ my_var.year }
@@ -3668,12 +3668,12 @@ review:
 
   - Edit: has_other_cases
     button: |
-      **Are there other cases with ${other_parties[0].name.full(middle="full")}?**
+      **Are there other cases with ${other_parties[0].name_full()}?**
       ${ has_other_cases }
       
   - Edit: other_cases.revisit
     button: |
-      **Other cases with ${other_parties[0].name.full(middle="full")}: (Edit to change details)**
+      **Other cases with ${other_parties[0].name_full()}: (Edit to change details)**
 
       % for my_var in other_cases:
         * ${ my_var.name.text } in ${ my_var.year }
@@ -3691,7 +3691,7 @@ subquestion: |
 review:
   - Edit: service_method
     button: |
-      **How do you want ${other_parties[0].name.full(middle="full")} to be served?**
+      **How do you want ${other_parties[0].name_full()} to be served?**
       % if service_method == "sheriff":
       By the sheriff
       % elif service_method == "sps":
@@ -3704,7 +3704,7 @@ review:
 
   - Edit: service_address_choice
     button: |
-      **Where can ${other_parties[0].name.full(middle="full")} be found for service?**
+      **Where can ${other_parties[0].name_full()} be found for service?**
       % if service_address_choice == "other":
       At another address
       % else:
@@ -3717,11 +3717,11 @@ review:
     show if: service_address_choice == "other"
   - Edit: has_second_service_address
     button: |
-      **Do you know another location where ${other_parties[0].name.full(middle="full")} can be found for service?**
+      **Do you know another location where ${other_parties[0].name_full()} can be found for service?**
       ${ word(yesno(has_second_service_address)) }
   - Edit: second_service_address_choice
     button: |
-      **Where else can ${other_parties[0].name.full(middle="full")} be found for service?**
+      **Where else can ${other_parties[0].name_full()} be found for service?**
       % if second_service_address_choice == "other":
       At another address
       % else:
@@ -3735,23 +3735,23 @@ review:
     show if: has_second_service_address and second_service_address_choice == "other"
   - Edit: other_parties[0].phone_number_alt
     button: |
-      **${other_parties[0].name.full(middle="full")}'s other contact info:**
+      **${other_parties[0].name_full()}'s other contact info:**
   
       % if other_parties[0].phone_number_alt != "":
-      * ${other_parties[0].name.full(middle="full")}'s alternate phone: ${ phone_number_formatted(other_parties[0].phone_number_alt) }
+      * ${other_parties[0].name_full()}'s alternate phone: ${ phone_number_formatted(other_parties[0].phone_number_alt) }
       % else:
-      * ${other_parties[0].name.full(middle="full")}'s alternate phone: None entered
+      * ${other_parties[0].name_full()}'s alternate phone: None entered
       % endif
       % if other_parties[0].email_alt != "":
-      * ${other_parties[0].name.full(middle="full")}'s alternate email: ${ other_parties[0].email_alt }
+      * ${other_parties[0].name_full()}'s alternate email: ${ other_parties[0].email_alt }
       % else:
-      * ${other_parties[0].name.full(middle="full")}'s alternate email: None entered
+      * ${other_parties[0].name_full()}'s alternate email: None entered
       % endif
     show if: has_second_service_address
       
   - Edit: service_information
     button: |
-      **Additional information to help serve court papers on ${other_parties[0].name.full(middle="full")}:**
+      **Additional information to help serve court papers on ${other_parties[0].name_full()}:**
       ${ service_information }
     show if: trial_court_index == -1
 
@@ -3776,7 +3776,7 @@ review:
       % endif    
   - Edit: previous_cook_case_type
     button: |
-      **Previous Cook County case involving ${other_parties[0].name.full(middle="full")}:**
+      **Previous Cook County case involving ${other_parties[0].name_full()}:**
       ${ previous_cook_case_type.capitalize() }
     show if: trial_court_index == -1
   - Edit: previous_cook_case_date
