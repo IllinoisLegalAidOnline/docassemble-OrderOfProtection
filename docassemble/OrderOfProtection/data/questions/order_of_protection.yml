@@ -504,7 +504,7 @@ subquestion: |
   * Relative of your child (includes relatives of your foster child, adopted child or prospective adopted child, or relatives of a child for whom you are the legally-appointed guardian or legally-appointed custodian), or
   * Caregiver for persons with disabilities.
 
-  You can also ask for an Order of Protection if you are filing for any person who has been abused by a family or household member, but is unable to file on their own.
+  You can also ask for an Order of Protection if you are filing for any person who has been abused by a family or household member, but is unable to file on their own. This could be a minor child or a person with disabilities.
 
   There are many kinds of abuse. To learn more, read ILAO's [**Domestic violence common questions**](https://www.illinoislegalaid.org/node/185806).
 ---
@@ -657,7 +657,7 @@ fields:
     datatype: yesnowide
   - We have or might have children together.: relationship_ac
     datatype: yesnowide
-  - We are related through a current or past marriage, such as a spouse, in-law, or step-sibling.: relationship_ma
+  - We are related through a current or past marriage, such as a spouse, in-law, or step-sibling. **Click to see options.**: relationship_ma
     help: |
       Select this if you are a spouse, ex-spouse, in-law, step-child, step-brother, step-sister, step-sibling, or other family member of the person who caused the abuse.
     datatype: yesnowide
@@ -683,7 +683,7 @@ fields:
     datatype: yesnowide
     help: |
       Example: We share a common area like a kitchen. This would not apply if you just had apartments in the same building.
-  - We are related through blood, such as a child, parent, or sibling.: relationship_bl
+  - We are related through blood, such as a child, parent, or sibling. **Click to see options.**: relationship_bl
     datatype: yesnowide
     help: |
       Select this if you are a child, parent, brother, sister, sibling, grandchild, grandparent, or other family member of the person who caused the abuse.
@@ -824,7 +824,7 @@ fields:
 ---
 id: know respondent birthdate
 question: |
-  Do you know ${other_parties[0].name.full(middle="full")}'s birthdate?
+  Do you know ${other_parties[0].name_full()}'s birthdate?
 fields:   
   - no label: knows_respondent_dob
     datatype: radio
@@ -838,13 +838,13 @@ fields:
           % else:
           You may want to update the sheriff's office when you have this information.
           % endif
-  - ${other_parties[0].name.full(middle="full")}'s date of birth: other_parties[0].birthdate
+  - ${other_parties[0].name_full()}'s date of birth: other_parties[0].birthdate
     datatype: ThreePartsDate
     alMax: ${ today().format("yyyy-MM-dd") }
     show if: 
       variable: knows_respondent_dob
       is: exact
-  - How old do you think ${other_parties[0].name.full(middle="full")} is?: other_parties[0].approx_age
+  - How old do you think ${other_parties[0].name_full()} is?: other_parties[0].approx_age
     maxlength: 20
     show if:
       variable: knows_respondent_dob
@@ -852,7 +852,7 @@ fields:
 ---
 id: minor kids with respondent
 question: |
-  Do you have any minor children with ${other_parties[0].name.full(middle="full")}?
+  Do you have any minor children with ${other_parties[0].name_full()}?
 subquestion:
   Minor children are under 18.
 field: minor_kids_with_respondent
@@ -879,15 +879,15 @@ fields:
   - Me: protect_petitioner
     datatype: yesnowide
     default: True
-  - Minor children I have with ${other_parties[0].name.full(middle="full")}: protect_shared_kids
+  - Minor children I have with ${other_parties[0].name_full()}: protect_shared_kids
     datatype: yesnowide
     help: |
-      Check this if you want the order to protect your minor children you have with ${other_parties[0].name.full(middle="full")}.
+      Check this if you want the order to protect your minor children you have with ${other_parties[0].name_full()}.
     # removing this show if to accommodate adding minor children thru review, maybe revisit
     #show if:
     #  code: |
     #    minor_kids_with_respondent == True
-  - My minor children I **did not** have with ${other_parties[0].name.full(middle="full")}: protect_petitioner_kids
+  - My minor children I **did not** have with ${other_parties[0].name_full()}: protect_petitioner_kids
     datatype: yesnowide
   - A dependent adult: protect_dependent_adult
     datatype: yesnowide
@@ -914,7 +914,7 @@ sets:
   - shared_kids[0].name.suffix
 id: name of first child with respondent
 question: |
-  Who is your minor child with ${other_parties[0].name.full(middle="full")}?
+  Who is your minor child with ${other_parties[0].name_full()}?
 subquestion: |
   The statewide Order of Protection forms have space for up to 6 minor children with the Respondent.
 fields:
@@ -928,18 +928,18 @@ sets:
   - shared_kids[i].name.last
   - shared_kids[i].name.suffix
 question: |
-  Who is your ${ ordinal(i) } minor child with ${other_parties[0].name.full(middle="full")}?
+  Who is your ${ ordinal(i) } minor child with ${other_parties[0].name_full()}?
 fields:
   - code: |
       shared_kids[i].name_fields()
 ---
 id: any other children with respondent
 question: |
-  Do you have another minor child with ${other_parties[0].name.full(middle="full")}?
+  Do you have another minor child with ${other_parties[0].name_full()}?
 subquestion: |
   The statewide Order of Protection forms have space for up to 6 minor children with the Respondent.
   % if len(shared_kids.elements) >= 1:  
-  So far you have told us about ${comma_and_list(shared_kids.complete_elements().full_names())}.
+  So far you have told us about ${shared_kids.full_names()}.
   % endif
 fields:
   - "Anyone else?": shared_kids.there_is_another
@@ -952,7 +952,7 @@ sets:
   - petitioner_kids[0].name.suffix
 id: name of first child not with respondent
 question: |
-  Who is your minor child **not with** ${other_parties[0].name.full(middle="full")} you want protected by this order?
+  Who is your minor child **not with** ${other_parties[0].name_full()} you want protected by this order?
 subquestion: |
   If you want to include more than one, you can enter their names on following screens.
 fields:
@@ -966,17 +966,17 @@ sets:
   - petitioner_kids[i].name.last
   - petitioner_kids[i].name.suffix
 question: |
-  Who is your ${ ordinal(i) } minor child **not with** ${other_parties[0].name.full(middle="full")}  you want protected by this order?
+  Who is your ${ ordinal(i) } minor child **not with** ${other_parties[0].name_full()}  you want protected by this order?
 fields:
   - code: |
       petitioner_kids[i].name_fields()
 ---
 id: any other children not with respondent
 question: |
-  Do you have another minor child **not with** ${other_parties[0].name.full(middle="full")} you want protected by this order?
+  Do you have another minor child **not with** ${other_parties[0].name_full()} you want protected by this order?
 subquestion: |
   % if len(petitioner_kids.elements) >= 1:  
-  So far you have told us about ${comma_and_list(petitioner_kids.complete_elements().full_names())}.
+  So far you have told us about ${petitioner_kids.full_names()}.
   % endif
 fields:
   - "Anyone else?": petitioner_kids.there_is_another
@@ -1013,7 +1013,7 @@ question: |
   Do you have another household member you want protected by this order?
 subquestion: |
   % if len(other_hh_members.elements) >= 1:  
-  So far you have told us about ${comma_and_list(other_hh_members.complete_elements().full_names())}.
+  So far you have told us about ${other_hh_members.full_names()}.
   % endif
 fields:
   - "Anyone else?": other_hh_members.there_is_another
@@ -1022,7 +1022,7 @@ fields:
 id: minor child info
 generic object: ALIndividual
 question: |
-  Tell us more about ${ x.name.full(middle="full")}
+  Tell us more about ${ x.name_full()}
 subquestion: |
   ${ collapse_template(minor_child_residence_help) }
 fields:
@@ -1038,18 +1038,18 @@ fields:
       ${ collapse_template(legal_parentage_help) }
   - Your legal parentage has already been established.: x.pet_parentage
     datatype: yesnomaybe
-  - ${other_parties[0].name.full(middle="full")}'s legal parentage has already been established.: x.res_parentage
+  - ${other_parties[0].name_full()}'s legal parentage has already been established.: x.res_parentage
     datatype: yesnomaybe
   - Include as a protected person?: x.protect
     datatype: yesnoradio
     help: |
-      Select **Yes** if you want the order to protect the child from ${other_parties[0].name.full(middle="full")}. 
+      Select **Yes** if you want the order to protect the child from ${other_parties[0].name_full()}. 
 ---
 template: minor_child_residence_help
 subject: |
   **What if the child has not lived in the same state over the past 6 months?**
 content: |  
-  If ${ x.name.full(middle="full")} has not lived in Illinois or the state you select for the past 6 months, you may want to talk with a lawyer. There are laws that affect which state courts can settle things like child custody. If the child is under 6 months old, select where the child lived since birth.
+  If ${ x.name_full()} has not lived in Illinois or the state you select for the past 6 months, you may want to talk with a lawyer. There are laws that affect which state courts can settle things like child custody. If the child is under 6 months old, select where the child lived since birth.
   
   Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate. You can also use [**Get Legal Help**](https://www.illinoislegalaid.org/get-legal-help) to find free or low-cost legal services in your area.
 ---
@@ -1114,7 +1114,7 @@ fields:
 ---
 id: order type
 question: |
-  Which type of Order of Protection do you want against ${other_parties[0].name.full(middle="full")}?
+  Which type of Order of Protection do you want against ${other_parties[0].name_full()}?
 subquestion: |
   You can ask for both.
   
@@ -1126,17 +1126,17 @@ fields:
     help: |
       **Emergency Order of Protection**
 
-      * Judge can give this order on the same day you file, without notifying ${other_parties[0].name.full(middle="full")}
+      * Judge can give this order on the same day you file, before ${other_parties[0].name_full()} is notified
       * Lasts for 14 to 21 days
-      * After ${other_parties[0].name.full(middle="full")} is served with court papers, you can ask for a long-term (Plenary) Order of Protection
+      * After ${other_parties[0].name_full()} is served with court papers, you can ask for a long-term (Plenary) Order of Protection
   - Plenary: pop
     datatype: yesnowide
     help: |
       **Plenary (long-term) Order of Protection**
           
-      * Judge can give this order on a later date, after ${other_parties[0].name.full(middle="full")} has been notified
+      * Judge can give this order on a later date, after ${other_parties[0].name_full()} has been notified
       * Lasts for up to 2 years
-      * ${other_parties[0].name.full(middle="full")} will have a chance to participate in the court case
+      * ${other_parties[0].name_full()} will have a chance to participate in the court case
 validation code: |
   if not (eop or pop):
     validation_error("Please select at least one type of order to continue.", field="pop")
@@ -1146,7 +1146,7 @@ id: other ops
 question: |
   Other Orders of Protection
 subquestion: |
-  Is there now, or has there ever been, an Order of Protection in any state against ${other_parties[0].name.full(middle="full")} involving you or other people you want to protect in this Order?
+  Is there now, or has there ever been, an Order of Protection in any state against ${other_parties[0].name_full()} involving you or other people you want to protect in this Order?
 fields:
   - Other Orders of Protection?: has_other_ops
     datatype: radio
@@ -1221,9 +1221,9 @@ code: |
 
 id: other cases
 question: |
-  Other court cases with ${other_parties[0].name.full(middle="full")}
+  Other court cases with ${other_parties[0].name_full()}
 subquestion: |
-  Are there now, or have there ever been, any other court cases (civil or criminal) involving ${other_parties[0].name.full(middle="full")} and you or other people you want to protect in this Order?
+  Are there now, or have there ever been, any other court cases (civil or criminal) involving ${other_parties[0].name_full()} and you or other people you want to protect in this Order?
   
   Examples include:
   
@@ -1345,8 +1345,8 @@ question: |
 subquestion: |
   Try to be specific about:
   
-  * What ${other_parties[0].name.full(middle="full")} did,
-  * What ${other_parties[0].name.full(middle="full")} said,
+  * What ${other_parties[0].name_full()} did,
+  * What ${other_parties[0].name_full()} said,
   * Where the abuse happened,
   * How the abuse happened, such as in person, by phone or text, etc.,
   * Who was there when the abuse happened, and
@@ -1360,7 +1360,7 @@ fields:
   - Date (month and year): incidents[i].date
     maxlength: 20
     help: |
-      If you don't remember the exact date, enter the month and year. Use abbreviations if needed.
+      If you don't remember the exact date, enter the month and year. Use abbreviations if needed. Also, any format is fine. For example: Sept. 3, 2024 or 9/3/24.
   - Time: incidents[i].time
     maxlength: 20
     help: |
@@ -1378,8 +1378,8 @@ question: |
 subquestion: |
   Try to be specific about:
   
-  * What ${other_parties[0].name.full(middle="full")} did,
-  * What ${other_parties[0].name.full(middle="full")} said,
+  * What ${other_parties[0].name_full()} did,
+  * What ${other_parties[0].name_full()} said,
   * Where the abuse happened,
   * How the abuse happened, such as in person, by phone or text, etc.,
   * Who was there when the abuse happened, and
@@ -1393,7 +1393,7 @@ fields:
   - Date (month and year): incidents[0].date
     maxlength: 20
     help: |
-      If you don't remember the exact date, enter the month and year. Use abbreviations if needed.
+      If you don't remember the exact date, enter the month and year. Use abbreviations if needed. Also, any format is fine. For example: Sept. 3, 2024 or 9/3/24.
   - Time: incidents[0].time
     maxlength: 20
     help: |
@@ -1440,11 +1440,11 @@ code: |
 ---
 id: no abuse
 question: |
-  What do you want the court to order ${other_parties[0].name.full(middle="full")} to not do?
+  What do you want the court to order ${other_parties[0].name_full()} to not do?
 subquestion: |
-  This includes ordering ${other_parties[0].name.full(middle="full")} to not to threaten to do these things.
+  This includes ordering ${other_parties[0].name_full()} to not do these things and not to threaten to do these things.
 
-  Check as many as you want, even if ${other_parties[0].name.full(middle="full")} has not done this before.
+  Check as many as you want, even if ${other_parties[0].name_full()} has not done this before.
 fields:
   - Harassment: no_harassment
     datatype: yesnowide
@@ -1527,9 +1527,9 @@ fields:
 ---
 id: stay away
 question: |
-  Do you want the court to order ${other_parties[0].name.full(middle="full")} to stay away and not communicate with people protected by this order?
+  Do you want the court to order ${other_parties[0].name_full()} to stay away and not communicate with people protected by this order?
 subquestion: |
-  If ordered to stay away, ${other_parties[0].name.full(middle="full")} must not have any physical, non-physical, direct, or indirect contact with the people protected by this order. This includes:
+  If ordered to stay away, ${other_parties[0].name_full()} must not have any physical, non-physical, direct, or indirect contact with the people protected by this order, including:
   
   * Oral communication,
   * Written communication,
@@ -1539,18 +1539,18 @@ subquestion: |
   * Texts,
   * Emails,
   * Posts, tweets, or communication by any other social media, and
-  * All other communication
+  * All other communication.
   
-  with people protected by this order. This also includes contact or communication through others who may not know about the Order of Protection.
+  This also includes contact or communication through others who may not know about the Order of Protection.
 fields:
-  - ${other_parties[0].name.full(middle="full")} should stay away at all times and have no contact?: stay_away
+  - ${other_parties[0].name_full()} should stay away at all times and have no contact?: stay_away
     datatype: yesnoradio
 ---
 id: no stay under influence
 question: |
-  Do you want the court to order ${other_parties[0].name.full(middle="full")} to stay away from and not be at your residence while under the influence?
+  Do you want the court to order ${other_parties[0].name_full()} to stay away from and not be at your residence while under the influence?
 subquestion: |
-  Select **Yes** if when ${other_parties[0].name.full(middle="full")} is under the influence of drugs or alcohol, they are a threat to you or your children.
+  Select **Yes** if when ${other_parties[0].name_full()} is under the influence of drugs or alcohol, they are a threat to you or your children.
 fields:
   - No entry or presence while under the influence?: no_stay_under_influence
     datatype: yesnoradio
@@ -1577,7 +1577,7 @@ id: hide address
 question: |
   Do you want to keep your address hidden?
 subquestion: |
-  You do not need to list where you are staying on your court papers. You can use an address where you can receive court notices instead.
+  You do not need to list where you are staying on your court papers. You can use a different address instead, as long as it is a place where you can get mail. This could be a friend or family member's home, a work address, a PO box, or some other mailing address.
 field: hide_address
 choices:
   - Yes: True
@@ -1618,8 +1618,8 @@ fields:
   - no label: residence_remedies
     datatype: radio
     choices:
-    - I want **exclusive possession** of the residence. This means ${other_parties[0].name.full(middle="full")} should not be allowed to enter or stay there.: exclusive possession
-    - I want ${other_parties[0].name.full(middle="full")} to **provide a different place** for me and the protected people to live because we share a residence.: provide alternate housing
+    - I want **exclusive possession** of the residence. This means ${other_parties[0].name_full()} should not be allowed to enter or stay there.: exclusive possession
+    - I want ${other_parties[0].name_full()} to **provide a different place** for me and the protected people to live because we share a residence.: provide alternate housing
     - None of the above: none
 
 ---
@@ -1628,13 +1628,13 @@ question: |
   Why should the court give you exclusive possession of your residence?
 field: exclusive_possession_reason
 choices:
-  - I have a right to occupy the residence and ${other_parties[0].name.full(middle="full")} has no right.: respondent_no_right_to_stay
+  - I have a right to occupy the residence and ${other_parties[0].name_full()} has no right.: respondent_no_right_to_stay
   - Both of us have a right to occupy the residence, but it would be harder on me or any of my children or dependents to leave.: both_parties_right_to_stay
 
 ---
 id: respondent info
 question: |
-  What are ${other_parties[0].name.full(middle="full")}'s phone number and email address?
+  What are ${other_parties[0].name_full()}'s phone number and email address?
 subquestion: |
   If you do not know, leave these blank.
 fields:
@@ -1653,13 +1653,13 @@ fields:
 ---
 id: respondent social media
 question: |
-  Is ${other_parties[0].name.full(middle="full")} active on social media?
+  Is ${other_parties[0].name_full()} active on social media?
 subquestion: |
-  If you know about ${other_parties[0].name.full(middle="full")}'s accounts, this could help the sheriff find them.
+  If you know about ${other_parties[0].name_full()}'s accounts, this could help the sheriff find them.
   
   This information **will not** appear on public court documents.
 fields:
-  - ${other_parties[0].name.full(middle="full")} active on social media?: respondent_on_social_media
+  - ${other_parties[0].name_full()} active on social media?: respondent_on_social_media
     datatype: radio
     choices:
       - Yes: Yes
@@ -1677,7 +1677,7 @@ fields:
 ---
 id: respondent home address question
 question: |
-  Do you know ${other_parties[0].name.full(middle="full")}'s current home address?
+  Do you know ${other_parties[0].name_full()}'s current home address?
 subquestion: |
   If you do not know the current address, select **No**. You can enter their last known address on another screen.
 fields:
@@ -1686,7 +1686,7 @@ fields:
 ---
 id: respondent last known address
 question: |
-  Do you know ${other_parties[0].name.full(middle="full")}'s last known address?
+  Do you know ${other_parties[0].name_full()}'s last known address?
 fields:
   - no label: knows_respondent_home_last
     datatype: yesnoradio
@@ -1694,9 +1694,9 @@ fields:
 id: respondent address
 question: |
   % if knows_respondent_home:
-  What is ${other_parties[0].name.full(middle="full")}'s current home address?
+  What is ${other_parties[0].name_full()}'s current home address?
   % else:
-  What is ${other_parties[0].name.full(middle="full")}'s last known address?
+  What is ${other_parties[0].name_full()}'s last known address?
   % endif
 fields:
   - Street address: other_parties[0].address.address
@@ -1712,16 +1712,16 @@ fields:
 ---
 id: respondent work question
 question: |
-  Do you know ${other_parties[0].name.full(middle="full")}'s work information?
+  Do you know ${other_parties[0].name_full()}'s work information?
 subquestions: |
-  If ${other_parties[0].name.full(middle="full")} is currently unemployed, you can select **No**.
+  If ${other_parties[0].name_full()} is currently unemployed, you can select **No**.
 fields:
-  - Know ${other_parties[0].name.full(middle="full")}'s work info?: knows_respondent_work
+  - Know ${other_parties[0].name_full()}'s work info?: knows_respondent_work
     datatype: yesnoradio
 ---
 id: respondent work info
 question: |
-  Tell us about ${other_parties[0].name.full(middle="full")}'s job
+  Tell us about ${other_parties[0].name_full()}'s job
 subquestion: |
 fields:
   - Employer or company: other_parties[0].employer
@@ -1751,7 +1751,7 @@ fields:
 ---
 id: stay away work question
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to stay away from where you work while you are there?
+  Do you want ${other_parties[0].name_full()} to stay away from where you work while you are there?
 subquestion: |
   The statewide Order of Protection forms have space for up to 2 places of employment.
   
@@ -1805,17 +1805,17 @@ fields:
 ---
 id: another stay away job
 question: |
-  Do you have another job you want ${other_parties[0].name.full(middle="full")} to stay away from while you are there?
+  Do you have another job you want ${other_parties[0].name_full()} to stay away from while you are there?
 fields:
   - no label: stay_away_jobs_2
     datatype: yesnoradio
 ---
 id: stay away school question
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to stay away from any schools, kindergartens, or daycare centers while you or people you want to protect are there?
+  Do you want ${other_parties[0].name_full()} to stay away from any schools, kindergartens, or daycare centers while you or people you want to protect are there?
 subquestion: |
   % if minor_kids_with_respondent or protect_petitioner_kids:
-  The statewide Order of Protection forms have space for up to 2 schools or daycares. If you need to list more than 2 schools or daycares, you can add them as "other places" you want ${other_parties[0].name.full(middle="full")} to stay away from.
+  The statewide Order of Protection forms have space for up to 2 schools or daycares. If you need to list more than 2 schools or daycares, you can add them as "other places" you want ${other_parties[0].name_full()} to stay away from.
   
   **Note:** You can keep the name and address of these schools confidential if your children attend them.
   % else:
@@ -1834,7 +1834,7 @@ question: |
   % endif
 subquestion: |  
   % if minor_kids_with_respondent or protect_petitioner_kids:
-  If you do not want this information on your court forms, which can be seen by ${ other_parties[0].name.full(middle="full") }, check **Yes** to the **Hide this information** question below.
+  If you do not want this information on your court forms, which can be seen by ${ other_parties[0].name_full() }, check **Yes** to the **Hide this information** question below.
   % endif
 fields:
   - School or daycare name: schools[i].name
@@ -1848,7 +1848,7 @@ fields:
     code: |
       states_list()
   - ZIP code: schools[i].zip
-  - Hide this information from ${ other_parties[0].name.full(middle="full") }?: schools[i].hide
+  - Hide this information from ${ other_parties[0].name_full() }?: schools[i].hide
     datatype: yesnoradio
     show if: 
       code: |
@@ -1858,14 +1858,14 @@ fields:
 ---
 id: second stay away school
 question: |
-  Do you have another school or daycare you want ${other_parties[0].name.full(middle="full")} to stay away from while you or people you want to protect are there?
+  Do you have another school or daycare you want ${other_parties[0].name_full()} to stay away from while you or people you want to protect are there?
 subquestion: |  
   So far you entered: ${ schools[0].name }
 
   % if minor_kids_with_respondent or protect_petitioner_kids:
-  **Note:** You can enter up to 2 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from. If you need to list more than 2 schools or daycares, you can add them as "other places" you want ${other_parties[0].name.full(middle="full")} to stay away from.
+  **Note:** You can enter up to 2 schools or daycares that you want ${other_parties[0].name_full()} to stay away from. If you need to list more than 2 schools or daycares, you can add them as "other places" you want ${other_parties[0].name_full()} to stay away from.
   % else:
-  **Note:** You can enter up to 2 schools or daycares that you want ${other_parties[0].name.full(middle="full")} to stay away from.
+  **Note:** You can enter up to 2 schools or daycares that you want ${other_parties[0].name_full()} to stay away from.
   % endif
 fields:
   - no label: stay_away_schools_2
@@ -1883,11 +1883,11 @@ code: |
   if minor_kids_with_respondent:
     if shared_kids.number() > 0:
       for person in shared_kids:
-        minor_kids_list.append( {person.name.full(middle="full"): person.name.full(middle="full") } )
+        minor_kids_list.append( {person.name_full(): person.name_full() } )
   if protect_petitioner_kids:
     if petitioner_kids.number() > 0:
       for person in petitioner_kids:
-        minor_kids_list.append( {person.name.full(middle="full"): person.name.full(middle="full") } )
+        minor_kids_list.append( {person.name_full(): person.name_full() } )
 ---
 id: confidential school details
 question: |
@@ -1920,7 +1920,7 @@ code: |
 ---
 id: stay away other location question
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to stay away from other places while you are there?
+  Do you want ${other_parties[0].name_full()} to stay away from other places while you are there?
 subquestion: |
   The statewide Order of Protection forms have space for up to 2 other places.
   % if stay_away_schools:
@@ -1956,7 +1956,7 @@ choices:
 ---
 id: stay away other location name
 question: |
-  Tell us about the place you want ${other_parties[0].name.full(middle="full")} to stay away from
+  Tell us about the place you want ${other_parties[0].name_full()} to stay away from
 subquestion: |
   This description will appear on your court papers.
 fields:
@@ -1964,7 +1964,7 @@ fields:
 ---
 id: stay away other location 2 name
 question: |
-  Tell us about the second place you want ${other_parties[0].name.full(middle="full")} to stay away from
+  Tell us about the second place you want ${other_parties[0].name_full()} to stay away from
 subquestion: |
   This description will appear on your court papers.
 fields:
@@ -1974,9 +1974,9 @@ fields:
 id: stay away other location info
 question: |
   % if i==0:
-  Tell us about the place you want ${other_parties[0].name.full(middle="full")} to stay away from
+  Tell us about the place you want ${other_parties[0].name_full()} to stay away from
   % else:
-  Tell us about the second place you want ${other_parties[0].name.full(middle="full")} to stay away from
+  Tell us about the second place you want ${other_parties[0].name_full()} to stay away from
   % endif
 subquestion: |
   **This address will appear on your court papers.** If you do not want this, click **Back** to keep this address hidden.
@@ -1995,7 +1995,7 @@ fields:
 ---
 id: another stay away location
 question: |
-  Do you have another place you want ${other_parties[0].name.full(middle="full")} to stay away from while you are there?
+  Do you have another place you want ${other_parties[0].name_full()} to stay away from while you are there?
 subquestion: |
   % if other_location_1_is_school:
   So far you entered: ${ schools[2].name }
@@ -2013,7 +2013,7 @@ fields:
 ---
 id: attend same school
 question: |
-  Does ${other_parties[0].name.full(middle="full")} attend the same school as you or any of the people you want to protect?
+  Does ${other_parties[0].name_full()} attend the same school as you or any of the people you want to protect?
 subquestion: |
   This can be an elementary, middle, or high school.
 fields:
@@ -2022,18 +2022,18 @@ fields:
 ---
 id: school restrictions
 question: |
-  What should the court order ${other_parties[0].name.full(middle="full")} to do at the school?
+  What should the court order ${other_parties[0].name_full()} to do at the school?
 fields:
   - no label: same_school_restrictions
     datatype: radio
     choices:
-      - ${other_parties[0].name.full(middle="full")} should not attend the school while I or other protected people are enrolled there.: not attend
-      - ${other_parties[0].name.full(middle="full")} should change their placement or program at the school, as determined by the public school district or by a private or non-public school.: change program
-      - ${other_parties[0].name.full(middle="full")} should not be present in certain parts of the school.: not present in parts
+      - ${other_parties[0].name_full()} should not attend the school while I or other protected people are enrolled there.: not attend
+      - ${other_parties[0].name_full()} should change their placement or program at the school, as determined by the public school district or by a private or non-public school.: change program
+      - ${other_parties[0].name_full()} should not be present in certain parts of the school.: not present in parts
         help: |
-          If you select this, you can list the parts of the school where ${other_parties[0].name.full(middle="full")} should not go.
-      - I don't want the court to order any school restrictions on ${other_parties[0].name.full(middle="full")}.: none
-  - Parts of the school where ${other_parties[0].name.full(middle="full")} should not go: parts_of_school
+          If you select this, you can list the parts of the school where ${other_parties[0].name_full()} should not go.
+      - I don't want the court to order any school restrictions on ${other_parties[0].name_full()}.: none
+  - Parts of the school where ${other_parties[0].name_full()} should not go: parts_of_school
     input type: area
     rows: 3
     maxlength: 150  
@@ -2044,7 +2044,7 @@ fields:
 ---
 id: same school name
 question: |
-  What is the name of the school ${other_parties[0].name.full(middle="full")} attends?
+  What is the name of the school ${other_parties[0].name_full()} attends?
 subquestion: |
   This can be an elementary, middle, or high school. 
 fields:
@@ -2054,9 +2054,9 @@ fields:
 ---
 id: minor respondent parents help
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")}'s parent or guardian to help them follow the Order of Protection?
+  Do you want ${other_parties[0].name_full()}'s parent or guardian to help them follow the Order of Protection?
 subquestion: |
-  You can ask for this if you know or think ${other_parties[0].name.full(middle="full")} is under age 18.
+  You can ask for this if you know or think ${other_parties[0].name_full()} is under age 18.
 fields:
   - no label: respondent_parent_help
     datatype: radio
@@ -2068,12 +2068,12 @@ fields:
 ---
 id: minor respondent parent info
 question: |
-  Requirements for ${other_parties[0].name.full(middle="full")}'s parent or guardian
+  Requirements for ${other_parties[0].name_full()}'s parent or guardian
 fields:
   - Parent or guardian name: respondent_parent_name
     maxlength: 60
     required: False
-  - What should ${other_parties[0].name.full(middle="full")}'s parent or guardian be ordered to do?: respondent_parent_order
+  - What should ${other_parties[0].name_full()}'s parent or guardian be ordered to do?: respondent_parent_order
     input type: area
     rows: 6
     maxlength: 200
@@ -2081,9 +2081,9 @@ fields:
 ---
 id: request counseling for respondent
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to get counseling?
+  Do you want ${other_parties[0].name_full()} to get counseling?
 subquestion: |
-  **Note:** The court can order evaluation and treatment only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
+  **Note:** The court can order evaluation and treatment only after ${other_parties[0].name_full()} has received written notice or attended the court hearing where this is decided.
 
   ${ collapse_template(counseling_help) }  
 fields:
@@ -2103,9 +2103,9 @@ content: |
 ---
 id: counseling types
 question: |
-  What kinds of counseling do you want the court to order ${other_parties[0].name.full(middle="full")} to participate in and complete?
+  What kinds of counseling do you want the court to order ${other_parties[0].name_full()} to participate in and complete?
 subquestion: |
-  The court can order evaluation and treatment only after ${other_parties[0].name.full(middle="full")} has received **{advance written notice}** or attended the court hearing where this is decided.
+  The court can order evaluation and treatment only after ${other_parties[0].name_full()} has received **{advance written notice}** or attended the court hearing where this is decided.
   
   Check all that apply.
 fields:
@@ -2117,7 +2117,7 @@ fields:
     datatype: yesnowide
   - Other counseling: other_counseling
     datatype: yesnowide
-  - Other counseling ${other_parties[0].name.full(middle="full")} should complete: other_counseling_text
+  - Other counseling ${other_parties[0].name_full()} should complete: other_counseling_text
     input type: area
     rows: 2
     maxlength: 60
@@ -2137,17 +2137,17 @@ code: |
 ---
 id: want court to make decisions about children
 question: |
-  Do you want the court to make decisions about your minor children you have with ${ other_parties[0].name.full(middle="full") }?
+  Do you want the court to make decisions about your minor children you have with ${ other_parties[0].name_full() }?
 subquestion: |
   In the Order of Protection, the court can decide:
 
   * Who is responsible for the children,  
   * Who the children will stay with, and
-  * What kind of parenting time you want ${ other_parties[0].name.full(middle="full") } to have, if any.
+  * What kind of parenting time you want ${ other_parties[0].name_full() } to have, if any.
 
   % if protect_shared_kids or include_shared_kids:
 
-  **Note:** Earlier, you said you wanted to protect your minor children you have with ${ other_parties[0].name.full(middle="full") }. Select **Yes** to answer questions about what you want the court to do for them. If you did not mean to include them in the Order of Protection, click the **:edit: Edit answers** button below to change your answers.
+  **Note:** Earlier, you said you wanted to protect your minor children you have with ${ other_parties[0].name_full() }. Select **Yes** to answer questions about what you want the court to do for them. If you did not mean to include them in the Order of Protection, click the **:edit: Edit answers** button below to change your answers.
   % endif
 fields:
   - no label: court_make_children_decisions
@@ -2171,16 +2171,16 @@ fields:
 ---
 id: primary caretaker
 question: |
-  Who is the primary caretaker of the children with ${other_parties[0].name.full(middle="full")}?
+  Who is the primary caretaker of the children with ${other_parties[0].name_full()}?
 fields:
   - no label: primary_caretaker
     datatype: radio
     choices:
       - I am.: petitioner
-      - ${other_parties[0].name.full(middle="full")} is.: respondent
-      - Another person is the primary caretaker of the children with ${other_parties[0].name.full(middle="full")}.: other
+      - ${other_parties[0].name_full()} is.: respondent
+      - Another person is the primary caretaker of the children with ${other_parties[0].name_full()}.: other
   - note: |
-      Enter the name of the primary caretaker of the children with ${other_parties[0].name.full(middle="full")}. 
+      Enter the name of the primary caretaker of the children with ${other_parties[0].name_full()}. 
     show if:
       variable: primary_caretaker
       is: "other"
@@ -2208,9 +2208,9 @@ fields:
 ---
 id: other caretaker address
 question: | 
-  What is ${ other_caretaker.name.full(middle="full") }'s address?
+  What is ${ other_caretaker.name_full() }'s address?
 subquestion: |
-  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name_full()}.
 fields:
   - Street address: other_caretaker.address.address
     address autocomplete: True
@@ -2224,14 +2224,14 @@ fields:
 ---
 id: temporary custody
 question: |
-  Do you want the court to grant you temporary decision-making responsibility of the children you have with ${other_parties[0].name.full(middle="full")}?
+  Do you want the court to grant you temporary decision-making responsibility of the children you have with ${other_parties[0].name_full()}?
 subquestion: |
   This used to be called "custody" in Illinois.
   
   Notes:
   
   * This is not the same as primary decision-making responsibility.
-  * The court can order this only after ${other_parties[0].name.full(middle="full")} received **{advance written notice}** or attended the court hearing where this is decided.
+  * The court can order this only after ${other_parties[0].name_full()} received **{advance written notice}** or attended the court hearing where this is decided.
 
 fields:
   - no label: temp_custody_of_children
@@ -2239,7 +2239,7 @@ fields:
 ---
 id: physical care and possession of children
 question: |
-  Do you want the court to grant you physical care and possession of the children you have with ${other_parties[0].name.full(middle="full")}?
+  Do you want the court to grant you physical care and possession of the children you have with ${other_parties[0].name_full()}?
 subquestion: |
   This means the children would live with you on a day-to-day basis.
 
@@ -2250,18 +2250,18 @@ fields:
 ---
 id: concealment of children
 question: |
-  Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot hide the children in Illinois or remove them from Illinois?
+  Do you want the court to order that ${other_parties[0].name_full()} cannot hide the children in Illinois or remove them from Illinois?
 subquestion: |
-  You may want this if ${other_parties[0].name.full(middle="full")} has made threats or attempts to unlawfully remove the children.
+  You may want this if ${other_parties[0].name_full()} has made threats or attempts to unlawfully remove the children.
 fields:
   - no label: no_conceal_children
     datatype: yesnoradio    
 ---
 id: no removal of children from petitioner or school
 question: |
-  Do you want the court to order that ${other_parties[0].name.full(middle="full")} cannot remove the children from your care or from a school or daycare?
+  Do you want the court to order that ${other_parties[0].name_full()} cannot remove the children from your care or from a school or daycare?
 subquestion: |
-  You can keep the name and location of the school or daycare hidden from ${other_parties[0].name.full(middle="full")}.
+  You can keep the name and location of the school or daycare hidden from ${other_parties[0].name_full()}.
 
   If you want to change confidential schools, edit information about schools in [**Protections**](${ url_action('section_protections') }) section.
 fields:
@@ -2270,25 +2270,25 @@ fields:
 ---
 id: have current possession of children
 question: |
-  Do you currently have physical care and possession of your children with  ${other_parties[0].name.full(middle="full")}?
+  Do you currently have physical care and possession of your children with  ${other_parties[0].name_full()}?
 subquestion: |
-  If the children are not with you now, the court can order ${other_parties[0].name.full(middle="full")} to return them to you, to another person, or to bring the children to court.
+  If the children are not with you now, the court can order ${other_parties[0].name_full()} to return them to you, to another person, or to bring the children to court.
 fields:
   - no label: current_possession_of_children
     datatype: yesnoradio
 ---
 id: children returned to whom
 question: |
-  Who should ${other_parties[0].name.full(middle="full")} return the children to?
+  Who should ${other_parties[0].name_full()} return the children to?
 fields:
   - no label: return_children_to
     datatype: radio
     choices:
-      - ${other_parties[0].name.full(middle="full")} should return the children to me.: petitioner
-      - ${other_parties[0].name.full(middle="full")} should return the children to someone else.: other
-      - ${other_parties[0].name.full(middle="full")} should bring the children to court. This is usually 14 to 21 days after you file your petition.: court
+      - ${other_parties[0].name_full()} should return the children to me.: petitioner
+      - ${other_parties[0].name_full()} should return the children to someone else.: other
+      - ${other_parties[0].name_full()} should bring the children to court. This is usually 14 to 21 days after you file your petition.: court
   - note: |
-      Enter the name of the person ${other_parties[0].name.full(middle="full")} should return the children to. 
+      Enter the name of the person ${other_parties[0].name_full()} should return the children to. 
     show if:
       variable: return_children_to
       is: "other"
@@ -2315,16 +2315,16 @@ fields:
 ---
 id: know children return details
 question: |
-  Do you know where you want ${other_parties[0].name.full(middle="full")} to return the children to ${ return_children_other_person.name.full(middle="full") }?
+  Do you know where you want ${other_parties[0].name_full()} to return the children to ${ return_children_other_person.name_full() }?
 fields:
   - no label: knows_return_children_details
     datatype: yesnoradio
 ---
 id: children return location
 question: |
-  Where should ${other_parties[0].name.full(middle="full")} return the children to ${ return_children_other_person.name.full(middle="full") }?
+  Where should ${other_parties[0].name_full()} return the children to ${ return_children_other_person.name_full() }?
 subquestion: |
-  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.  
+  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name_full()}.  
 fields:
   - Street address: return_children_location.address
     address autocomplete: True
@@ -2339,7 +2339,7 @@ fields:
 ---
 id: reason respondent should bring children to court
 question: |
-  Why should ${other_parties[0].name.full(middle="full")} be ordered to bring the children to court?
+  Why should ${other_parties[0].name_full()} be ordered to bring the children to court?
 subquestion: |
   Check all that apply.
 fields:
@@ -2347,23 +2347,23 @@ fields:
     datatype: yesnowide
   - To return the children to you: appear_with_children_return
     datatype: yesnowide
-  - To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}: appear_with_children_exam
+  - To permit a court-ordered interview or examination of the children or of ${other_parties[0].name_full()}: appear_with_children_exam
     datatype: yesnowide
 ---
 id: order respondent to appear in court
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} be ordered to come to court alone?
+  Do you want ${other_parties[0].name_full()} be ordered to come to court alone?
 subquestion: |
   You can ask for this 
 
   * To prevent abuse, neglect, removal, or concealment of the children,
   * To return the children to you, or
-  * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}.  
+  * To permit a court-ordered interview or examination of the children or of ${other_parties[0].name_full()}.  
 fields:
-  - Should ${other_parties[0].name.full(middle="full")} be ordered to come to court alone?: res_appear_alone
+  - Should ${other_parties[0].name_full()} be ordered to come to court alone?: res_appear_alone
     datatype: yesnoradio
   - note: |
-      Why should ${other_parties[0].name.full(middle="full")} be ordered to come to court alone?
+      Why should ${other_parties[0].name_full()} be ordered to come to court alone?
       
       Check all that apply.
     show if: res_appear_alone
@@ -2373,22 +2373,22 @@ fields:
   - To return the children to you: appear_alone_return
     datatype: yesnowide
     show if: res_appear_alone
-  - To permit a court-ordered interview or examination of the children or of ${other_parties[0].name.full(middle="full")}: appear_alone_exam
+  - To permit a court-ordered interview or examination of the children or of ${other_parties[0].name_full()}: appear_alone_exam
     datatype: yesnowide
     show if: res_appear_alone
 
 ---
 id: childrens records
 question: |
-  Do you want the court to prevent ${other_parties[0].name.full(middle="full")} from accessing your children's records?
+  Do you want the court to prevent ${other_parties[0].name_full()} from accessing your children's records?
 subquestion: |
-  These include school records, health care records, or any other records. The records may have address and contact information you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+  These include school records, health care records, or any other records. The records may have address and contact information you want to keep hidden from ${other_parties[0].name_full()}.
 
-  If you want to deny ${other_parties[0].name.full(middle="full")} accessing to your children's records, select the reasons why. Check all that apply.
+  If you want to deny ${other_parties[0].name_full()} accessing to your children's records, select the reasons why. Check all that apply.
 fields:
-  - Yes. I am requesting that ${other_parties[0].name.full(middle="full")} not be allowed to have contact with the minor children.: no_records_no_contact
+  - Yes. I am requesting that ${other_parties[0].name_full()} not be allowed to have contact with the minor children.: no_records_no_contact
     help: |
-      Select this if you asked the court to prevent ${other_parties[0].name.full(middle="full")} from having any contact with the children.
+      Select this if you asked the court to prevent ${other_parties[0].name_full()} from having any contact with the children.
     datatype: yesnowide
   - Yes. My address is not included on the court forms to avoid further abuse.: no_records_hide_address
     help: |
@@ -2396,39 +2396,39 @@ fields:
     datatype: yesnowide
   - Yes. It is necessary to prevent abuse or wrongful removal or concealment of the minor children.: no_records_no_removal
     help: |
-      Select this if you asked the court to prevent ${other_parties[0].name.full(middle="full")} from hiding or removing the children.
+      Select this if you asked the court to prevent ${other_parties[0].name_full()} from hiding or removing the children.
     datatype: yesnowide
 ---
 id: parenting time
 question: |
-  How do you want the court to handle parenting time for the children you have with ${other_parties[0].name.full(middle="full")}?
+  How do you want the court to handle parenting time for the children you have with ${other_parties[0].name_full()}?
 subquestion: |
   This used to be called "visitation" in Illinois.
 fields:
   - The court should:: parenting_time
     datatype: radio
     choices:
-      - Reserve ${other_parties[0].name.full(middle="full")}'s parenting time until a later hearing: reserve
-      - Deny ${other_parties[0].name.full(middle="full")} parenting time (no visits at all): deny
+      - Reserve ${other_parties[0].name_full()}'s parenting time until a later hearing: reserve
+      - Deny ${other_parties[0].name_full()} parenting time (no visits at all): deny
         help: |
           You can enter reasons why you want to deny parenting time on the next screen.
-      - Restrict ${other_parties[0].name.full(middle="full")}'s parenting time (allow visits with limits): restrict
+      - Restrict ${other_parties[0].name_full()}'s parenting time (allow visits with limits): restrict
         help: |
           You can enter reasons why you want to restrict parenting time on the next screen.
-      - Grant ${other_parties[0].name.full(middle="full")} parenting (allow visits according to schedule): grant
+      - Grant ${other_parties[0].name_full()} parenting (allow visits according to schedule): grant
 
 ---
 id: restrict or deny parenting time reasons
 question: |
   % if parenting_time == "restrict":
-  Why do you want to restrict ${other_parties[0].name.full(middle="full")}'s parenting time?
+  Why do you want to restrict ${other_parties[0].name_full()}'s parenting time?
   % else:
-  Why do you want to deny ${other_parties[0].name.full(middle="full")} any parenting time?
+  Why do you want to deny ${other_parties[0].name_full()} any parenting time?
   % endif  
 subquestion: |
   Check all that apply.
 fields:
-  - ${other_parties[0].name.full(middle="full")} is likely to:: restrict_or_deny_pt_reasons
+  - ${other_parties[0].name_full()} is likely to:: restrict_or_deny_pt_reasons
     datatype: checkboxes
     none of the above: False
     choices:
@@ -2441,7 +2441,7 @@ id: parenting time format
 question: |
   How do you want to tell the court about your parenting time schedule?
 subquestion: |
-  Your parenting time schedule should include days and times when ${other_parties[0].name.full(middle="full")} will be able to visit the children.
+  Your parenting time schedule should include days and times when ${other_parties[0].name_full()} will be able to visit the children.
 fields:
   - no label: pt_format
     datatype: radio
@@ -2458,7 +2458,7 @@ fields:
 ---
 id: parenting time weekdays
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to have parenting time on weekdays?
+  Do you want ${other_parties[0].name_full()} to have parenting time on weekdays?
 subquestion: |
   You can pick which weekdays and times on the next screen.
   
@@ -2469,7 +2469,7 @@ fields:
 ---
 id: parenting time weekday schedule
 question: |
-  What weekday parenting time schedule do you want ${other_parties[0].name.full(middle="full")} to have?
+  What weekday parenting time schedule do you want ${other_parties[0].name_full()} to have?
 fields:
   - Days: pt_weekday_days
     datatype: checkboxes
@@ -2493,7 +2493,7 @@ validation code: |
 ---
 id: parenting time weekends
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to have parenting time on weekends?
+  Do you want ${other_parties[0].name_full()} to have parenting time on weekends?
 subquestion: |
   You can pick weekend days and times on the next screen.
 fields:
@@ -2502,7 +2502,7 @@ fields:
 ---
 id: parenting time weekend schedule
 question: |
-  What weekend parenting time schedule do you want ${other_parties[0].name.full(middle="full")} to have?
+  What weekend parenting time schedule do you want ${other_parties[0].name_full()} to have?
 fields:
   - How often?: pt_weekend_cadence
     datatype: radio
@@ -2548,7 +2548,7 @@ fields:
 ---
 id: parenting time holiday schedule
 question: |
-  What holiday parenting time schedule do you want ${other_parties[0].name.full(middle="full")} to have?
+  What holiday parenting time schedule do you want ${other_parties[0].name_full()} to have?
 fields:
   - List holidays by name or date and include times: pt_holiday_list
     input type: area
@@ -2567,7 +2567,7 @@ fields:
 ---
 id: parenting time supervised
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")}'s parenting time to be supervised?
+  Do you want ${other_parties[0].name_full()}'s parenting time to be supervised?
 subquestion: |
   You can name an adult to supervise parenting time. In some places, an official supervised visitation center may be available.
 fields:
@@ -2610,14 +2610,14 @@ fields:
 ---
 id: parenting time location identified
 question: |
-  Do you know where you want ${other_parties[0].name.full(middle="full")}'s parenting time to happen?
+  Do you know where you want ${other_parties[0].name_full()}'s parenting time to happen?
 fields:
   - no label: pt_location_identified
     datatype: yesnoradio
   - note: |
       Where will parenting time happen?
       
-      **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+      **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name_full()}.
 
       **Note:** The forms do not require a ZIP code for this address. 
     show if: pt_location_identified
@@ -2644,7 +2644,7 @@ fields:
 #question: |
 #  Where will parenting time happen?
 #subquestion: |
-#  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+#  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name_full()}.
 #
 #  **Note:** The forms do not require a ZIP code for this address. 
 #fields:
@@ -2673,7 +2673,7 @@ fields:
     datatype: radio
     choices:
       - I will provide transportation.: petitioner
-      - ${other_parties[0].name.full(middle="full")} will provide transportation.: respondent
+      - ${other_parties[0].name_full()} will provide transportation.: respondent
       - Someone else will provide transportation.: other
       - I will figure this out later.: later
   - note: |
@@ -2713,7 +2713,7 @@ fields:
   - note: |
       Where will pickup for parenting time happen?
       
-      **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+      **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name_full()}.
 
       **Note:** The forms do not require a ZIP code for this address.
     show if: pt_separate_pickup_location
@@ -2740,7 +2740,7 @@ fields:
 #question: |
 #  Where will pickup for parenting time happen?
 #subquestion: |
-#  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+#  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name_full()}.
 #
 #  **Note:** The forms do not require a ZIP code for this address.
 #fields:
@@ -2767,7 +2767,7 @@ fields:
   - note: |
       Where will the return from parenting time happen?
       
-      **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+      **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name_full()}.
 
       **Note:** The forms do not require a ZIP code for this address.
     show if: pt_separate_return_location
@@ -2794,7 +2794,7 @@ fields:
 #question: |
 #  Where will the return from parenting time happen?
 #subquestion: |
-#  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.
+#  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name_full()}.
 #
 #  **Note:** The forms do not require a ZIP code for this address.
 #fields:
@@ -2812,13 +2812,13 @@ fields:
 ---
 id: immediate return after parenting time
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to return the children immediately after parenting time?
+  Do you want ${other_parties[0].name_full()} to return the children immediately after parenting time?
 subquestion: |
   You can ask that the children are returned directly to you or to someone you choose. 
 fields:
   - no label: pt_immediate_return
     datatype: yesnoradio
-  - Who should ${other_parties[0].name.full(middle="full")} return the children to at the end of parenting time?: pt_return_person_choice
+  - Who should ${other_parties[0].name_full()} return the children to at the end of parenting time?: pt_return_person_choice
     datatype: radio
     choices:
       - Me: Me
@@ -2858,7 +2858,7 @@ question: |
 subquestion: |
   The court can order that you will get or keep control of personal property. This is called having **possession** of the property.
   
-  These can be things that you currently have with you or things you want ${other_parties[0].name.full(middle="full")} to return to you. For example: your car, clothing, or phone.
+  These can be things that you currently have with you or things you want ${other_parties[0].name_full()} to return to you. For example: your car, clothing, or phone.
 fields:
   - no label: award_personal_property
     datatype: yesnoradio
@@ -2874,7 +2874,7 @@ subquestion: |
   If you are listing a car, include the year, make, and model. For example: 2019 Chevy Malibu.
 fields:
   - Item name: petitioner_personal_property[i].name.text
-  - Do you want the court to order ${other_parties[0].name.full(middle="full")} to return it to you?: petitioner_personal_property[i].respo_has
+  - Do you want the court to order ${other_parties[0].name_full()} to return it to you?: petitioner_personal_property[i].respo_has
     datatype: yesnoradio
 ---
 id: any other petitioner personal property to award
@@ -2911,9 +2911,9 @@ code: |
 ---
 id: return petitioner property to whom
 question: |
-  Who should ${other_parties[0].name.full(middle="full")} return your property to?
+  Who should ${other_parties[0].name_full()} return your property to?
 subquestion: |
-  **Note:** You can ask that another person or law enforcement be present when ${other_parties[0].name.full(middle="full")} returns your property. You can choose this on another screen.
+  **Note:** You can ask that another person or law enforcement be present when ${other_parties[0].name_full()} returns your property. You can choose this on another screen.
 fields:
   - no label: return_property_person
     datatype: radio
@@ -2944,20 +2944,20 @@ fields:
 ---
 id: why respondent should return property
 question: |
-  Why should ${other_parties[0].name.full(middle="full")} return the property?
+  Why should ${other_parties[0].name_full()} return the property?
 subquestion: | 
-  You said ${other_parties[0].name.full(middle="full")} should return these items: ${ comma_and_list([item.name.text for item in petitioner_personal_property if item.respo_has == True]) }.
+  You said ${other_parties[0].name_full()} should return these items: ${ comma_and_list([item.name.text for item in petitioner_personal_property if item.respo_has == True]) }.
 fields:
   - no label: return_property_reason
     datatype: radio
     choices:
       - I own the property.: petitioner owns
       - We both own the property, but not having it would be harder on me. It would put me at risk for abuse or sharing is not practical.: both own
-      - I am married to ${other_parties[0].name.full(middle="full")}, and we have filed for divorce.: divorce
+      - I am married to ${other_parties[0].name_full()}, and we have filed for divorce.: divorce
 ---
 id: any property to return to respondent
 question: |
-  Is there any personal property ${other_parties[0].name.full(middle="full")} will need returned to them right away?
+  Is there any personal property ${other_parties[0].name_full()} will need returned to them right away?
 subquestion: |
   This can be things like clothes, medicine, or other items.
 fields:
@@ -2966,7 +2966,7 @@ fields:
 ---
 id: respondent property
 question: |
-  What personal property should be returned to ${other_parties[0].name.full(middle="full")}?
+  What personal property should be returned to ${other_parties[0].name_full()}?
 fields:
   - no label: respo_property
     datatype: checkboxes
@@ -2985,13 +2985,13 @@ fields:
 ---
 id: respondent one time right to enter
 question: |
-  Should ${other_parties[0].name.full(middle="full")} be allowed to enter the home **only one time** to get their personal property?
+  Should ${other_parties[0].name_full()} be allowed to enter the home **only one time** to get their personal property?
 subquestion: |
-  You can require that a law enforcement officer or another person is present when ${other_parties[0].name.full(middle="full")} gets their property.
+  You can require that a law enforcement officer or another person is present when ${other_parties[0].name_full()} gets their property.
 fields:
   - no label: respondent_one_time_entry
     datatype: yesnoradio
-  - Who should be present when ${other_parties[0].name.full(middle="full")} gets their property?: res_property_transfer_person
+  - Who should be present when ${other_parties[0].name_full()} gets their property?: res_property_transfer_person
     datatype: radio
     choices:
       - Law enforcement: police
@@ -3024,7 +3024,7 @@ id: know property transfer address
 question: |
   Do you know where you want the personal property transfer to happen?
 subquestion: |
-  This is where you will get your property back from ${other_parties[0].name.full(middle="full")}. 
+  This is where you will get your property back from ${other_parties[0].name_full()}. 
   
   You may want this to happen at a police department or sheriff's office. You can enter the address on the next screen.
 fields:
@@ -3037,7 +3037,7 @@ question: |
 subquestion: |
   This can be at a police department or sheriff's office.
   
-  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name.full(middle="full")}.  
+  **This address will appear on your court papers.** Do not list a location you want to keep hidden from ${other_parties[0].name_full()}.  
 fields:
   - Street address: property_transfer_location.address
     address autocomplete: True
@@ -3112,7 +3112,7 @@ id: any pets to protect
 question: |
   Do you want the court to give you possession of family pets or other animals?
 subquestion: |
-  The court can order ${other_parties[0].name.full(middle="full")} to stay away from the pets and forbid them from taking, hiding, or harming the pets.
+  The court can order ${other_parties[0].name_full()} to stay away from the pets and forbid them from taking, hiding, or harming the pets.
 fields:
   - no label: possession_of_animals
     datatype: yesnoradio
@@ -3145,7 +3145,7 @@ id: want cell phone account separation
 question: |
   Do you want the court to order that your cell phone accounts be separated?
 subquestion: |
-  If you or your children are on ${other_parties[0].name.full(middle="full")}'s cell phone account, you can ask the court to separate the accounts. You will be responsible for paying the cell phone service of the separate account. 
+  If you or your children are on ${other_parties[0].name_full()}'s cell phone account, you can ask the court to separate the accounts. You will be responsible for paying the cell phone service of the separate account. 
 fields:
   - no label: separate_phone_service
     datatype: yesnoradio
@@ -3159,7 +3159,7 @@ fields:
   - no label: phone_account_holder
     datatype: radio
     choices:
-      - ${other_parties[0].name.full(middle="full")}: respondent
+      - ${other_parties[0].name_full()}: respondent
       - Someone else: other
   - First: other_phone_account_holder.name.first
     show if:
@@ -3190,7 +3190,7 @@ fields:
     maxlength: 25
     help: |
       Examples: Verizon or T-Mobile
-  - ${other_parties[0].name.full(middle="full")}'s phone number: billing_phone_number
+  - ${other_parties[0].name_full()}'s phone number: billing_phone_number
     datatype: al_international_phone
 ---
 id: cell phone number to separate
@@ -3235,19 +3235,19 @@ question: |
 subquestion: |
   We already asked about property that the court should order that you can keep or be returned to you.
   
-  The court can also order ${other_parties[0].name.full(middle="full")} not to take, hide, damage, or dispose of property. This can include personal property like your car or real estate like your apartment or house. It can include the spaces inside and outside the property as well as things that are inside the property.
+  The court can also order ${other_parties[0].name_full()} not to take, hide, damage, or dispose of property. This can include personal property like your car or real estate like your apartment or house. It can include the spaces inside and outside the property as well as things that are inside the property.
 
   **Note:** If you want these protections, you will need to describe the items, including property address, on your court papers.
   
 fields:
-  - Is there property you want to protect from ${other_parties[0].name.full(middle="full")}?: restrict_other_property
+  - Is there property you want to protect from ${other_parties[0].name_full()}?: restrict_other_property
     datatype: yesnoradio
 ---
 id: restricted property
 question: |
-  What property should be protected from ${other_parties[0].name.full(middle="full")}?
+  What property should be protected from ${other_parties[0].name_full()}?
 subquestion: |
-  The court can order ${other_parties[0].name.full(middle="full")} not to take, hide, damage, or dispose of property. This can include personal property or real estate.
+  The court can order ${other_parties[0].name_full()} not to take, hide, damage, or dispose of property. This can include personal property or real estate.
 
   Check all that apply.
 fields:
@@ -3293,7 +3293,7 @@ fields:
 ---
 id: why property should be restricted
 question: |
-  Why should the property be protected from ${other_parties[0].name.full(middle="full")}?
+  Why should the property be protected from ${other_parties[0].name_full()}?
 subquestion: | 
   You said this property should be protected:
 
@@ -3318,11 +3318,11 @@ fields:
     choices:
       - I own the property.: petitioner
       - We both own the property, but not having it would be harder on me. It would put me at risk for abuse or sharing is not practical.: both
-      - I am married to ${other_parties[0].name.full(middle="full")}, and we have filed for divorce.: divorce
+      - I am married to ${other_parties[0].name_full()}, and we have filed for divorce.: divorce
 ---
 id: restrict resources of elderly petitioner
 question: |
-  Should ${other_parties[0].name.full(middle="full")} be ordered not to improperly use an elderly person's money or property for themselves or any other person?
+  Should ${other_parties[0].name_full()} be ordered not to improperly use an elderly person's money or property for themselves or any other person?
 subquestion: |
   If the Order of Protection will include any elderly people, this can protect their financial resources and property.
 fields:
@@ -3335,9 +3335,9 @@ fields:
 ---
 id: request temporary support
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to pay temporary child support?
+  Do you want ${other_parties[0].name_full()} to pay temporary child support?
 subquestion: |
-  **Note:** The court can order temporary child support only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
+  **Note:** The court can order temporary child support only after ${other_parties[0].name_full()} has received written notice or attended the court hearing where this is decided.
   
   **Important:** Even if the judge can't award temporary support at the first hearing, it is easier to ask for it now. Otherwise, you will have to amend your Petition later.
 fields:
@@ -3346,20 +3346,22 @@ fields:
 ---
 id: request maintenance
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to pay temporary maintenance?
+  Do you want ${other_parties[0].name_full()} to pay temporary maintenance?
 subquestion: |
   Maintenance used to be called "spousal support" or "alimony."
   
-  **Note:** The court can order temporary maintenance only after ${other_parties[0].name.full(middle="full")} has received written notice or attended the court hearing where this is decided.
+  **Note:** The court can order temporary maintenance only after ${other_parties[0].name_full()} has received written notice or attended the court hearing where this is decided.
+
+  **Important:** Even if the judge can't award temporary maintenance at the first hearing, it is easier to ask for it now. Otherwise, you will have to amend your Petition later.
 fields:
   - no label: temp_maintenance
     datatype: yesnoradio
 ---
 id: expenses
 question: |
-  Do you want ${other_parties[0].name.full(middle="full")} to pay for losses caused by abuse, neglect, or exploitation?
+  Do you want ${other_parties[0].name_full()} to pay for losses caused by abuse, neglect, or exploitation?
 subquestion: |
-  **Note:** The court can order ${other_parties[0].name.full(middle="full")} to pay only after they have received written notice or attended the court hearing where this is decided.
+  **Note:** The court can order ${other_parties[0].name_full()} to pay only after they have received written notice or attended the court hearing where this is decided.
 
   If you do not know the exact amount you can estimate. Bring receipts, proof of payment, and repair estimates to court if you have them.
 fields:
@@ -3368,7 +3370,7 @@ fields:
     disable others: True
   - note: |
       ---
-      Yes. I want the court to order ${other_parties[0].name.full(middle="full")} to pay for:
+      Yes. I want the court to order ${other_parties[0].name_full()} to pay for:
   - Medical expenses: expenses_medical
     datatype: yesnowide
   - "Amount": expenses_medical_amount
@@ -3444,19 +3446,19 @@ validation code: |
 id: firearms threat
 question: |
   % if minor_kids_with_respondent or protect_petitioner_kids:
-  Is ${other_parties[0].name.full(middle="full")} a threat to the physical safety of you or your children?
+  Is ${other_parties[0].name_full()} a threat to the physical safety of you or your children?
   % else:
-  Is ${other_parties[0].name.full(middle="full")} a threat to your physical safety?
+  Is ${other_parties[0].name_full()} a threat to your physical safety?
   % endif
 subquestion: |
-  Just knowing that ${other_parties[0].name.full(middle="full")} has a **weapon** can be a threat if you are afraid they could use it against you.
+  Just knowing that ${other_parties[0].name_full()} has a **weapon** can be a threat if you are afraid they could use it against you.
 
   ${ collapse_template(dv_risk_factors) }
 
   % if minor_kids_with_respondent or protect_petitioner_kids:
-  **Note:** If ${other_parties[0].name.full(middle="full")} threatened you or your children with a weapon, be sure to explain the threats, the weapon and its location in the [**What happened**](${ url_action('section_incidents') }) section. Describe the weapon as best you can. Threats are incidents of abuse that are important to your case.
+  **Note:** If ${other_parties[0].name_full()} threatened you or your children with a weapon, be sure to explain the threats, the weapon and its location in the [**What happened**](${ url_action('section_incidents') }) section. Describe the weapon as best you can. Threats are incidents of abuse that are important to your case.
   % else:
-  **Note:** If ${other_parties[0].name.full(middle="full")} threatened you with a weapon, be sure to explain the threats, the weapon and its location in the [**What happened**](${ url_action('section_incidents') }) section. Describe the weapon as best you can. Threats are incidents of abuse that are important to your case.
+  **Note:** If ${other_parties[0].name_full()} threatened you with a weapon, be sure to explain the threats, the weapon and its location in the [**What happened**](${ url_action('section_incidents') }) section. Describe the weapon as best you can. Threats are incidents of abuse that are important to your case.
   % endif
 fields:
   - no label: firearms_threat
@@ -3466,7 +3468,7 @@ template: dv_risk_factors
 subject: |
   **What other things should I consider?**
 content: |  
-  ${other_parties[0].name.full(middle="full")} might be more likely to threaten your safety if:
+  ${other_parties[0].name_full()} might be more likely to threaten your safety if:
 
   * You recently separated from them or are currently separating from them.
   * They tried to strangle or choke you.
@@ -3483,8 +3485,8 @@ question: |
 subquestion: |
   As part of an Order of Protection, the court can:
   
-  * Order ${other_parties[0].name.full(middle="full")} to **surrender firearms** to law enforcement, and
-  * Issue a **search warrant** be issued so law enforcement can search ${other_parties[0].name.full(middle="full")}'s property to seize firearms.
+  * Order ${other_parties[0].name_full()} to **surrender firearms** to law enforcement, and
+  * Issue a **search warrant** be issued so law enforcement can search ${other_parties[0].name_full()}'s property to seize firearms.
   
   Firearms can include:
   
@@ -3496,17 +3498,17 @@ subquestion: |
   ${ collapse_template(firearms_help) }
 
   % if minor_kids_with_respondent or protect_petitioner_kids:
-  Reminder: If ${other_parties[0].name.full(middle="full")} threatened you or your children with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
+  Reminder: If ${other_parties[0].name_full()} threatened you or your children with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
   % else:
-  Reminder: If ${other_parties[0].name.full(middle="full")} threatened you with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
+  Reminder: If ${other_parties[0].name_full()} threatened you with a weapon, be sure to explain the threat and the weapon in the [**What happened**](${ url_action('section_incidents') }) section.
   % endif
 
 fields:
   - Do you want the court to order any firearms relief? (Check all that apply.): firearms_relief
     datatype: checkboxes
     choices:
-      - Yes, I want ${other_parties[0].name.full(middle="full")} to **surrender firearms** to law enforcement.: surrender
-      - Yes, I want a **search warrant** to be issued so law enforcement can search ${other_parties[0].name.full(middle="full")}'s property and seize fierarms.: warrant
+      - Yes, I want ${other_parties[0].name_full()} to **surrender firearms** to law enforcement.: surrender
+      - Yes, I want a **search warrant** to be issued so law enforcement can search ${other_parties[0].name_full()}'s property and seize fierarms.: warrant
     none of the above: No, I do not want to ask for either of these.
 ---
 template: firearms_help
@@ -3524,9 +3526,9 @@ content: |
 ---
 id: intimate partner
 question: |
-  Is ${other_parties[0].name.full(middle="full")} a current or former intimate partner?
+  Is ${other_parties[0].name_full()} a current or former intimate partner?
 subquestion: |
-  This means you were in a romantic relationship with them. This information may be part of the court's decision to order that ${other_parties[0].name.full(middle="full")} surrender their guns.
+  This means you were in a romantic relationship with them. This information may be part of the court's decision to order that ${other_parties[0].name_full()} surrender their guns.
 fields:
   - no label: intimate_partner
     datatype: radio
@@ -3539,16 +3541,16 @@ id: remove firearms additional reasons
 question: |
   Reasons why you want the court to issue a search warrant 
 subquestion: |
-  Explain why a search warrant should be issued so that law enforcement can search ${other_parties[0].name.full(middle="full")}'s property and may seize firearms or firearm parts from them.
+  Explain why a search warrant should be issued so that law enforcement can search ${other_parties[0].name_full()}'s property and may seize firearms or firearm parts from them.
   
   Check all that apply.
 fields:
   - no label: warrant_reasons
     datatype: checkboxes
     choices:
-      - ${other_parties[0].name.full(middle="full")} is an immediate threat to the physical safety of the people I want to protect.: threat
-      - ${other_parties[0].name.full(middle="full")} has a firearm or firearm parts that could be used to make a firearm.: has_guns
-      - The firearm or firearm parts are in the residence, vehicle, or other property of ${other_parties[0].name.full(middle="full")}.: location
+      - ${other_parties[0].name_full()} is an immediate threat to the physical safety of the people I want to protect.: threat
+      - ${other_parties[0].name_full()} has a firearm or firearm parts that could be used to make a firearm.: has_guns
+      - The firearm or firearm parts are in the residence, vehicle, or other property of ${other_parties[0].name_full()}.: location
 ---
 id: report of dv
 question: |
@@ -3580,7 +3582,7 @@ fields:
     rows: 2
     maxlength: 75
     required: False
-  - Days and times ${other_parties[0].name.full(middle="full")} will likely be at this location: warrant_location_list[i].days_times
+  - Days and times ${other_parties[0].name_full()} will likely be at this location: warrant_location_list[i].days_times
     input type: area
     rows: 2
     maxlength: 60
@@ -3619,11 +3621,11 @@ code: |
 ---
 id: other helpful warrant info
 question: |
-  Do you have other information about ${other_parties[0].name.full(middle="full")} that might be helpful to law enforcement when they execute the warrant?
+  Do you have other information about ${other_parties[0].name_full()} that might be helpful to law enforcement when they execute the warrant?
 subquestion: |
-  Law enforcement might want to know details about ${other_parties[0].name.full(middle="full")}'s appearance like their skin color or if they wear glasses.
+  Law enforcement might want to know details about ${other_parties[0].name_full()}'s appearance like their skin color or if they wear glasses.
   
-  They also might want to know if ${other_parties[0].name.full(middle="full")}:
+  They also might want to know if ${other_parties[0].name_full()}:
   
   * Has a history of mental illness,
   * Has ever been suicidal, 
@@ -3641,9 +3643,9 @@ fields:
 ---
 id: firearms eop prior notice question
 question: |
-  Are you worried that ${other_parties[0].name.full(middle="full")} might hurt you or the people you want to protect when they learn about the Order of Protection?
+  Are you worried that ${other_parties[0].name_full()} might hurt you or the people you want to protect when they learn about the Order of Protection?
 subquestion: |
-  **Note:** If you are asking for an Emergency Order of Protection, select **Yes** if you think that ${other_parties[0].name.full(middle="full")} might cause physical injury to you or the people you want to protect when they learn about it.
+  **Note:** If you are asking for an Emergency Order of Protection, select **Yes** if you think that ${other_parties[0].name_full()} might cause physical injury to you or the people you want to protect when they learn about it.
 fields:
   - no label: firearms_eop_notice
     datatype: yesnoradio
@@ -3651,7 +3653,7 @@ fields:
 reconsider: True
 code: |
   if stay_away and trial_court_index != 71:
-    no_contact_text = "No contact by any means with protected parties. "
+    no_contact_text = "Have no contact by any means with protected parties. "
     add_no_contact_language = True
   else: 
     no_contact_text = ""
@@ -3659,13 +3661,13 @@ code: |
 ---
 id: misc remedies
 question: |
-  What else do you want the court to order ${other_parties[0].name.full(middle="full")} to do or to stop doing?
+  What else do you want the court to order ${other_parties[0].name_full()} to do or to stop doing?
 subquestion: |
   % if add_no_contact_language and trial_court_index != 71:
-  Because you are asking the court to order ${other_parties[0].name.full(middle="full")} to stay away and stop communication, "No contact by any means with protected parties" will be added. You can change this below.
+  Because you are asking the court to order ${other_parties[0].name_full()} to stay away and stop communication, "No contact by any means with protected parties" will be added. You can change this below.
   % endif
 fields:
-  - ${other_parties[0].name.full(middle="full")} should be ordered to:: misc_remedies_text
+  - ${other_parties[0].name_full()} should be ordered to:: misc_remedies_text
     input type: area
     rows: 5
     maxlength: 415
@@ -3745,7 +3747,7 @@ fields:
 ---
 id: service address choice
 question: |
-  Where can ${other_parties[0].name.full(middle="full")} be found?
+  Where can ${other_parties[0].name_full()} be found?
 subquestion: |
   This is where they will be served with Order of Protection court papers.
   
@@ -3762,17 +3764,17 @@ reconsider: True
 code: |
   service_list = []
   if knows_respondent_home == True:
-    service_list.append( { "home": other_parties[0].name.full(middle="full") + "'s home address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
+    service_list.append( { "home": other_parties[0].name_full() + "'s home address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
   else:
     if knows_respondent_home_last == True:
-      service_list.append( { "home": other_parties[0].name.full(middle="full") + "'s last known address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
+      service_list.append( { "home": other_parties[0].name_full() + "'s last known address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
   if knows_respondent_work == True:
-    service_list.append({ "work": other_parties[0].name.full(middle="full")+ "'s work address (" + other_parties[0].work_address.on_one_line(bare=True) + ")" })
+    service_list.append({ "work": other_parties[0].name_full()+ "'s work address (" + other_parties[0].work_address.on_one_line(bare=True) + ")" })
   service_list.append({ "other": "An address I will enter" })
 ---
 id: other service address
 question: |
-  Enter the address where ${other_parties[0].name.full(middle="full")} can be found
+  Enter the address where ${other_parties[0].name_full()} can be found
 fields:
   - Street address: service_address.address
     address autocomplete: True
@@ -3787,14 +3789,14 @@ fields:
 ---    
 id: have another service address
 question: |
-  Do you want to add another address where ${other_parties[0].name.full(middle="full")} can be found?
+  Do you want to add another address where ${other_parties[0].name_full()} can be found?
 fields:
   - no label: has_second_service_address
     datatype: yesnoradio
 ---
 id: second service address choice
 question: |
-  Where else can ${other_parties[0].name.full(middle="full")} be found?
+  Where else can ${other_parties[0].name_full()} be found?
 fields:
   - no label: second_service_address_choice
     datatype: radio
@@ -3804,20 +3806,20 @@ reconsider: True
 code: |
   alt_service_list = []
   if knows_respondent_home == True and service_address_choice != "home":
-    alt_service_list.append( { "home": other_parties[0].name.full(middle="full") + "'s home address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
+    alt_service_list.append( { "home": other_parties[0].name_full() + "'s home address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
   else:
     if knows_respondent_home == False:
       if knows_respondent_home_last == True and service_address_choice != "home":
-        alt_service_list.append( { "home": other_parties[0].name.full(middle="full") + "'s last known address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
+        alt_service_list.append( { "home": other_parties[0].name_full() + "'s last known address (" + other_parties[0].address.on_one_line(bare=True) + ")" })
   if knows_respondent_work == True and service_address_choice != "work":
-    alt_service_list.append({ "work": other_parties[0].name.full(middle="full")+ "'s work address (" + other_parties[0].work_address.on_one_line(bare=True) + ")" })
+    alt_service_list.append({ "work": other_parties[0].name_full()+ "'s work address (" + other_parties[0].work_address.on_one_line(bare=True) + ")" })
   alt_service_list.append({ "other": "An address I will enter" })
 ---
 id: out of state county
 question: |
-  In which county can the sheriff find ${other_parties[0].name.full(middle="full")}?
+  In which county can the sheriff find ${other_parties[0].name_full()}?
 subquestion: |
-  You said the sheriff can serve court papers on ${other_parties[0].name.full(middle="full")} at:
+  You said the sheriff can serve court papers on ${other_parties[0].name_full()} at:
   
   % if service_address_choice == "other":
   * ${ service_address.on_one_line(bare=True) }
@@ -3827,11 +3829,11 @@ subquestion: |
   * ${ other_parties[0].work_address.on_one_line(bare=True) }        
   % endif
   
-  Enter the county below so the sheriff can find ${other_parties[0].name.full(middle="full")}.
+  Enter the county below so the sheriff can find ${other_parties[0].name_full()}.
   
   ${ collapse_template(county_lookup_help) }
 fields:
-  - County where ${other_parties[0].name.full(middle="full")} can be served: service_county
+  - County where ${other_parties[0].name_full()} can be served: service_county
     maxlength: 40
 ---
 template: county_lookup_help
@@ -3842,7 +3844,7 @@ content: |
 ---
 id: second other service address
 question: |
-  Enter another address where ${other_parties[0].name.full(middle="full")} can be found
+  Enter another address where ${other_parties[0].name_full()} can be found
 fields:
   - Street address: second_service_address.address
     address autocomplete: True
@@ -3857,22 +3859,22 @@ fields:
 ---
 id: respondent alt contact info
 question: |
-  Do you know other ways ${other_parties[0].name.full(middle="full")} can be contacted?
+  Do you know other ways ${other_parties[0].name_full()} can be contacted?
 subquestion: |
   You alread told us:
   
   % if other_parties[0].phone_number != "":
-  * ${other_parties[0].name.full(middle="full")}'s phone: ${ phone_number_formatted(other_parties[0].phone_number) }
+  * ${other_parties[0].name_full()}'s phone: ${ phone_number_formatted(other_parties[0].phone_number) }
   % else:
-  * ${other_parties[0].name.full(middle="full")}'s phone: None entered
+  * ${other_parties[0].name_full()}'s phone: None entered
   % endif
   % if other_parties[0].email != "":
-  * ${other_parties[0].name.full(middle="full")}'s email: ${ other_parties[0].email }
+  * ${other_parties[0].name_full()}'s email: ${ other_parties[0].email }
   % else:
-  * ${other_parties[0].name.full(middle="full")}'s email: None entered
+  * ${other_parties[0].name_full()}'s email: None entered
   % endif
    
-  If you do not know other contact information for ${other_parties[0].name.full(middle="full")}, leave these blank.
+  If you do not know other contact information for ${other_parties[0].name_full()}, leave these blank.
 fields:
   - Phone: other_parties[0].phone_number_alt
     datatype: al_international_phone
@@ -3892,7 +3894,7 @@ code: |
 ---
 id: service method
 question: |
-  Who do you want to deliver court papers to ${other_parties[0].name.full(middle="full")}?
+  Who do you want to deliver court papers to ${other_parties[0].name_full()}?
 subquestion: |
   This is called service. In Illinois, **Sheriffs usually serve Orders of Protection.**
   
@@ -3908,13 +3910,13 @@ fields:
 ---
 id: additional service information cook
 question: |
-  What other information will help the sheriff deliver court papers to ${other_parties[0].name.full(middle="full")}?
+  What other information will help the sheriff deliver court papers to ${other_parties[0].name_full()}?
 subquestion: |
   You can add things like:
   
   * Best days and times to serve court papers,
-  * Details about the places where ${other_parties[0].name.full(middle="full")} can be found, and
-  * Information about other people at those locations that can help find ${other_parties[0].name.full(middle="full")}.
+  * Details about the places where ${other_parties[0].name_full()} can be found, and
+  * Information about other people at those locations that can help find ${other_parties[0].name_full()}.
 
   This will not appear on the forms that will be filed with the court. It goes on the Confidential Protective Order Information Sheet for the Sheriff.
 fields:
@@ -3929,9 +3931,9 @@ fields:
 if: trial_court_index != -1
 id: respondent gender
 question: |
-  What is ${other_parties[0].name.full(middle="full")}'s gender?
+  What is ${other_parties[0].name_full()}'s gender?
 subquestion: |
-  This information is used to help law enforcement identify ${other_parties[0].name.full(middle="full")} and enforce the Order of Protection. If you do not know this information, you can leave it blank.
+  This information is used to help law enforcement identify ${other_parties[0].name_full()} and enforce the Order of Protection. If you do not know this information, you can leave it blank.
 fields:
   - Gender: other_parties[0].gender
     datatype: radio
@@ -3940,7 +3942,7 @@ fields:
       - Male: male
       - Female: female
       - Other: other
-  - ${other_parties[0].name.full(middle="full")}'s gender: respondent_gender_other
+  - ${other_parties[0].name_full()}'s gender: respondent_gender_other
     maxlength: 20
     show if:
       variable: other_parties[0].gender
@@ -3949,9 +3951,9 @@ fields:
 if: trial_court_index == -1
 id: respondent gender cook only
 question: |
-  What is ${other_parties[0].name.full(middle="full")}'s gender?
+  What is ${other_parties[0].name_full()}'s gender?
 subquestion: |
-  This information is used to help law enforcement identify ${other_parties[0].name.full(middle="full")} and enforce the Order of Protection. If you do not know this information, you can leave it blank.
+  This information is used to help law enforcement identify ${other_parties[0].name_full()} and enforce the Order of Protection. If you do not know this information, you can leave it blank.
 fields:
   - Gender (will be public, used by any law enforcement): other_parties[0].gender
     datatype: radio
@@ -3960,7 +3962,7 @@ fields:
       - Male: Male
       - Female: Female
       - Other: other
-  - ${other_parties[0].name.full(middle="full")}'s gender (will be public, used by any law enforcement): respondent_gender_other
+  - ${other_parties[0].name_full()}'s gender (will be public, used by any law enforcement): respondent_gender_other
     maxlength: 20
     required: False
     show if:
@@ -3979,7 +3981,7 @@ fields:
       - Transgender man / Transmasculine: transmasc
       - Nonbinary / Gender non-conforming: nonbinary
       - Other: other
-  - ${other_parties[0].name.full(middle="full")}'s gender identity (confidential, used by Cook County sheriff only): respondent_gender_other_cook
+  - ${other_parties[0].name_full()}'s gender identity (confidential, used by Cook County sheriff only): respondent_gender_other_cook
     maxlength: 20
     required: False
     show if:
@@ -3992,11 +3994,11 @@ fields:
       - Male: male
       - Female: female
     help: |
-      Sex assigned at birth refers to the sex or gender marker on ${other_parties[0].name.full(middle="full")}'s original birth certificate. If they were born intersex, you may want to mention that in gender/other.
+      Sex assigned at birth refers to the sex or gender marker on ${other_parties[0].name_full()}'s original birth certificate. If they were born intersex, you may want to mention that in gender/other.
 ---
 id: respondent race
 question: |
-  What is ${other_parties[0].name.full(middle="full")}'s race?
+  What is ${other_parties[0].name_full()}'s race?
 subquestion: |
   This information is used to help enforce the Order of Protection.
 fields:
@@ -4016,7 +4018,7 @@ fields:
       - 2 or more races: Multiracial
       - Other: other
       - Unknown: unknown
-  - ${other_parties[0].name.full(middle="full")}'s race: respondent_race_other
+  - ${other_parties[0].name_full()}'s race: respondent_race_other
     maxlength: 25
     show if:
       variable: other_parties[0].race
@@ -4024,7 +4026,7 @@ fields:
 ---
 id: respondent physical characteristics
 question: |
-  Tell us about ${other_parties[0].name.full(middle="full")}'s appearance
+  Tell us about ${other_parties[0].name_full()}'s appearance
 subquestion: |
   This information is used to help enforce the Order of Protection.
   
@@ -4065,7 +4067,7 @@ fields:
     show if: 
       code: |
         trial_court_index == -1
-  - ${other_parties[0].name.full(middle="full")}'s skin color: respondent_skin_other
+  - ${other_parties[0].name_full()}'s skin color: respondent_skin_other
     maxlength: 30
     show if: 
       code: |
@@ -4089,7 +4091,7 @@ fields:
     required: False
     help: |
       Try to be descritive. Examples: tattoos on hands, facial scars, birthmarks, mustache, beard
-  - Does ${other_parties[0].name.full(middle="full")} wear glasses?: other_parties[0].glasses
+  - Does ${other_parties[0].name_full()} wear glasses?: other_parties[0].glasses
     datatype: radio
     required: False
     choices: 
@@ -4102,20 +4104,20 @@ fields:
 ---
 id: respondent more identifying info Cook
 question: |
-  Anything else about ${other_parties[0].name.full(middle="full")}?
+  Anything else about ${other_parties[0].name_full()}?
 subquestion: |
   This information is used to help enforce the Order of Protection.
   
   If you do not know, leave blank.
 fields:
-  - Other names used by ${other_parties[0].name.full(middle="full")}:: other_parties[0].alias_names
+  - Other names used by ${other_parties[0].name_full()}:: other_parties[0].alias_names
     input type: area
     rows: 3
     maxlength: 120
     required: False
     help: |
       This could be a name from an earlier marriage or a nickname. If there is more than one, separate by commas.
-  - Is ${other_parties[0].name.full(middle="full")} on court-ordered probation?: respondent_on_probation
+  - Is ${other_parties[0].name_full()} on court-ordered probation?: respondent_on_probation
     datatype: radio
     choices:
       - Yes: Yes
@@ -4132,11 +4134,11 @@ fields:
 ---
 id: respondent caution
 question: |
-  Are there reasons the sheriff should use caution when approaching ${other_parties[0].name.full(middle="full")}?
+  Are there reasons the sheriff should use caution when approaching ${other_parties[0].name_full()}?
 subquestion: |
   Check all that apply.
 fields:
-  - ${other_parties[0].name.full(middle="full")}: caution_reasons
+  - ${other_parties[0].name_full()}: caution_reasons
     datatype: checkboxes
     none of the above: False
     required: False
@@ -4157,7 +4159,7 @@ fields:
 ---
 id: car information for cook
 question: |
-  Enter details about ${other_parties[0].name.full(middle="full")}'s car
+  Enter details about ${other_parties[0].name_full()}'s car
 subquestion: |
   This information is used to help enforce the Order of Protection.
   
@@ -4196,20 +4198,20 @@ fields:
 ---
 id: any previous cook cases
 question: |
-  Have you filed any divorce or parentage cases with ${other_parties[0].name.full(middle="full")} in Cook County before?
+  Have you filed any divorce or parentage cases with ${other_parties[0].name_full()} in Cook County before?
 subquestion: |
   This will help the court clerk in Cook County assign your case to the correct location. If you were involved in more than one, choose the most recent.
 fields:
   - no label: previous_cook_case_type
     datatype: radio
     choices:
-      - I was in an earlier divorce case with ${other_parties[0].name.full(middle="full")}.: divorce
-      - I was in an earlier parentage case with ${other_parties[0].name.full(middle="full")} involving children we had together.: parentage
+      - I was in an earlier divorce case with ${other_parties[0].name_full()}.: divorce
+      - I was in an earlier parentage case with ${other_parties[0].name_full()} involving children we had together.: parentage
       - No earlier divorce or parentage cases were filed in Cook County.: none
 ---
 id: previous cook case details
 question: |
-  Tell us about the ${ previous_cook_case_type } case with ${other_parties[0].name.full(middle="full")} in Cook County
+  Tell us about the ${ previous_cook_case_type } case with ${other_parties[0].name_full()} in Cook County
 subquestion: |
   If there is more than one, enter information about the most recent.
 fields:
@@ -4405,31 +4407,31 @@ attachment:
   fields:
     - "county": ${ trial_court.address.county }
     - "civil_proceeding": True
-    - "petitioner": ${ users[0].name.full(middle="full") }
+    - "petitioner": ${ users[0].name_full() }
     - "petitioner__2": |
         % if protect_petitioner and protect_obo_minor: 
-        ${ users[0].name.full(middle="full") + " and on behalf of minor: " + obo_minor.name.full(middle="full")}
+        ${ users[0].name_full() + " and on behalf of minor: " + obo_minor.name_full()}
         % elif protect_petitioner:
-        ${ users[0].name.full(middle="full") }
+        ${ users[0].name_full() }
         % elif protect_obo_minor:
-        ${ "On behalf of minor: " + obo_minor.name.full(middle="full")}
+        ${ "On behalf of minor: " + obo_minor.name_full()}
         % else:
         ${""}
         % endif
-    - "petitioner__3": ${ users[0].name.full(middle="full") }
+    - "petitioner__3": ${ users[0].name_full() }
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
         % if protect_obo_minor and protect_high_risk_adult:
-        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        ${ obo_minor.name_full() }, ${ high_risk_adult.name_full() }
         % elif protect_obo_minor:
-        ${ obo_minor.name.full(middle="full") }
+        ${ obo_minor.name_full() }
         % elif protect_high_risk_adult:
-        ${ high_risk_adult.name.full(middle="full") }
+        ${ high_risk_adult.name_full() }
         % else:
         ${""}
         % endif
-    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "respondent": ${other_parties[0].name_full()}
     - "case_number__1": ${ case_number }
     - "case_number__2": ${ case_number }
     - "case_number__3": ${ case_number }
@@ -4447,15 +4449,15 @@ attachment:
     - "case_number__15": ${ case_number }
     - "protect_petitioner": ${ protect_petitioner }
     - "protect_shared_kids": ${ protect_shared_kids }
-    - "shared_kids_list": ${ comma_and_list([person.name.full(middle="full") for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
+    - "shared_kids_list": ${ comma_and_list([person.name_full() for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
     - "protect_petitioner_kids": ${ protect_petitioner_kids }
     - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
     - "protect_dependent_adult": ${ protect_dependent_adult }
     - "protect_high_risk_adult": ${ protect_high_risk_adult }
     - "protect_other_hh_members": ${ protect_other_hh_members }
     - "other_hh_members_list": ${ other_hh_members.full_names() if protect_other_hh_members else '' }
-    - "dependent_adult": ${ dependent_adult.name.full(middle="full") if protect_dependent_adult else '' }
-    - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") if protect_high_risk_adult else '' }
+    - "dependent_adult": ${ dependent_adult.name_full() if protect_dependent_adult else '' }
+    - "high_risk_adult": ${ high_risk_adult.name_full() if protect_high_risk_adult else '' }
 
     - "eop": ${ eop }
     - "pop": ${ pop }
@@ -4908,7 +4910,7 @@ attachment:
       # page 7    
     - "care_and_possession_of_children": ${ minor_kids_with_respondent } 
     - "minor_kids_with_respondent": ${ minor_kids_with_respondent }
-    - "shared_kids_1_name": ${ shared_kids[0].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_1_name": ${ shared_kids[0].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_1_age": ${ shared_kids[0].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_1_state": ${ shared_kids[0].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_1_pet_par": ${ True if minor_kids_with_respondent and shared_kids[0].pet_parentage == True else "" }
@@ -4916,7 +4918,7 @@ attachment:
     - "shared_kids_1_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[0].pet_parentage == None and shared_kids[0].res_parentage == None) else "" }
     - "shared_kids_1_include_yes": ${ shared_kids[0].protect if minor_kids_with_respondent else '' }
     - "shared_kids_1_include_no": ${ True if minor_kids_with_respondent and shared_kids[0].protect == False else '' }
-    - "shared_kids_2_name": ${ shared_kids[1].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_2_name": ${ shared_kids[1].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_2_age": ${ shared_kids[1].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_2_state": ${ shared_kids[1].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_2_pet_par": ${ True if minor_kids_with_respondent and shared_kids[1].pet_parentage == True else "" }
@@ -4924,7 +4926,7 @@ attachment:
     - "shared_kids_2_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[1].pet_parentage == None and shared_kids[1].res_parentage == None) else "" }
     - "shared_kids_2_include_yes": ${ shared_kids[1].protect if minor_kids_with_respondent else '' }
     - "shared_kids_2_include_no": ${ True if minor_kids_with_respondent and shared_kids[1].protect == False else '' }
-    - "shared_kids_3_name": ${ shared_kids[2].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_3_name": ${ shared_kids[2].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_3_age": ${ shared_kids[2].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_3_state": ${ shared_kids[2].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_3_pet_par": ${ True if minor_kids_with_respondent and shared_kids[2].pet_parentage == True else "" }
@@ -4932,7 +4934,7 @@ attachment:
     - "shared_kids_3_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[2].pet_parentage == None and shared_kids[2].res_parentage == None) else "" }
     - "shared_kids_3_include_yes": ${ shared_kids[2].protect if minor_kids_with_respondent else '' }
     - "shared_kids_3_include_no": ${ True if minor_kids_with_respondent and shared_kids[2].protect == False else '' }
-    - "shared_kids_4_name": ${ shared_kids[3].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_4_name": ${ shared_kids[3].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_4_age": ${ shared_kids[3].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_4_state": ${ shared_kids[3].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_4_pet_par": ${ True if minor_kids_with_respondent and shared_kids[3].pet_parentage == True else "" }
@@ -4940,7 +4942,7 @@ attachment:
     - "shared_kids_4_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[3].pet_parentage == None and shared_kids[3].res_parentage == None) else "" }
     - "shared_kids_4_include_yes": ${ shared_kids[3].protect if minor_kids_with_respondent else '' }
     - "shared_kids_4_include_no": ${ True if minor_kids_with_respondent and shared_kids[3].protect == False else '' }
-    - "shared_kids_5_name": ${ shared_kids[4].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_5_name": ${ shared_kids[4].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_5_age": ${ shared_kids[4].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_5_state": ${ shared_kids[4].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_5_pet_par": ${ True if minor_kids_with_respondent and shared_kids[4].pet_parentage == True else "" }
@@ -4948,7 +4950,7 @@ attachment:
     - "shared_kids_5_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[4].pet_parentage == None and shared_kids[4].res_parentage == None) else "" }
     - "shared_kids_5_include_yes": ${ shared_kids[4].protect if minor_kids_with_respondent else '' }
     - "shared_kids_5_include_no": ${ True if minor_kids_with_respondent and shared_kids[4].protect == False else '' }
-    - "shared_kids_6_name": ${ shared_kids[5].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_6_name": ${ shared_kids[5].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_6_age": ${ shared_kids[5].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_6_state": ${ shared_kids[5].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_6_pet_par": ${ True if minor_kids_with_respondent and shared_kids[5].pet_parentage == True else "" }
@@ -4967,7 +4969,7 @@ attachment:
 
     - "caretaker_respondent": ${ True if (primary_caretaker == "respondent" and minor_kids_with_respondent) else '' }
     - "caretaker_other": ${ True if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
-    - "other_caretaker_name": ${ other_caretaker.name.full(middle="full") if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
+    - "other_caretaker_name": ${ other_caretaker.name_full() if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "other_caretaker_address": ${ other_caretaker.address.on_one_line(bare=True) if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or ((schools[0].hide or schools[1].hide) and stay_away_schools and minor_kids_with_respondent) else '' }
 
@@ -4976,7 +4978,7 @@ attachment:
     - "return_children_other_person": |
         % if minor_kids_with_respondent:
         % if return_children_to == "other":
-        ${ return_children_other_person.name.full(middle="full") }
+        ${ return_children_other_person.name_full() }
         % elif return_children_to == "petitioner":
         ${ "Petitioner" }
         % else:
@@ -5025,7 +5027,7 @@ attachment:
         % elif pt_transportation == "respondent" and (parenting_time == "restrict" or parenting_time == "grant"):
         ${ "Respondent" }
         % elif pt_transportation == "other" and (parenting_time == "restrict" or parenting_time == "grant"):
-        ${ pt_transportation_person.name.full(middle="full") }
+        ${ pt_transportation_person.name_full() }
         % else:
         ${ "" }
         % endif
@@ -5069,13 +5071,13 @@ attachment:
         ${ "" }
         % endif          
     - "pt_supervised": ${ True if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
-    - "pt_supervisor_name": ${ pt_supervisor.name.full(middle="full") if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_supervisor_name": ${ pt_supervisor.name_full() if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_supervised_center_cb": ${ True if pt_supervised == True and pt_supervisor_type == "agency" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
 
     - "pt_immediate_return_cb": ${ True if pt_immediate_return == True and pt_return_person_choice != "later" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_immediate_return_pet": ${ True if pt_immediate_return == True and pt_return_person_choice == "Me" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_immediate_return_other": ${ True if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
-    - "pt_immediate_return_other_name": ${ pt_return_person.name.full(middle="full") if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_immediate_return_other_name": ${ pt_return_person.name_full() if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
 
     - "order_to_appear_cb": ${ True if minor_kids_with_respondent and ((current_possession_of_children == False and return_children_to == "court" ) or (current_possession_of_children == True and res_appear_alone) or ( current_possession_of_children == False and return_children_to != "court" and res_appear_alone ) ) else '' }         
     - "appear_alone_cb": ${ True if minor_kids_with_respondent and (current_possession_of_children == True and res_appear_alone) or ( current_possession_of_children == False and return_children_to != "court" and res_appear_alone ) else '' }
@@ -5163,7 +5165,7 @@ attachment:
     - "property_transfer_present_police_name_known": ${ True if property_transfer_person == 'police' and property_transfer_present_cb == True and property_transfer_police != "" else '' }
     - "property_transfer_present_police_name": ${ property_transfer_police if property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
     - "property_transfer_present_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
-    - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "property_transfer_present_other_name": ${ other_transfer_property_person.name_full() if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
     - "property_transfer_time": ${ format_time(property_transfer_time, format='h:mm') if property_transfer_know_date == True else ''  }
     - "property_transfer_time_am": ${ True if format_time(property_transfer_time, format='a') == "AM" and property_transfer_know_date == True else "" }
@@ -5181,7 +5183,7 @@ attachment:
     - "one_time_present_police_name_known": ${ True if res_property_transfer_person == 'police' and respondent_one_time_entry == True and res_property_transfer_police != "" else '' }
     - "one_time_present_police_name": ${ res_property_transfer_police if res_property_transfer_person == 'police' and respondent_one_time_entry == True else '' }
     - "one_time_present_other_cb": ${ True if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
-    - "one_time_present_person": ${ res_other_transfer_property_person.name.full(middle="full") if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
+    - "one_time_present_person": ${ res_other_transfer_property_person.name_full() if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
 
       # page 11    
     - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == "Yes" else "" }
@@ -5329,9 +5331,9 @@ attachment:
     - "phone_provider": ${ phone_provider if separate_phone_service else '' }
     - "phone_account_holder": |
         % if phone_account_holder == 'respondent' and separate_phone_service == True:
-        ${other_parties[0].name.full(middle="full")}
+        ${other_parties[0].name_full()}
         % elif phone_account_holder == 'other' and separate_phone_service == True:
-        ${ other_phone_account_holder.name.full(middle="full") }
+        ${ other_phone_account_holder.name_full() }
         % endif
     - "billing_phone_number": ${ phone_number_formatted(billing_phone_number) if separate_phone_service else '' }
     - "cell_number_1": ${ phone_number_formatted(cell_numbers[0].name.text) if separate_phone_service else '' }
@@ -5340,8 +5342,8 @@ attachment:
     - "cell_number_4": ${ phone_number_formatted(cell_numbers[3].name.text) if separate_phone_service else '' }
 
       # page 14    
-    - "petitioner_signature": ${ users[0].name.full(middle="full") if e_signature else '' }
-    - "preparer_name": ${ users[0].name.full(middle="full") }
+    - "petitioner_signature": ${ users[0].name_full() if e_signature else '' }
+    - "preparer_name": ${ users[0].name_full() }
     - "preparer_address_one_line": ${ users[0].address.on_one_line(bare=True) }
     - "preparer_phone": ${ phone_number_formatted(users[0].phone_number) }
     - "preparer_email": ${ users[0].email if users[0].email_notice else ""}
@@ -5356,20 +5358,20 @@ attachment:
   pdf template file: op_schools.pdf
   fields:
     - "county": ${ trial_court.address.county }
-    - "petitioner": ${ users[0].name.full(middle="full") }
+    - "petitioner": ${ users[0].name_full() }
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
         % if protect_obo_minor and protect_high_risk_adult:
-        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        ${ obo_minor.name_full() }, ${ high_risk_adult.name_full() }
         % elif protect_obo_minor:
-        ${ obo_minor.name.full(middle="full") }
+        ${ obo_minor.name_full() }
         % elif protect_high_risk_adult:
-        ${ high_risk_adult.name.full(middle="full") }
+        ${ high_risk_adult.name_full() }
         % else:
         ${""}
         % endif
-    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "respondent": ${other_parties[0].name_full()}
     - "case_number__1": ${ case_number }
 
     - "school_1_kids": ${ comma_and_list(schools[0].kids_who_attend.true_values()) if stay_away_schools and schools[0].hide == True else '' }
@@ -5405,20 +5407,20 @@ attachment:
   pdf template file: additional_incidents.pdf
   fields:
     - "county": ${ trial_court.address.county }
-    - "petitioner": ${ users[0].name.full(middle="full") }
+    - "petitioner": ${ users[0].name_full() }
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
         % if protect_obo_minor and protect_high_risk_adult:
-        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        ${ obo_minor.name_full() }, ${ high_risk_adult.name_full() }
         % elif protect_obo_minor:
-        ${ obo_minor.name.full(middle="full") }
+        ${ obo_minor.name_full() }
         % elif protect_high_risk_adult:
-        ${ high_risk_adult.name.full(middle="full") }
+        ${ high_risk_adult.name_full() }
         % else:
         ${""}
         % endif
-    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "respondent": ${other_parties[0].name_full()}
     - "case_number__1": ${ case_number }
     - "incident_date_1": ${ incidents[4].date }
     - "incident_time_1": ${ incidents[4].time }
@@ -5454,20 +5456,20 @@ attachment:
   pdf template file: additional_cases.pdf
   fields:
     - "county": ${ trial_court.address.county }
-    - "petitioner": ${ users[0].name.full(middle="full") }
+    - "petitioner": ${ users[0].name_full() }
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
         % if protect_obo_minor and protect_high_risk_adult:
-        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        ${ obo_minor.name_full() }, ${ high_risk_adult.name_full() }
         % elif protect_obo_minor:
-        ${ obo_minor.name.full(middle="full") }
+        ${ obo_minor.name_full() }
         % elif protect_high_risk_adult:
-        ${ high_risk_adult.name.full(middle="full") }
+        ${ high_risk_adult.name_full() }
         % else:
         ${""}
         % endif
-    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "respondent": ${other_parties[0].name_full()}
     - "case_number__1": ${ case_number }
       
     - "has_other_ops_yes": ${ True if has_other_ops == "Yes" and other_ops.number() > 3 else ''  }
@@ -5578,23 +5580,23 @@ attachment:
   pdf template file: affidavit_pt_supervisor.pdf
   fields:
     - "county": ${ trial_court.address.county }
-    - "petitioner__1": ${ users[0].name.full(middle="full") }
-    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "petitioner__1": ${ users[0].name_full() }
+    - "respondent": ${other_parties[0].name_full()}
     - "case_number__1": ${ case_number }
     - "case_number__2": ${ case_number }
     - "protect_petitioner": ${ protect_petitioner }
     - "protect_shared_kids": ${ protect_shared_kids }
     #- "shared_kids_list": ${ comma_and_list(protected_minor_kids_list ) if protect_shared_kids else ''}
-    - "shared_kids_list": ${ comma_and_list([person.name.full(middle="full") for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
+    - "shared_kids_list": ${ comma_and_list([person.name_full() for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
     - "protect_petitioner_kids": ${ protect_petitioner_kids }
     - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
     - "protect_dependent_adult": ${ protect_dependent_adult }
     - "protect_high_risk_adult": ${ protect_high_risk_adult }
     - "protect_other_hh_members": ${ protect_other_hh_members }
     - "other_hh_members_list": ${ other_hh_members.full_names() if protect_other_hh_members else '' }
-    - "dependent_adult": ${ dependent_adult.name.full(middle="full") if protect_dependent_adult else '' }
-    - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") if protect_high_risk_adult else '' }
-    - "pt_supervisor_name": ${ pt_supervisor.name.full(middle="full") if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "dependent_adult": ${ dependent_adult.name_full() if protect_dependent_adult else '' }
+    - "high_risk_adult": ${ high_risk_adult.name_full() if protect_high_risk_adult else '' }
+    - "pt_supervisor_name": ${ pt_supervisor.name_full() if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
 ---
 attachment:
   variable name: efiling_exemption[i]
@@ -5605,12 +5607,12 @@ attachment:
   pdf template file: efiling_exemption.pdf
   fields:
     - "county": ${ trial_court.address.county }
-    - "petitioner__1": ${ users[0].name.full(middle="full") }
-    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "petitioner__1": ${ users[0].name_full() }
+    - "respondent": ${other_parties[0].name_full()}
     - "case_number__1": ${ case_number }
     - "reason_dv": ${ True }
-    - "e_signature": ${ users[0].name.full(middle="full") if e_signature else '' }
-    - "petitioner__2": ${ users[0].name.full(middle="full") }
+    - "e_signature": ${ users[0].name_full() if e_signature else '' }
+    - "petitioner__2": ${ users[0].name_full() }
     - "user_address_one_line": ${ users[0].address.on_one_line(bare=True) }
     - "user_phone_number": ${ phone_number_formatted(users[0].phone_number) }
     - "user_email": ${ users[0].email if users[0].email_notice else ""}
@@ -5626,16 +5628,16 @@ attachment:
   fields:
     - "county__2": ${ trial_court.address.county }
     - "county": ${ trial_court.address.county }
-    - "petitioner": ${ users[0].name.full(middle="full") }
+    - "petitioner": ${ users[0].name_full() }
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
         % if protect_obo_minor and protect_high_risk_adult:
-        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        ${ obo_minor.name_full() }, ${ high_risk_adult.name_full() }
         % elif protect_obo_minor:
-        ${ obo_minor.name.full(middle="full") }
+        ${ obo_minor.name_full() }
         % elif protect_high_risk_adult:
-        ${ high_risk_adult.name.full(middle="full") }
+        ${ high_risk_adult.name_full() }
         % else:
         ${""}
         % endif
@@ -5643,25 +5645,25 @@ attachment:
     - "obo_high_risk_adult_cb_2": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name_2": |
         % if protect_obo_minor and protect_high_risk_adult:
-        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        ${ obo_minor.name_full() }, ${ high_risk_adult.name_full() }
         % elif protect_obo_minor:
-        ${ obo_minor.name.full(middle="full") }
+        ${ obo_minor.name_full() }
         % elif protect_high_risk_adult:
-        ${ high_risk_adult.name.full(middle="full") }
+        ${ high_risk_adult.name_full() }
         % else:
         ${""}
         % endif
-    - "respondent__1": ${other_parties[0].name.full(middle="full")}
-    - "petitioner__2": ${ users[0].name.full(middle="full") }
-    - "petitioner__3": ${ users[0].name.full(middle="full") }
-    - "respondent__3": ${other_parties[0].name.full(middle="full")}
-    - "respondent__4": ${other_parties[0].name.full(middle="full")}
+    - "respondent__1": ${other_parties[0].name_full()}
+    - "petitioner__2": ${ users[0].name_full() }
+    - "petitioner__3": ${ users[0].name_full() }
+    - "respondent__3": ${other_parties[0].name_full()}
+    - "respondent__4": ${other_parties[0].name_full()}
     - "case_number__1": ${ case_number }
     - "case_number__2": ${ case_number }
     - "case_number__3": ${ case_number }
     - "case_number__4": ${ case_number }
     - "case_number__5": ${ case_number }
-    - "respondent__2": ${other_parties[0].name.full(middle="full")}
+    - "respondent__2": ${other_parties[0].name_full()}
     - "service_address_line_1": |
         % if service_address_choice == "other":
         ${ service_address.line_one(bare=True) }
@@ -5734,31 +5736,31 @@ attachment:
   fields:
     - "county": ${ trial_court.address.county }
     - "civil_proceeding": True
-    - "petitioner": ${ users[0].name.full(middle="full") }
+    - "petitioner": ${ users[0].name_full() }
     - "petitioner__2": |
         % if protect_petitioner and protect_obo_minor: 
-        ${ users[0].name.full(middle="full") + " and on behalf of minor: " + obo_minor.name.full(middle="full")}
+        ${ users[0].name_full() + " and on behalf of minor: " + obo_minor.name_full()}
         % elif protect_petitioner:
-        ${ users[0].name.full(middle="full") }
+        ${ users[0].name_full() }
         % elif protect_obo_minor:
-        ${ "On behalf of minor: " + obo_minor.name.full(middle="full")}
+        ${ "On behalf of minor: " + obo_minor.name_full()}
         % else:
         ${""}
         % endif
-    - "petitioner__3": ${ users[0].name.full(middle="full") }
+    - "petitioner__3": ${ users[0].name_full() }
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
         % if protect_obo_minor and protect_high_risk_adult:
-        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        ${ obo_minor.name_full() }, ${ high_risk_adult.name_full() }
         % elif protect_obo_minor:
-        ${ obo_minor.name.full(middle="full") }
+        ${ obo_minor.name_full() }
         % elif protect_high_risk_adult:
-        ${ high_risk_adult.name.full(middle="full") }
+        ${ high_risk_adult.name_full() }
         % else:
         ${""}
         % endif
-    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "respondent": ${other_parties[0].name_full()}
     - "case_number__1": ${ case_number }
     - "case_number__2": ${ case_number }
     - "case_number__3": ${ case_number }
@@ -5776,15 +5778,15 @@ attachment:
     - "case_number__15": ${ case_number }
     - "protect_petitioner": ${ protect_petitioner }
     - "protect_shared_kids": ${ protect_shared_kids }
-    - "shared_kids_list": ${ comma_and_list([person.name.full(middle="full") for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
+    - "shared_kids_list": ${ comma_and_list([person.name_full() for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
     - "protect_petitioner_kids": ${ protect_petitioner_kids }
     - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
     - "protect_dependent_adult": ${ protect_dependent_adult }
     - "protect_high_risk_adult": ${ protect_high_risk_adult }
     - "protect_other_hh_members": ${ protect_other_hh_members }
     - "other_hh_members_list": ${ other_hh_members.full_names() if protect_other_hh_members else '' }
-    - "dependent_adult": ${ dependent_adult.name.full(middle="full") if protect_dependent_adult else '' }
-    - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") if protect_high_risk_adult else '' }    
+    - "dependent_adult": ${ dependent_adult.name_full() if protect_dependent_adult else '' }
+    - "high_risk_adult": ${ high_risk_adult.name_full() if protect_high_risk_adult else '' }    
       # page 2
     - "show_address": ${ not hide_address }
     - "hide_address": ${ hide_address }
@@ -6119,7 +6121,7 @@ attachment:
     - "respondent_one_time_entry": ${ True if respondent_one_time_entry == True else '' }
     - "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
     - "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
-    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name_full() if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
 
 
     - "same_school_not_attend": ${ True if (same_school and same_school_restrictions == "not attend") else ""}
@@ -6134,7 +6136,7 @@ attachment:
       # page 5
     
     - "care_and_possession_of_children": ${ minor_kids_with_respondent } 
-    - "shared_kids_1_name": ${ shared_kids[0].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_1_name": ${ shared_kids[0].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_1_age": ${ shared_kids[0].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_1_state": ${ shared_kids[0].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_1_pet_par": ${ True if minor_kids_with_respondent and shared_kids[0].pet_parentage == True else "" }
@@ -6142,7 +6144,7 @@ attachment:
     - "shared_kids_1_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[0].pet_parentage == None and shared_kids[0].res_parentage == None) else "" }
     - "shared_kids_1_include_yes": ${ shared_kids[0].protect if minor_kids_with_respondent else '' }
     - "shared_kids_1_include_no": ${ True if minor_kids_with_respondent and shared_kids[0].protect == False else '' }
-    - "shared_kids_2_name": ${ shared_kids[1].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_2_name": ${ shared_kids[1].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_2_age": ${ shared_kids[1].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_2_state": ${ shared_kids[1].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_2_pet_par": ${ True if minor_kids_with_respondent and shared_kids[1].pet_parentage == True else "" }
@@ -6150,7 +6152,7 @@ attachment:
     - "shared_kids_2_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[1].pet_parentage == None and shared_kids[1].res_parentage == None) else "" }
     - "shared_kids_2_include_yes": ${ shared_kids[1].protect if minor_kids_with_respondent else '' }
     - "shared_kids_2_include_no": ${ True if minor_kids_with_respondent and shared_kids[1].protect == False else '' }
-    - "shared_kids_3_name": ${ shared_kids[2].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_3_name": ${ shared_kids[2].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_3_age": ${ shared_kids[2].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_3_state": ${ shared_kids[2].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_3_pet_par": ${ True if minor_kids_with_respondent and shared_kids[2].pet_parentage == True else "" }
@@ -6158,7 +6160,7 @@ attachment:
     - "shared_kids_3_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[2].pet_parentage == None and shared_kids[2].res_parentage == None) else "" }
     - "shared_kids_3_include_yes": ${ shared_kids[2].protect if minor_kids_with_respondent else '' }
     - "shared_kids_3_include_no": ${ True if minor_kids_with_respondent and shared_kids[2].protect == False else '' }
-    - "shared_kids_4_name": ${ shared_kids[3].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_4_name": ${ shared_kids[3].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_4_age": ${ shared_kids[3].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_4_state": ${ shared_kids[3].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_4_pet_par": ${ True if minor_kids_with_respondent and shared_kids[3].pet_parentage == True else "" }
@@ -6166,7 +6168,7 @@ attachment:
     - "shared_kids_4_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[3].pet_parentage == None and shared_kids[3].res_parentage == None) else "" }
     - "shared_kids_4_include_yes": ${ shared_kids[3].protect if minor_kids_with_respondent else '' }
     - "shared_kids_4_include_no": ${ True if minor_kids_with_respondent and shared_kids[3].protect == False else '' }
-    - "shared_kids_5_name": ${ shared_kids[4].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_5_name": ${ shared_kids[4].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_5_age": ${ shared_kids[4].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_5_state": ${ shared_kids[4].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_5_pet_par": ${ True if minor_kids_with_respondent and shared_kids[4].pet_parentage == True else "" }
@@ -6174,7 +6176,7 @@ attachment:
     - "shared_kids_5_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[4].pet_parentage == None and shared_kids[4].res_parentage == None) else "" }
     - "shared_kids_5_include_yes": ${ shared_kids[4].protect if minor_kids_with_respondent else '' }
     - "shared_kids_5_include_no": ${ True if minor_kids_with_respondent and shared_kids[4].protect == False else '' }
-    - "shared_kids_6_name": ${ shared_kids[5].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_6_name": ${ shared_kids[5].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_6_age": ${ shared_kids[5].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_6_state": ${ shared_kids[5].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_6_pet_par": ${ True if minor_kids_with_respondent and shared_kids[5].pet_parentage == True else "" }
@@ -6190,7 +6192,7 @@ attachment:
     - "caretaker_petitioner": ${ True if (primary_caretaker == "petitioner" and minor_kids_with_respondent) else '' }
     - "caretaker_respondent": ${ True if (primary_caretaker == "respondent" and minor_kids_with_respondent) else '' }
     - "caretaker_other": ${ True if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
-    - "other_caretaker_name": ${ other_caretaker.name.full(middle="full") if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
+    - "other_caretaker_name": ${ other_caretaker.name_full() if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "other_caretaker_address": ${ other_caretaker.address.on_one_line(bare=True) if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or ((schools[0].hide or schools[1].hide) and stay_away_schools and minor_kids_with_respondent) else '' }
 
@@ -6199,7 +6201,7 @@ attachment:
     - "return_children_possession": ${ True if (return_children_to == "petitioner" or return_children_to == "other") and minor_kids_with_respondent else '' }
     - "return_children_petitioner_cb": ${ True if return_children_to == "petitioner" and minor_kids_with_respondent else '' }
     - "return_children_other_cb": ${ True if return_children_to == "other" and minor_kids_with_respondent else '' }    
-    - "return_children_other_person": ${ return_children_other_person.name.full(middle="full") if return_children_to == "other" and minor_kids_with_respondent else '' }
+    - "return_children_other_person": ${ return_children_other_person.name_full() if return_children_to == "other" and minor_kids_with_respondent else '' }
     - "return_children_location": ${ return_children_location.on_one_line(bare=True) if knows_return_children_details and return_children_to == "other" and minor_kids_with_respondent else "" }
 
     
@@ -6348,7 +6350,7 @@ attachment:
         % elif pt_transportation == "respondent" and (parenting_time == "restrict" or parenting_time == "grant"):
         ${ "Respondent" }
         % elif pt_transportation == "other" and (parenting_time == "restrict" or parenting_time == "grant"):
-        ${ pt_transportation_person.name.full(middle="full") }
+        ${ pt_transportation_person.name_full() }
         % else:
         ${ "" }
         % endif
@@ -6396,14 +6398,14 @@ attachment:
         % endif
         
     - "pt_supervised": ${ True if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
-    - "pt_supervisor_name": ${ pt_supervisor.name.full(middle="full") if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_supervisor_name": ${ pt_supervisor.name_full() if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_supervised_center_cb": ${ True if pt_supervised == True and pt_supervisor_type == "agency" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_visitation_center_name": ${ pt_visitation_center_name  if pt_supervised == True and pt_supervisor_type == "agency" and (parenting_time == "restrict" or parenting_time == "grant") and pt_visitation_center_name != "" else "" }    
 
     - "pt_immediate_return_cb": ${ True if pt_immediate_return == True and pt_return_person_choice != "later" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_immediate_return_pet": ${ True if pt_immediate_return == True and pt_return_person_choice == "Me" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_immediate_return_other": ${ True if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
-    - "pt_immediate_return_other_name": ${ pt_return_person.name.full(middle="full") if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_immediate_return_other_name": ${ pt_return_person.name_full() if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
 
     - "no_conceal_children_cb": ${ True if no_conceal_children and minor_kids_with_respondent else '' }
 
@@ -6481,7 +6483,7 @@ attachment:
         % if return_property_person == "petitioner":
         ${ "Petitioner" }
         % elif return_property_person == 'other':
-        ${ other_return_property_person.name.full(middle="full") }
+        ${ other_return_property_person.name_full() }
         % endif
         % endif
 
@@ -6498,7 +6500,7 @@ attachment:
     - "property_transfer_present_police_name_known": ${ True if property_transfer_person == 'police' and property_transfer_present_cb == True and property_transfer_police != "" else '' }
     - "property_transfer_present_police_name": ${ property_transfer_police if property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
     - "property_transfer_present_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
-    - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "property_transfer_present_other_name": ${ other_transfer_property_person.name_full() if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
     - "property_transfer_time": ${ format_time(property_transfer_time, format='h:mm') if property_transfer_know_date == True else ''  }
     - "property_transfer_time_am": ${ True if format_time(property_transfer_time, format='a') == "AM" and property_transfer_know_date == True else "" }
@@ -6516,7 +6518,7 @@ attachment:
     - "one_time_present_police_name_known": ${ True if res_property_transfer_person == 'police' and respondent_one_time_entry == True and res_property_transfer_police != "" else '' }
     - "one_time_present_police_name": ${ res_property_transfer_police if res_property_transfer_person == 'police' and respondent_one_time_entry == True else '' }
     - "one_time_present_other_cb": ${ True if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
-    - "one_time_present_person": ${ res_other_transfer_property_person.name.full(middle="full") if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
+    - "one_time_present_person": ${ res_other_transfer_property_person.name_full() if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
     
     - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == "Yes" else "" }
     - "restrict_property_cb": ${ True if restrict_other_property == True else "" }
@@ -6563,9 +6565,9 @@ attachment:
     - "phone_provider": ${ phone_provider if separate_phone_service else '' }
     - "phone_account_holder": |
         % if phone_account_holder == 'respondent' and separate_phone_service == True:
-        ${other_parties[0].name.full(middle="full")}
+        ${other_parties[0].name_full()}
         % elif phone_account_holder == 'other' and separate_phone_service == True:
-        ${ other_phone_account_holder.name.full(middle="full") }
+        ${ other_phone_account_holder.name_full() }
         % endif
     - "billing_phone_number": ${ phone_number_formatted(billing_phone_number) if separate_phone_service else '' }
     - "cell_number_1": ${ phone_number_formatted(cell_numbers[0].name.text) if separate_phone_service else '' }
@@ -6612,31 +6614,31 @@ attachment:
   fields:
     - "county": ${ trial_court.address.county }
     - "civil_proceeding": True
-    - "petitioner": ${ users[0].name.full(middle="full") }
+    - "petitioner": ${ users[0].name_full() }
     - "petitioner__2": |
         % if protect_petitioner and protect_obo_minor: 
-        ${ users[0].name.full(middle="full") + " and on behalf of minor: " + obo_minor.name.full(middle="full")}
+        ${ users[0].name_full() + " and on behalf of minor: " + obo_minor.name_full()}
         % elif protect_petitioner:
-        ${ users[0].name.full(middle="full") }
+        ${ users[0].name_full() }
         % elif protect_obo_minor:
-        ${ "On behalf of minor: " + obo_minor.name.full(middle="full")}
+        ${ "On behalf of minor: " + obo_minor.name_full()}
         % else:
         ${""}
         % endif
-    - "petitioner__3": ${ users[0].name.full(middle="full") }
+    - "petitioner__3": ${ users[0].name_full() }
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
     - "obo_high_risk_adult_cb": ${ True if protect_high_risk_adult else '' }
     - "obo_child_or_adult_name": |
         % if protect_obo_minor and protect_high_risk_adult:
-        ${ obo_minor.name.full(middle="full") }, ${ high_risk_adult.name.full(middle="full") }
+        ${ obo_minor.name_full() }, ${ high_risk_adult.name_full() }
         % elif protect_obo_minor:
-        ${ obo_minor.name.full(middle="full") }
+        ${ obo_minor.name_full() }
         % elif protect_high_risk_adult:
-        ${ high_risk_adult.name.full(middle="full") }
+        ${ high_risk_adult.name_full() }
         % else:
         ${""}
         % endif
-    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "respondent": ${other_parties[0].name_full()}
     - "case_number__1": ${ case_number }
     - "case_number__2": ${ case_number }
     - "case_number__3": ${ case_number }
@@ -6655,15 +6657,15 @@ attachment:
     - "case_number__16": ${ case_number }
     - "protect_petitioner": ${ protect_petitioner }
     - "protect_shared_kids": ${ protect_shared_kids }
-    - "shared_kids_list": ${ comma_and_list([person.name.full(middle="full") for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
+    - "shared_kids_list": ${ comma_and_list([person.name_full() for person in shared_kids if person.protect == True]) if (minor_kids_with_respondent == True and shared_kids.number() > 0 and protect_shared_kids == True) else "" }
     - "protect_petitioner_kids": ${ protect_petitioner_kids }
     - "petitioner_kids_list": ${ petitioner_kids.full_names() if protect_petitioner_kids else '' }
     - "protect_dependent_adult": ${ protect_dependent_adult }
     - "protect_high_risk_adult": ${ protect_high_risk_adult }
     - "protect_other_hh_members": ${ protect_other_hh_members }
     - "other_hh_members_list": ${ other_hh_members.full_names() if protect_other_hh_members else '' }
-    - "dependent_adult": ${ dependent_adult.name.full(middle="full") if protect_dependent_adult else '' }
-    - "high_risk_adult": ${ high_risk_adult.name.full(middle="full") if protect_high_risk_adult else '' }    
+    - "dependent_adult": ${ dependent_adult.name_full() if protect_dependent_adult else '' }
+    - "high_risk_adult": ${ high_risk_adult.name_full() if protect_high_risk_adult else '' }    
       
       # page 2
     - "show_address": ${ not hide_address }
@@ -6995,7 +6997,7 @@ attachment:
     - "respondent_one_time_entry": ${ True if respondent_one_time_entry == True else '' }
     - "respondent_one_time_entry_police": ${ True if respondent_one_time_entry == True and property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
     - "respondent_one_time_entry_other_cb": ${ True if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
-    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name.full(middle="full") if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "respondent_one_time_entry_name": ${ other_transfer_property_person.name_full() if respondent_one_time_entry == True and property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
 
     - "same_school_restrictions": ${ True if (same_school and same_school_restrictions != "none") else ""} 
     - "same_school_name": ${ same_school_name if (same_school and same_school_restrictions != "none") else ""}
@@ -7019,7 +7021,7 @@ attachment:
     
     - "care_and_possession_of_children": ${ minor_kids_with_respondent } 
     - "minor_kids_with_respondent": ${ minor_kids_with_respondent }
-    - "shared_kids_1_name": ${ shared_kids[0].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_1_name": ${ shared_kids[0].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_1_age": ${ shared_kids[0].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_1_state": ${ shared_kids[0].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_1_pet_par": ${ True if minor_kids_with_respondent and shared_kids[0].pet_parentage == True else "" }
@@ -7027,7 +7029,7 @@ attachment:
     - "shared_kids_1_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[0].pet_parentage == None and shared_kids[0].res_parentage == None) else "" }
     - "shared_kids_1_include_yes": ${ shared_kids[0].protect if minor_kids_with_respondent else '' }
     - "shared_kids_1_include_no": ${ True if minor_kids_with_respondent and shared_kids[0].protect == False else '' }
-    - "shared_kids_2_name": ${ shared_kids[1].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_2_name": ${ shared_kids[1].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_2_age": ${ shared_kids[1].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_2_state": ${ shared_kids[1].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_2_pet_par": ${ True if minor_kids_with_respondent and shared_kids[1].pet_parentage == True else "" }
@@ -7035,7 +7037,7 @@ attachment:
     - "shared_kids_2_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[1].pet_parentage == None and shared_kids[1].res_parentage == None) else "" }
     - "shared_kids_2_include_yes": ${ shared_kids[1].protect if minor_kids_with_respondent else '' }
     - "shared_kids_2_include_no": ${ True if minor_kids_with_respondent and shared_kids[1].protect == False else '' }
-    - "shared_kids_3_name": ${ shared_kids[2].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_3_name": ${ shared_kids[2].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_3_age": ${ shared_kids[2].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_3_state": ${ shared_kids[2].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_3_pet_par": ${ True if minor_kids_with_respondent and shared_kids[2].pet_parentage == True else "" }
@@ -7043,7 +7045,7 @@ attachment:
     - "shared_kids_3_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[2].pet_parentage == None and shared_kids[2].res_parentage == None) else "" }
     - "shared_kids_3_include_yes": ${ shared_kids[2].protect if minor_kids_with_respondent else '' }
     - "shared_kids_3_include_no": ${ True if minor_kids_with_respondent and shared_kids[2].protect == False else '' }
-    - "shared_kids_4_name": ${ shared_kids[3].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_4_name": ${ shared_kids[3].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_4_age": ${ shared_kids[3].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_4_state": ${ shared_kids[3].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_4_pet_par": ${ True if minor_kids_with_respondent and shared_kids[3].pet_parentage == True else "" }
@@ -7051,7 +7053,7 @@ attachment:
     - "shared_kids_4_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[3].pet_parentage == None and shared_kids[3].res_parentage == None) else "" }
     - "shared_kids_4_include_yes": ${ shared_kids[3].protect if minor_kids_with_respondent else '' }
     - "shared_kids_4_include_no": ${ True if minor_kids_with_respondent and shared_kids[3].protect == False else '' }
-    - "shared_kids_5_name": ${ shared_kids[4].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_5_name": ${ shared_kids[4].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_5_age": ${ shared_kids[4].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_5_state": ${ shared_kids[4].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_5_pet_par": ${ True if minor_kids_with_respondent and shared_kids[4].pet_parentage == True else "" }
@@ -7059,7 +7061,7 @@ attachment:
     - "shared_kids_5_idk_par": ${ True if minor_kids_with_respondent and (shared_kids[4].pet_parentage == None and shared_kids[4].res_parentage == None) else "" }
     - "shared_kids_5_include_yes": ${ shared_kids[4].protect if minor_kids_with_respondent else '' }
     - "shared_kids_5_include_no": ${ True if minor_kids_with_respondent and shared_kids[4].protect == False else '' }
-    - "shared_kids_6_name": ${ shared_kids[5].name.full(middle="full") if  minor_kids_with_respondent else '' }
+    - "shared_kids_6_name": ${ shared_kids[5].name_full() if  minor_kids_with_respondent else '' }
     - "shared_kids_6_age": ${ shared_kids[5].age_in_years() if minor_kids_with_respondent else '' }
     - "shared_kids_6_state": ${ shared_kids[5].address.state if minor_kids_with_respondent else '' }
     - "shared_kids_6_pet_par": ${ True if minor_kids_with_respondent and shared_kids[5].pet_parentage == True else "" }
@@ -7075,7 +7077,7 @@ attachment:
     - "caretaker_petitioner": ${ True if (primary_caretaker == "petitioner" and minor_kids_with_respondent) else '' }
     - "caretaker_respondent": ${ True if (primary_caretaker == "respondent" and minor_kids_with_respondent) else '' }
     - "caretaker_other": ${ True if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
-    - "other_caretaker_name": ${ other_caretaker.name.full(middle="full") if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
+    - "other_caretaker_name": ${ other_caretaker.name_full() if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
     - "other_caretaker_address": ${ other_caretaker.address.on_one_line(bare=True) if (primary_caretaker == "other" and minor_kids_with_respondent) else '' }
 
     - "care_and_possession_cb": ${ True if physical_care_of_children or return_children_to == "petitioner" or return_children_to == "other" or no_removal_school or ((schools[0].hide or schools[1].hide) and stay_away_schools and minor_kids_with_respondent) else '' }
@@ -7085,7 +7087,7 @@ attachment:
     - "return_children_possession": ${ True if (return_children_to == "petitioner" or return_children_to == "other") and minor_kids_with_respondent else '' }
     - "return_children_petitioner_cb": ${ True if return_children_to == "petitioner" and minor_kids_with_respondent else '' }
     - "return_children_other_cb": ${ True if return_children_to == "other" and minor_kids_with_respondent else '' }    
-    - "return_children_other_person": ${ return_children_other_person.name.full(middle="full") if return_children_to == "other" and minor_kids_with_respondent else '' }
+    - "return_children_other_person": ${ return_children_other_person.name_full() if return_children_to == "other" and minor_kids_with_respondent else '' }
     - "return_children_location": ${ return_children_location.on_one_line(bare=True) if knows_return_children_details and return_children_to == "other" and minor_kids_with_respondent else "" }
 
     - "no_removal_school": ${ True if no_removal_school and minor_kids_with_respondent else '' }
@@ -7236,7 +7238,7 @@ attachment:
         % elif pt_transportation == "respondent" and (parenting_time == "restrict" or parenting_time == "grant"):
         ${ "Respondent" }
         % elif pt_transportation == "other" and (parenting_time == "restrict" or parenting_time == "grant"):
-        ${ pt_transportation_person.name.full(middle="full") }
+        ${ pt_transportation_person.name_full() }
         % else:
         ${ "" }
         % endif
@@ -7283,14 +7285,14 @@ attachment:
         ${ "" }
         % endif
     - "pt_supervised": ${ True if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
-    - "pt_supervisor_name": ${ pt_supervisor.name.full(middle="full") if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_supervisor_name": ${ pt_supervisor.name_full() if pt_supervised == True and pt_supervisor_type == "person" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_supervised_center_cb": ${ True if pt_supervised == True and pt_supervisor_type == "agency" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_visitation_center_name": ${ pt_visitation_center_name  if pt_supervised == True and pt_supervisor_type == "agency" and (parenting_time == "restrict" or parenting_time == "grant") and pt_visitation_center_name != "" else "" }    
 
     - "pt_immediate_return_cb": ${ True if pt_immediate_return == True and pt_return_person_choice != "later" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_immediate_return_pet": ${ True if pt_immediate_return == True and pt_return_person_choice == "Me" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
     - "pt_immediate_return_other": ${ True if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
-    - "pt_immediate_return_other_name": ${ pt_return_person.name.full(middle="full") if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
+    - "pt_immediate_return_other_name": ${ pt_return_person.name_full() if pt_immediate_return == True and pt_return_person_choice == "other" and (parenting_time == "restrict" or parenting_time == "grant") else "" }
 
     - "no_conceal_children_cb": ${ True if no_conceal_children and minor_kids_with_respondent else '' }
 
@@ -7369,7 +7371,7 @@ attachment:
         % if return_property_person == "petitioner":
         ${ "Petitioner" }
         % elif return_property_person == 'other':
-        ${ other_return_property_person.name.full(middle="full") }
+        ${ other_return_property_person.name_full() }
         % endif
         % endif
     
@@ -7384,7 +7386,7 @@ attachment:
     - "property_transfer_present_police_name_known": ${ True if property_transfer_person == 'police' and property_transfer_present_cb == True and property_transfer_police != "" else '' }
     - "property_transfer_present_police_name": ${ property_transfer_police if property_transfer_person == 'police' and property_transfer_present_cb == True else '' }
     - "property_transfer_present_other_cb": ${ True if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
-    - "property_transfer_present_other_name": ${ other_transfer_property_person.name.full(middle="full") if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
+    - "property_transfer_present_other_name": ${ other_transfer_property_person.name_full() if property_transfer_person == 'other' and property_transfer_present_cb == True else '' }
     - "property_transfer_date": ${ property_transfer_date if property_transfer_know_date == True else '' }
     - "property_transfer_time": ${ format_time(property_transfer_time, format='h:mm') if property_transfer_know_date == True else ''  }
     - "property_transfer_time_am": ${ True if format_time(property_transfer_time, format='a') == "AM" and property_transfer_know_date == True else "" }
@@ -7402,7 +7404,7 @@ attachment:
     - "one_time_present_police_name_known": ${ True if res_property_transfer_person == 'police' and respondent_one_time_entry == True and res_property_transfer_police != "" else '' }
     - "one_time_present_police_name": ${ res_property_transfer_police if res_property_transfer_person == 'police' and respondent_one_time_entry == True else '' }
     - "one_time_present_other_cb": ${ True if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
-    - "one_time_present_person": ${ res_other_transfer_property_person.name.full(middle="full") if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
+    - "one_time_present_person": ${ res_other_transfer_property_person.name_full() if res_property_transfer_person == 'other' and respondent_one_time_entry == True else '' }
 
      # page 9    
     - "property_restrictions_cb": ${ True if restrict_other_property == True or restrict_elderly_petitioner_resources == "Yes" else "" }
@@ -7547,9 +7549,9 @@ attachment:
     - "phone_provider": ${ phone_provider if separate_phone_service else '' }
     - "phone_account_holder": |
         % if phone_account_holder == 'respondent' and separate_phone_service == True:
-        ${other_parties[0].name.full(middle="full")}
+        ${other_parties[0].name_full()}
         % elif phone_account_holder == 'other' and separate_phone_service == True:
-        ${ other_phone_account_holder.name.full(middle="full") }
+        ${ other_phone_account_holder.name_full() }
         % endif
     - "billing_phone_number": ${ phone_number_formatted(billing_phone_number) if separate_phone_service else '' }
     - "cell_number_1": ${ phone_number_formatted(cell_numbers[0].name.text) if separate_phone_service else '' }
@@ -7595,8 +7597,8 @@ attachment:
   editable: False
   pdf template file: cook_dv_cover_sheet.pdf
   fields:
-    - "petitioner__1": ${ users[0].name.full(middle="full") }
-    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "petitioner__1": ${ users[0].name_full() }
+    - "respondent": ${other_parties[0].name_full()}
     - "case_number__1": ${ case_number }
     - "civil_proceeding": ${ True }
 
@@ -7611,7 +7613,7 @@ attachment:
     - "previous_cook_case_judge": ${ previous_cook_case_judge if previous_cook_case_type == "divorce" or previous_cook_case_type == "parentage" else '' }
 
     - "pro_se_cb": ${ True }
-    - "petitioner__2": ${ users[0].name.full(middle="full") }
+    - "petitioner__2": ${ users[0].name_full() }
     - "preparer_address_line_1": ${ users[0].address.line_one(bare=True) }
     - "petitioner_city": ${ users[0].address.city }
     - "petitioner_state": ${ users[0].address.state }
@@ -7628,7 +7630,7 @@ attachment:
   editable: False
   pdf template file: cook_sheriff_info_sheet.pdf
   fields:
-    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "respondent": ${other_parties[0].name_full()}
     - "alias_names": ${ other_parties[0].alias_names}
     - "respondent_race": ${ respondent_race_other if other_parties[0].race == 'other' else other_parties[0].race }
     - "respondent_dob": |
@@ -7778,7 +7780,7 @@ attachment:
     - "cook_vehicle_plate": ${ cook_vehicle_plate }
     - "cook_vehicle_state": ${ state_name(cook_vehicle_state) }
 
-    - "preparer_name": ${ users[0].name.full(middle="full") }
+    - "preparer_name": ${ users[0].name_full() }
     - "preparer_phone": ${ phone_number_formatted(users[0].phone_number) }
 ---
 attachment:
@@ -7801,9 +7803,9 @@ attachment:
   pdf template file: op_warrant_info_sheet.pdf
   fields:
     - "county": ${ trial_court.address.county }
-    - "petitioner": ${ users[0].name.full(middle="full") }
+    - "petitioner": ${ users[0].name_full() }
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
-    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "respondent": ${other_parties[0].name_full()}
     - "case_number__1": ${ case_number }
     - "petitioner_notice_phone": ${ phone_number_formatted(users[0].phone_number) }
     - "petitioner_notice_email": ${ users[0].email if users[0].email_notice else "" }
@@ -7852,7 +7854,7 @@ attachment:
   pdf template file: op_warrant.pdf
   fields:
     - "county": ${ trial_court.address.county }
-    - "petitioner": ${ users[0].name.full(middle="full") }
+    - "petitioner": ${ users[0].name_full() }
     - "obo_minor_cb": ${ True if protect_obo_minor else '' }
-    - "respondent": ${other_parties[0].name.full(middle="full")}
+    - "respondent": ${other_parties[0].name_full()}
     - "case_number__1": ${ case_number }
