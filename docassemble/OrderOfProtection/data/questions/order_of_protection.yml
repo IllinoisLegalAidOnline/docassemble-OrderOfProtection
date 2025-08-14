@@ -5613,6 +5613,7 @@ attachment:
     - "reason_dv": ${ True }
     - "e_signature": ${ users[0].name_full() if e_signature else '' }
     - "petitioner__2": ${ users[0].name_full() }
+    - "form_for_self": ${ True }
     - "user_address_one_line": ${ users[0].address.on_one_line(bare=True) }
     - "user_phone_number": ${ phone_number_formatted(users[0].phone_number) }
     - "user_email": ${ users[0].email if users[0].email_notice else ""}
