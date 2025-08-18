@@ -916,7 +916,7 @@ id: name of first child with respondent
 question: |
   Who is your minor child with ${other_parties[0].name_full()}?
 subquestion: |
-  The statewide Order of Protection forms have space for up to 6 minor children with the Respondent.
+  The statewide Order of Protection forms have space for up to 6 minor children with ${other_parties[0].name_full()}.
 fields:
   - code: |
       shared_kids[0].name_fields()
@@ -937,7 +937,7 @@ id: any other children with respondent
 question: |
   Do you have another minor child with ${other_parties[0].name_full()}?
 subquestion: |
-  The statewide Order of Protection forms have space for up to 6 minor children with the Respondent.
+  The statewide Order of Protection forms have space for up to 6 minor children with ${other_parties[0].name_full()}.
   % if len(shared_kids.elements) >= 1:  
   So far you have told us about ${shared_kids.full_names()}.
   % endif
@@ -1116,11 +1116,13 @@ id: order type
 question: |
   Which type of Order of Protection do you want against ${other_parties[0].name_full()}?
 subquestion: |
-  You can ask for both.
+  There are Emergency and Plenary Orders of Protection. You can ask for both.
+
+  ${ collapse_template(op_type_help) }
   
-  **Important:** It is easier to ask for both an Emergency and a Plenary Order of Protection now. If you change your mind later, it involves less paperwork.
+  **Important:** It is easier to ask for both an Emergency and a Plenary Order of Protection now. If you change your mind later, it involves more paperwork.
 fields:
-  - Emergency: eop
+  - Emergency Order of Protection: eop
     datatype: yesnowide
     default: True
     help: |
@@ -1129,7 +1131,7 @@ fields:
       * Judge can give this order on the same day you file, before ${other_parties[0].name_full()} is notified
       * Lasts for 14 to 21 days
       * After ${other_parties[0].name_full()} is served with court papers, you can ask for a long-term (Plenary) Order of Protection
-  - Plenary: pop
+  - Plenary Order of Protection: pop
     datatype: yesnowide
     help: |
       **Plenary (long-term) Order of Protection**
@@ -1140,7 +1142,23 @@ fields:
 validation code: |
   if not (eop or pop):
     validation_error("Please select at least one type of order to continue.", field="pop")
+---
+template: op_type_help
+subject: |
+  **What is the difference between Emergency and Plenary Orders?**
+content: |
+      **Emergency Order of Protection:**
 
+      * Judge can give this order on the same day you file, before ${other_parties[0].name_full()} is notified
+      * Lasts for 14 to 21 days
+      * After ${other_parties[0].name_full()} is served with court papers, you can ask for a long-term (Plenary) Order of Protection
+
+
+      **Plenary (long-term) Order of Protection:**
+          
+      * Judge can give this order on a later date, after ${other_parties[0].name_full()} has been notified
+      * Lasts for up to 2 years
+      * ${other_parties[0].name_full()} will have a chance to participate in the court case
 ---
 id: other ops
 question: |
@@ -1577,7 +1595,9 @@ id: hide address
 question: |
   Do you want to keep your address hidden?
 subquestion: |
-  You do not need to list where you are staying on your court papers. You can use a different address instead, as long as it is a place where you can get mail. This could be a friend or family member's home, a work address, a PO box, or some other mailing address.
+  You need to list an address on your court papers where you can receive court notices and documents about your case. Since ${other_parties[0].name_full()} will get a copy of your court papers, you might not want to share the address where you are staying. 
+  
+  You can use a different address on your court papers, as long as it is a place where you can get mail. This could be a friend or family member's home, a work address, a PO box, or some other mailing address.
 field: hide_address
 choices:
   - Yes: True
@@ -2226,7 +2246,7 @@ id: temporary custody
 question: |
   Do you want the court to grant you temporary decision-making responsibility of the children you have with ${other_parties[0].name_full()}?
 subquestion: |
-  This used to be called "custody" in Illinois.
+  Decision-making responsibility means making important decisions for a child, such as their education, healthcare, religious upbringing, and their activities. This used to be called "custody" in Illinois.
   
   Notes:
   
@@ -2354,7 +2374,7 @@ id: order respondent to appear in court
 question: |
   Do you want ${other_parties[0].name_full()} be ordered to come to court alone?
 subquestion: |
-  You can ask for this 
+  You can ask for this:
 
   * To prevent abuse, neglect, removal, or concealment of the children,
   * To return the children to you, or
