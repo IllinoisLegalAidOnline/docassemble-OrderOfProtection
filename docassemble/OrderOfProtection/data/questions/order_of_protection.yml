@@ -4857,7 +4857,7 @@ attachment:
         % elif hide_other_address_2 and stay_away_other_2:
         ${ other_locations_hidden_description_2 }
         % elif stay_away_other_2:
-        ${ other_locations[0].name }
+        ${ other_locations[1].name }
         % else:
         ${ "" }
         % endif
@@ -4879,7 +4879,7 @@ attachment:
         % elif hide_other_address_2 and stay_away_other_2:
         ${ "Confidential" }
         % elif stay_away_other_2:
-        ${ other_locations[0].on_one_line(bare=True) }
+        ${ other_locations[1].on_one_line(bare=True) }
         % else:
         ${ "" }
         % endif
@@ -6084,7 +6084,7 @@ attachment:
         % elif hide_other_address_2 and stay_away_other_2:
         ${ other_locations_hidden_description_2 }
         % elif stay_away_other_2:
-        ${ other_locations[0].name }
+        ${ other_locations[1].name }
         % else:
         ${ "" }
         % endif
@@ -6106,7 +6106,7 @@ attachment:
         % elif hide_other_address_2 and stay_away_other_2:
         ${ "Confidential" }
         % elif stay_away_other_2:
-        ${ other_locations[0].on_one_line(bare=True) }
+        ${ other_locations[1].on_one_line(bare=True) }
         % else:
         ${ "" }
         % endif
@@ -6963,7 +6963,7 @@ attachment:
         % elif hide_other_address_2 and stay_away_other_2:
         ${ other_locations_hidden_description_2 }
         % elif stay_away_other_2:
-        ${ other_locations[0].name }
+        ${ other_locations[1].name }
         % else:
         ${ "" }
         % endif
@@ -6985,7 +6985,7 @@ attachment:
         % elif hide_other_address_2 and stay_away_other_2:
         ${ "Confidential" }
         % elif stay_away_other_2:
-        ${ other_locations[0].on_one_line(bare=True) }
+        ${ other_locations[1].on_one_line(bare=True) }
         % else:
         ${ "" }
         % endif
