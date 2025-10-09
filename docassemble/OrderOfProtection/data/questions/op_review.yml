@@ -963,7 +963,7 @@ review:
       **Property you want to protect:**
       
       % if restrict_cars:
-      * ${ restricted_car_details }
+      * ${ restricted_car_details.replace("\n", " ").replace("\r", " ") }
       % endif
       % if restrict_home:
       * ${ restricted_property_address.on_one_line(bare=True) } 
@@ -975,7 +975,7 @@ review:
       % endif
       % endif
       % if restrict_other_property:
-      * ${ restricted_property }
+      * ${ restricted_property.replace("\n", " ").replace("\r", " ") }
       % endif
     show if: restrict_other_property == True
     
