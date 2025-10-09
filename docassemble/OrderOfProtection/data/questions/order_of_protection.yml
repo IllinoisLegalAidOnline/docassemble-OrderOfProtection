@@ -2028,7 +2028,11 @@ subquestion: |
   % if other_location_1_is_school:
   So far you entered: ${ schools[2].name }
   % else:
+  % if hide_other_address_1:
+  So far you entered: ${ other_locations_hidden_description_1 }
+  % else:
   So far you entered: ${ other_locations[0].name }
+  % endif
   % endif
 
   The statewide Order of Protection forms have space for up to 2 other places in total.  
@@ -3326,7 +3330,7 @@ subquestion: |
   You said this property should be protected:
 
   % if restrict_cars:
-  * ${ restricted_car_details }
+  * ${ restricted_car_details.replace("\n", " ").replace("\r", " ") }
   % endif
   % if restrict_home:
   * ${ restricted_property_address.on_one_line(bare=True) } 
@@ -3338,7 +3342,7 @@ subquestion: |
   % endif
   % endif
   % if restrict_other_property:
-  * ${ restricted_property }
+  * ${ restricted_property.replace("\n", " ").replace("\r", " ") }
   % endif
 fields:
   - no label: restrict_property_reason
@@ -3633,7 +3637,7 @@ subquestion: |
   So far you told us about: 
   
   * Address: ${ warrant_location_list[0].on_one_line(bare=True) }
-  * Description: ${ warrant_location_list[0].description }
+  * Description: ${ warrant_location_list[0].description.replace("\n", " ").replace("\r", " ") }
 field: warrant_location_list.there_is_another
 choices:
   - Yes: True
@@ -3712,7 +3716,7 @@ id: e-signature
 question: |
   Do you want to add your e-signature to your Petition for Order of Protection?
 subquestion: |
-  This program can put "**/s/ ${users[0].name.full(middle='full')}**" where you would sign your name. The court will accept this as your signature.
+  This program can put "**/s/ ${users[0].name_full()}**" where you would sign your name. The court will accept this as your signature.
 
   If you do not add your **{e-signature}**, you must sign your paper forms before you file them.
 
