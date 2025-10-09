@@ -524,7 +524,7 @@ subquestion: |
 id: cook after hours option
 continue button field: cook_after_hours
 question: |
-  Cook County after-hours court
+  Not for after-hours court hearings
 subquestion: |
   **Cook County domestic violence courts have additional hours during nights and weekends**, excluding [**court holidays**](https://www.cookcountycourt.org/ABOUT-THE-COURT/Legal-Court-Holidays).
   
@@ -532,9 +532,13 @@ subquestion: |
 
   * Monday through Friday: 9:00 PM to 3:00 AM
   * Saturday and Sunday: 1:00 PM to 6:00 PM
-  
-  If you want to schedule a remote hearing during these limited hours, use the [**Emergency Order of Protection - Cook County Easy Form**](https://www.illinoislegalaid.org/node/176901) instead. Otherwise, click **Next** to continue making your forms.
 
+  <div class="alert alert-info ilao-info" role="alert">
+    <h6 class="alert-heading">Use a different Easy Form for after-hours court</h6>
+    <p>If you want to email your forms directly to the after-hours court and schedule a remote court hearing during these limited hours, use this Easy Form instead:</p>
+  <p><a href="https://www.illinoislegalaid.org/node/176901"><b>Emergency Order of Protection - Cook County</b></a></p></div>  
+  
+  Otherwise, click **Next** to continue making forms that you can download.
 ---
 id: in illinois
 question: |
@@ -1388,7 +1392,9 @@ fields:
     rows: 18
     maxlength: 800
     help: |
-      The petition has space for about 800 characters including spaces for each incident.
+      The petition has space for about **800 characters** including spaces for each incident.
+  - note:  |
+      **Note:** The petition has space for about **800 characters** including spaces for each incident.
 ---
 id: first incident detail
 question: |
@@ -1421,7 +1427,9 @@ fields:
     rows: 18
     maxlength: 800
     help: |
-      The petition has space for about 800 characters including spaces for each incident.
+      The petition has space for about **800 characters** including spaces for each incident.
+  - note:  |
+      **Note:** The petition has space for about **800 characters** including spaces for each incident.
 ---
 template: incidents_help
 subject: |
