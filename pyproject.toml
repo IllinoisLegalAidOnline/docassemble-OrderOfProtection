@@ -1,3 +1,28 @@
+license = "MIT"
+license-files = [
+    "LICENSE",
+]
+
 [build-system]
-requires = ["setuptools"]
+requires = [
+    "setuptools==80.9.0",
+]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "docassemble.OrderOfProtection"
+version = "1.1.7"
+description = "A docassemble extension."
+readme = "README.md"
+authors = [
+    { name = "Matt Newsted", email = "mnewsted@illinoislegalaid.org" },
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://docassemble.org"
+
+[tool.setuptools.packages.find]
+where = [
+    ".",
+]
