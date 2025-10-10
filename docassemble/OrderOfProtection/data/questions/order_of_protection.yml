@@ -1702,6 +1702,11 @@ fields:
     show if:
       variable: respondent_on_social_media
       is: 'Yes'
+  - note:  |
+      **Note:** The form has space for about **180 characters** including spaces.
+    show if:
+      variable: respondent_on_social_media
+      is: 'Yes'
 ---
 id: respondent home address question
 question: |
@@ -2072,7 +2077,11 @@ fields:
     show if: 
       variable: same_school_restrictions
       is: "not present in parts"
-      
+  - note:  |
+      **Note:** The form has space for about **150 characters** including spaces.
+    show if: 
+      variable: same_school_restrictions
+      is: "not present in parts"      
 ---
 id: same school name
 question: |
@@ -2109,7 +2118,8 @@ fields:
     input type: area
     rows: 6
     maxlength: 200
-
+  - note:  |
+      **Note:** The form has space for about **200 characters** including spaces.
 ---
 id: request counseling for respondent
 question: |
@@ -2588,6 +2598,8 @@ fields:
     maxlength: 270
     help: |
       For example: New Years Day 10:00 AM to 3:00 PM, Fourth of July noon - 5:00PM, and Thanksgiving 9AM-4PM
+  - note:  |
+      **Note:** The form has space for about **270 characters** including spaces.
 ---
 id: parenting time start date
 question: |
@@ -3014,6 +3026,11 @@ fields:
     show if:
       variable: respo_property['other']
       is: True
+  - note:  |
+      **Note:** The form has space for about **200 characters** including spaces.
+    show if:
+      variable: respo_property['other']
+      is: True
 ---
 id: respondent one time right to enter
 question: |
@@ -3322,6 +3339,9 @@ fields:
     rows: 6
     maxlength: 200
     show if: restrict_other_property
+  - note:  |
+      **Note:** The form has space for about **200 characters** including spaces.
+    show if: restrict_other_property
 ---
 id: why property should be restricted
 question: |
@@ -3626,7 +3646,7 @@ fields:
     maxlength: 75
     help: |
       Include the names and ages of people, and the days and times they are likely to be there.
-    show if: warrant_location_list[i].others_present  
+    show if: warrant_location_list[i].others_present
 ---
 id: more warrant locations
 question: |
@@ -3671,7 +3691,9 @@ fields:
     rows: 3
     maxlength: 120
     show if: has_helpful_warrant_info
-     
+  - note:  |
+      **Note:** The form has space for about **120 characters** including spaces.
+    show if: has_helpful_warrant_info     
 ---
 id: firearms eop prior notice question
 question: |
@@ -3706,11 +3728,15 @@ fields:
     required: False
     default: |
       ${ no_contact_text }
+  - note:  |
+      **Note:** The form has space for about **415 characters** including spaces.
   - Because:: misc_remedies_because_text
     input type: area
     rows: 5
     maxlength: 375
     required: False
+  - note:  |
+      **Note:** The form has space for about **375 characters** including spaces.   
 ---
 id: e-signature
 question: |
@@ -3959,6 +3985,8 @@ fields:
     required: False
     help: |
       Include as much information as possible, such as best hours to serve, type of building, etc.
+  - note:  |
+      **Note:** The form has space for about **400 characters** including spaces.
 ---
 if: trial_court_index != -1
 id: respondent gender
@@ -4123,6 +4151,8 @@ fields:
     required: False
     help: |
       Try to be descritive. Examples: tattoos on hands, facial scars, birthmarks, mustache, beard
+  - note:  |
+      **Note:** The form has space for about **120 characters** including spaces.
   - Does ${other_parties[0].name_full()} wear glasses?: other_parties[0].glasses
     datatype: radio
     required: False
@@ -4186,6 +4216,10 @@ fields:
     input type: area
     rows: 5
     maxlength: 180
+    js show if: |
+      val("caution_reasons['armed']") == true || val("caution_reasons['home']") == true
+  - note:  |
+      **Note:** The form has space for about **180 characters** including spaces.
     js show if: |
       val("caution_reasons['armed']") == true || val("caution_reasons['home']") == true
 ---
@@ -4558,7 +4592,7 @@ attachment:
     - "respondent_weight": ${ str(other_parties[0].weight) + " lbs." if other_parties[0].weight > 0 else '' }
     - "respondent_hair": ${ other_parties[0].hair if other_parties[0].hair != "" else '' }
     - "respondent_eyes": ${ other_parties[0].eyes if other_parties[0].eyes != "" else '' }
-    - "respondent_tattoos": ${ other_parties[0].tattoos if other_parties[0].tattoos != "" else '' }
+    - "respondent_tattoos": ${ other_parties[0].tattoos.replace("\n", " ").replace("\r", " ") if other_parties[0].tattoos != "" else '' }
 
       # page 3    
     - "relationship_bg": ${ relationship_bg }
@@ -5876,7 +5910,7 @@ attachment:
     - "respondent_weight": ${ str(other_parties[0].weight) + " lbs." if other_parties[0].weight > 0 else '' }
     - "respondent_hair": ${ other_parties[0].hair if other_parties[0].hair != "" else '' }
     - "respondent_eyes": ${ other_parties[0].eyes if other_parties[0].eyes != "" else '' }
-    - "respondent_tattoos": ${ other_parties[0].tattoos if other_parties[0].tattoos != "" else '' }
+    - "respondent_tattoos": ${ other_parties[0].tattoos.replace("\n", " ").replace("\r", " ") if other_parties[0].tattoos != "" else '' }
 
       # page 3
     
@@ -6756,7 +6790,7 @@ attachment:
     - "respondent_weight": ${ str(other_parties[0].weight) + " lbs." if other_parties[0].weight > 0 else '' }
     - "respondent_hair": ${ other_parties[0].hair if other_parties[0].hair != "" else '' }
     - "respondent_eyes": ${ other_parties[0].eyes if other_parties[0].eyes != "" else '' }
-    - "respondent_tattoos": ${ other_parties[0].tattoos if other_parties[0].tattoos != "" else '' }
+    - "respondent_tattoos": ${ other_parties[0].tattoos.replace("\n", " ").replace("\r", " ") if other_parties[0].tattoos != "" else '' }
       
       # page 3    
     - "no_abuse": ${ any((no_harassment, no_physical, no_stalking, no_willful, no_intimidation, no_exploitation, no_neglect, no_interference)) }
