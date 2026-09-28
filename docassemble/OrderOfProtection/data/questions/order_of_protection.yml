@@ -2903,6 +2903,8 @@ subquestion: |
   The court can order that you will get or keep control of personal property. This is called having **possession** of the property.
   
   These can be things that you currently have with you or things you want ${other_parties[0].name_full()} to return to you. For example: your car, clothing, or phone.
+
+  **Note:** This only refers to who controls or has possession of the items. On another screen, you can ask the court to protect your belongings from ${other_parties[0].name_full()}.
 fields:
   - no label: award_personal_property
     datatype: yesnoradio
@@ -3282,15 +3284,16 @@ id: restrict other property
 question: |
   Additional property protections
 subquestion: |
-  We already asked about property that the court should order that you can keep or be returned to you.
-  
+  We already asked about property that you want to keep or be returned to you. You mentioned these items: ${comma_and_list([item.name.text for item in petitioner_personal_property])}.
+ 
   The court can also order ${other_parties[0].name_full()} not to take, hide, damage, or dispose of property. This can include personal property like your car or real estate like your apartment or house. It can include the spaces inside and outside the property as well as things that are inside the property.
 
-  **Note:** If you want these protections, you will need to describe the items, including property address, on your court papers.
-  
+  **Note:** This is different from who should have control or possession of the property. If you want these protections, you will need to describe the items, including property address, on your court papers.
 fields:
   - Is there property you want to protect from ${other_parties[0].name_full()}?: restrict_other_property
     datatype: yesnoradio
+  - note: |
+      **Important:** If you want to protect the items listed above and other property from ${other_parties[0].name_full()}, select **Yes**.
 ---
 id: restricted property
 question: |
@@ -3298,6 +3301,10 @@ question: |
 subquestion: |
   The court can order ${other_parties[0].name_full()} not to take, hide, damage, or dispose of property. This can include personal property or real estate.
 
+  % if restrict_other_property:
+  **Note:** You said you want possession of these items: ${comma_and_list([item.name.text for item in petitioner_personal_property])}. If you want to protect these items, you will need to list them again here.
+
+  % endif
   Check all that apply.
 fields:
   - Cars or other motor vehicles: restrict_cars
@@ -3332,16 +3339,16 @@ fields:
   - Protect items located inside the property: restrict_property_items
     datatype: yesnoradio
     show if: restrict_home
-  - Other important property (explain below): restrict_other_property
+  - Other important property (explain below): restrict_more_property
     datatype: yesnowide
   - Other property to protect (separate by commas): restricted_property
     input type: area
     rows: 6
     maxlength: 200
-    show if: restrict_other_property
+    show if: restrict_more_property
   - note:  |
       **Note:** The form has space for about **200 characters** including spaces.
-    show if: restrict_other_property
+    show if: restrict_more_property
 ---
 id: why property should be restricted
 question: |
@@ -3361,7 +3368,7 @@ subquestion: |
   [NEWLINE][TAB]Including items inside the property
   % endif
   % endif
-  % if restrict_other_property:
+  % if restrict_more_property:
   * ${ restricted_property.replace("\n", " ").replace("\r", " ") }
   % endif
 fields:
@@ -3753,7 +3760,7 @@ subquestion: |
       <li>Everything on the forms is true and correct, or you have been informed or you believe it is true and correct, and</li>
       <li>You understand that making a false statement on the form is perjury and has penalties provided by law.</li>
     </ul></p>
-  <p>See the <a href="https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm"><b>Code of Civil Procedure, 735 ILCS 5/1-109</b></a> for more information.</p>
+  <p>See the <a href="https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm"><b>Illinois Code of Civil Procedure, 735 ILCS 5/1-109</b></a> for more information.</p>
   </div>
 fields:
   - "Add e-signature?": e_signature
@@ -5260,7 +5267,7 @@ attachment:
     - "restricted_property_address": ${ restricted_property_address.on_one_line(bare=True) if restrict_other_property == True and restrict_home else '' }
     - "restrict_property_space": ${ True if restrict_other_property == True and restrict_home and restrict_property_space else '' }
     - "restrict_property_items": ${ True if restrict_other_property == True and restrict_home and restrict_property_items else '' }
-    - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
+    - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True and restrict_more_property == True else "" }
     - "restrict_property_reason_petitioner_owns": ${ True if (restrict_property_reason == "petitioner" and restrict_other_property == True) else "" }
     - "restrict_property_reason_both_own": ${ True if restrict_property_reason == "both" and restrict_other_property == True else "" }
     - "restrict_property_reason_divorce": ${ True if restrict_property_reason == "divorce" and restrict_other_property == True else "" }
@@ -6595,7 +6602,7 @@ attachment:
     - "restricted_property_address": ${ restricted_property_address.on_one_line(bare=True) if restrict_other_property == True and restrict_home else '' }
     - "restrict_property_space": ${ True if restrict_other_property == True and restrict_home and restrict_property_space else '' }
     - "restrict_property_items": ${ True if restrict_other_property == True and restrict_home and restrict_property_items else '' }
-    - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
+    - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True and restrict_more_property == True else "" }
     - "restrict_property_reason_petitioner_owns": ${ True if (restrict_property_reason == "petitioner" and restrict_other_property == True) else "" }
     - "restrict_property_reason_both_own": ${ True if restrict_property_reason == "both" and restrict_other_property == True else "" }
     - "restrict_property_reason_divorce": ${ True if restrict_property_reason == "divorce" and restrict_other_property == True else "" }
@@ -7482,7 +7489,7 @@ attachment:
     - "restricted_property_address": ${ restricted_property_address.on_one_line(bare=True) if restrict_other_property == True and restrict_home else '' }
     - "restrict_property_space": ${ True if restrict_other_property == True and restrict_home and restrict_property_space else '' }
     - "restrict_property_items": ${ True if restrict_other_property == True and restrict_home and restrict_property_items else '' }
-    - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True else "" }
+    - "restricted_property_list": ${ restricted_property.rstrip('.') if restrict_other_property == True and restrict_more_property == True else "" }
     - "restrict_property_reason_petitioner_owns": ${ True if (restrict_property_reason == "petitioner" and restrict_other_property == True) else "" }
     - "restrict_property_reason_both_own": ${ True if restrict_property_reason == "both" and restrict_other_property == True else "" }
     - "restrict_property_reason_divorce": ${ True if restrict_property_reason == "divorce" and restrict_other_property == True else "" }
