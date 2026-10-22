@@ -14,7 +14,7 @@ include:
 ---
 default screen parts:
   under: |
-    **Worried about doing this on your own?** Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate.
+    **Worried about doing this on your own?** Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at <a href="tel:+18778636338">**(877) 863-6338**</a> (877-TO END DV) to talk with an advocate.
     % if not user_logged_in():
     
     [${fa_icon("sign-in-alt", color="#0079d0", size="sm")} **Sign in**](${url_of('login', next=interview_url())}) or [**create**](${url_of('register', next=interview_url())}) an ILAO Easy Form account to save your progress (optional).
@@ -71,7 +71,7 @@ objects:
   - warrant_location_list: ALAddressList.using(there_are_any=True)
   - service_address: ALAddress
   - second_service_address: ALAddress
-  - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
+  - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts_plus.xlsx')
 
 ---
 code: |
@@ -432,7 +432,7 @@ subquestion: |
 
   This program makes forms that help you ask the court to order someone to stop harming or threatening you, your children, or other household members. The Order of Protection can also require the abuser to stay away from other protected people and locations.
 
-  To learn more, read ILAO's article about [**Orders of Protection**](https://www.illinoislegalaid.org/node/29806).
+  To learn more, read ILAO's article about [**Getting a domestic violence Order of Protection**](https://www.illinoislegalaid.org/node/29806).
   
   #### Your safety is important
   
@@ -599,9 +599,9 @@ code: |
 code: |
   def court_county_lookup(lowercase=False):
     all_court_counties = court_list._load_courts()['address_county'].items()
-    filtered_courts = [(-1, "cook")] if lowercase else [(-1, "Cook")]
+    filtered_courts = [(-1, "cook"), (-2, "kane")] if lowercase else [(-1, "Cook"), (-2, "Kane")]
     for court in all_court_counties:
-      if court[1] != "Cook":
+      if court[1] != "Cook" and court[1] != "Kane":
         court_name = court[1].lower() if lowercase else court[1]
         filtered_courts.append((court[0],court_name))
     return sorted( filtered_courts, key=lambda y: y[1])
@@ -612,6 +612,9 @@ code: |
   if trial_court_index == -1:
     trial_court = court_list.as_court('trial_court', 15)
     trial_court.address.county = "Cook"
+  elif trial_court_index == -2:
+    trial_court = court_list.as_court('trial_court', 52)
+    trial_court.address.county = "Kane"  
   else:
     trial_court = court_list.as_court('trial_court', trial_court_index)
 ---
@@ -792,8 +795,7 @@ question: |
 subquestion: |
   You can file for an Order of Protection only if the person you want protected has a qualifying relationship with the abuser.
   
-  A Stalking No Contact Order might work better in your situation. Read ILAO's article about [**Getting a Stalking No Contact Order**](https://www.illinoislegalaid.org/node/30216) to learn more.
-  
+  A Stalking No Contact Order might work better in your situation. Read ILAO's article about [**Protection from stalking**](https://www.illinoislegalaid.org/node/30216) to learn more.
 buttons:
   - Exit: exit
   - Restart: restart
@@ -1055,7 +1057,7 @@ subject: |
 content: |  
   If ${ x.name_full()} has not lived in Illinois or the state you select for the past 6 months, you may want to talk with a lawyer. There are laws that affect which state courts can settle things like child custody. If the child is under 6 months old, select where the child lived since birth.
   
-  Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate. You can also use [**Get Legal Help**](https://www.illinoislegalaid.org/get-legal-help) to find free or low-cost legal services in your area.
+  Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at <a href="tel:+18778636338">**(877) 863-6338**</a> (877-TO END DV) to talk with an advocate. You can also use [**Get Legal Help**](https://www.illinoislegalaid.org/get-legal-help) to find free or low-cost legal services in your area.
 ---
 template: legal_parentage_help
 subject: |
@@ -3584,7 +3586,7 @@ content: |
   * If you ask for a search warrant, this will involve additional contact with law enforcement.
   * The search warrant process is different in every county. Local courts and law enforcement may have their own process and forms to get firearms relief.
 
-  You can read these [**important information pages**](${ url_of('op_firearms_info.pdf') }) to get some guidance, but it can be helpful to talk with a domestic violence advocate when deciding what to do. Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate.
+  You can read these [**important information pages**](${ url_of('op_firearms_info.pdf') }) to get some guidance, but it can be helpful to talk with a domestic violence advocate when deciding what to do. Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at <a href="tel:+18778636338">**(877) 863-6338**</a> (877-TO END DV) to talk with an advocate.
 
   The information pages are also included in the instructions you can download at the end of this program.
 ---
@@ -3716,9 +3718,10 @@ fields:
   - no label: firearms_eop_notice
     datatype: yesnoradio
 ---
+# McLean County requested in 2023 not to include this language by default
 reconsider: True
 code: |
-  if stay_away and trial_court_index != 71:
+  if stay_away and trial_court_index != 76:
     no_contact_text = "Have no contact by any means with protected parties. "
     add_no_contact_language = True
   else: 
@@ -3729,7 +3732,7 @@ id: misc remedies
 question: |
   What else do you want the court to order ${other_parties[0].name_full()} to do or to stop doing?
 subquestion: |
-  % if add_no_contact_language and trial_court_index != 71:
+  % if add_no_contact_language and trial_court_index != 76:
   Because you are asking the court to order ${other_parties[0].name_full()} to stay away and stop communication, "No contact by any means with protected parties" will be added. You can change this below.
   % endif
 fields:
@@ -4345,7 +4348,7 @@ subquestion: |
   Thank you for using ILAO Easy Forms!
 event: get_docs_screen
 under: |
-  **Worried about doing this on your own?** Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at 877-863-6338 (877-TO END DV) to talk with an advocate.
+  **Worried about doing this on your own?** Call the [**Illinois Domestic Violence Hotline**](https://the-network.org/get-help/) at <a href="tel:+18778636338">**(877) 863-6338**</a> (877-TO END DV) to talk with an advocate.
   % if not user_logged_in():
   
   [${fa_icon("sign-in-alt", color="#0079d0", size="sm")} Sign-in](${url_of('login', next=interview_url())}) or [create](${url_of('register', next=interview_url())}) an ILAO Easy Form account to save your progress (optional).
